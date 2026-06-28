@@ -165,13 +165,10 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
     required String produtoCategoria,
     required double areaHa,
   }) async {
-    await _addProduto(
+    _openProdutoPanel(
       estadio,
-      nome: nome,
-      dose: 0,
-      unidade: AppConstants.unidadesDose.first,
-      areaHa: areaHa,
-      produtoCategoria: produtoCategoria,
+      nomeSugerido: nome,
+      categoriaSugerida: produtoCategoria,
     );
   }
 
@@ -189,7 +186,11 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
   }
 
   void _openProdutoPanel(
-      EstadioEntity estadio, ProdutoAplicacaoEntity produto) {
+    EstadioEntity estadio, {
+    ProdutoAplicacaoEntity? produto,
+    String? nomeSugerido,
+    String? categoriaSugerida,
+  }) {
     ProdutoPanel.show(
       context: context,
       estadioId: estadio.id,
@@ -197,21 +198,34 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
       fazendaNome: _displayFazenda,
       talhoes: const [],
       produtoInicial: produto,
-      onSalvar: (dados) => _updateProduto(
-        estadio.id,
-        produto.copyWith(
-          produtoNome: dados['produtoNome'] as String,
-          produtoCategoria: dados['produtoCategoria'] as String,
-          dose: (dados['dose'] as num).toDouble(),
-          doseUnidade: dados['doseUnidade'] as String,
-          areaHa: (dados['areaHa'] as num).toDouble(),
-          totalOverride: dados['totalOverride'] as double?,
-          overrideMotivo: dados['overrideMotivo'] as String?,
-          precoUnitario: dados['precoUnitario'] as double?,
-          observacao: dados['observacao'] as String?,
-          dataPrevista: dados['dataPrevista'] as DateTime?,
-        ),
-      ),
+      nomeSugerido: nomeSugerido,
+      categoriaSugerida: categoriaSugerida,
+      onSalvar: (dados) async {
+        if (produto != null) {
+          await _updateProduto(
+            estadio.id,
+            produto.copyWith(
+              produtoNome: dados['produtoNome'] as String,
+              produtoCategoria: dados['produtoCategoria'] as String,
+              dose: (dados['dose'] as num).toDouble(),
+              doseUnidade: dados['doseUnidade'] as String,
+              areaHa: (dados['areaHa'] as num).toDouble(),
+              totalOverride: dados['totalOverride'] as double?,
+              overrideMotivo: dados['overrideMotivo'] as String?,
+              observacao: dados['observacao'] as String?,
+            ),
+          );
+        } else {
+          await _addProduto(
+            estadio,
+            nome: dados['produtoNome'] as String,
+            dose: (dados['dose'] as num).toDouble(),
+            unidade: dados['doseUnidade'] as String,
+            areaHa: (dados['areaHa'] as num).toDouble(),
+            produtoCategoria: dados['produtoCategoria'] as String,
+          );
+        }
+      },
     );
   }
 
@@ -312,11 +326,11 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
                       onPlanoChanged: _updatePlano,
                       onAddEstadio: _addEstadio,
                       onPickLogo: _pickLogo,
-                      onAddProduto: _addProduto,
+                      onAddProduto: (estadio) => _openProdutoPanel(estadio),
                       onAddProdutoFromReferencia: _addProdutoFromReferencia,
-                      onUpdateProduto: _updateProduto,
                       onDeleteProduto: _deleteProduto,
-                      onEditProduto: _openProdutoPanel,
+                      onEditProduto: (estadio, produto) =>
+                          _openProdutoPanel(estadio, produto: produto),
                       onPickStageImage: _pickStageImage,
                       onUpdateEstadio: _updateEstadio,
                       onRemoveEstadio: _removeEstadio,
@@ -454,7 +468,6 @@ class _PlanningView extends StatelessWidget {
     required this.onPickLogo,
     required this.onAddProduto,
     required this.onAddProdutoFromReferencia,
-    required this.onUpdateProduto,
     required this.onDeleteProduto,
     required this.onEditProduto,
     required this.onPickStageImage,
@@ -468,21 +481,13 @@ class _PlanningView extends StatelessWidget {
   final ValueChanged<PlanoEntity> onPlanoChanged;
   final VoidCallback onAddEstadio;
   final VoidCallback onPickLogo;
-  final Future<void> Function(
-    EstadioEntity estadio, {
-    required String nome,
-    required double dose,
-    required String unidade,
-    required double areaHa,
-  }) onAddProduto;
+  final void Function(EstadioEntity estadio) onAddProduto;
   final Future<void> Function(
     EstadioEntity estadio, {
     required String nome,
     required String produtoCategoria,
     required double areaHa,
   }) onAddProdutoFromReferencia;
-  final Future<void> Function(String estadioId, ProdutoAplicacaoEntity produto)
-      onUpdateProduto;
   final Future<void> Function(String estadioId, String produtoId)
       onDeleteProduto;
   final void Function(EstadioEntity estadio, ProdutoAplicacaoEntity produto)
@@ -494,54 +499,44 @@ class _PlanningView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
-    return Stack(
+    return ListView(
+      padding: EdgeInsets.only(
+        left: 14,
+        right: 14,
+        top: 16,
+        bottom: 16 + bottomInset,
+      ),
       children: [
-        ListView(
-          padding: EdgeInsets.only(
-            left: 14,
-            right: 14,
-            top: 16,
-            bottom: 72 + bottomInset,
-          ),
-          children: [
-            _PlanHeaderCard(
-              plano: plano,
-              produtor: produtor,
-              fazenda: fazenda,
-              onChanged: onPlanoChanged,
-            ),
-            if (plano.estadios.isEmpty)
-              _CanvasHint(onTap: onAddEstadio)
-            else ...[
-              ...plano.estadios.map(
-                (estadio) => _StageBlock(
-                  plano: plano,
-                  estadio: estadio,
-                  onPickStageImage: onPickStageImage,
-                  onAddProduto: onAddProduto,
-                  onAddProdutoFromReferencia: onAddProdutoFromReferencia,
-                  onUpdateProduto: onUpdateProduto,
-                  onDeleteProduto: onDeleteProduto,
-                  onEditProduto: onEditProduto,
-                  onUpdateEstadio: onUpdateEstadio,
-                  onRemoveEstadio: onRemoveEstadio,
-                ),
-              ),
-              _AddStageHint(onTap: onAddEstadio),
-            ],
-            _PlanSummaryCard(planoId: plano.id, areaHa: plano.areaHaTotal),
-          ],
+        _PlanHeaderCard(
+          plano: plano,
+          produtor: produtor,
+          fazenda: fazenda,
+          onChanged: onPlanoChanged,
         ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 0,
-          child: _FooterCard(
-            plano: plano,
-            onPickLogo: onPickLogo,
-            onConsultorChanged: (value) => onPlanoChanged(
-              plano.copyWith(consultorNome: value.trim()),
+        if (plano.estadios.isEmpty)
+          _CanvasHint(onTap: onAddEstadio)
+        else ...[
+          ...plano.estadios.map(
+            (estadio) => _StageBlock(
+              plano: plano,
+              estadio: estadio,
+              onPickStageImage: onPickStageImage,
+              onAddProduto: onAddProduto,
+              onAddProdutoFromReferencia: onAddProdutoFromReferencia,
+              onDeleteProduto: onDeleteProduto,
+              onEditProduto: onEditProduto,
+              onUpdateEstadio: onUpdateEstadio,
+              onRemoveEstadio: onRemoveEstadio,
             ),
+          ),
+          _AddStageHint(onTap: onAddEstadio),
+        ],
+        _PlanSummaryCard(planoId: plano.id, areaHa: plano.areaHaTotal),
+        _ConsultorCard(
+          plano: plano,
+          onPickLogo: onPickLogo,
+          onConsultorChanged: (value) => onPlanoChanged(
+            plano.copyWith(consultorNome: value.trim()),
           ),
         ),
       ],
@@ -818,7 +813,6 @@ class _StageBlock extends StatefulWidget {
     required this.onPickStageImage,
     required this.onAddProduto,
     required this.onAddProdutoFromReferencia,
-    required this.onUpdateProduto,
     required this.onDeleteProduto,
     required this.onEditProduto,
     required this.onUpdateEstadio,
@@ -828,21 +822,13 @@ class _StageBlock extends StatefulWidget {
   final PlanoEntity plano;
   final EstadioEntity estadio;
   final ValueChanged<EstadioEntity> onPickStageImage;
-  final Future<void> Function(
-    EstadioEntity estadio, {
-    required String nome,
-    required double dose,
-    required String unidade,
-    required double areaHa,
-  }) onAddProduto;
+  final void Function(EstadioEntity estadio) onAddProduto;
   final Future<void> Function(
     EstadioEntity estadio, {
     required String nome,
     required String produtoCategoria,
     required double areaHa,
   }) onAddProdutoFromReferencia;
-  final Future<void> Function(String estadioId, ProdutoAplicacaoEntity produto)
-      onUpdateProduto;
   final Future<void> Function(String estadioId, String produtoId)
       onDeleteProduto;
   final void Function(EstadioEntity estadio, ProdutoAplicacaoEntity produto)
@@ -947,10 +933,8 @@ class _StageBlockState extends State<_StageBlock> {
                 ),
                 const SizedBox(width: 9),
                 _OperationCard(
-                  plano: widget.plano,
                   estadio: widget.estadio,
-                  onAddProduto: widget.onAddProduto,
-                  onUpdateProduto: widget.onUpdateProduto,
+                  onAddProduto: () => widget.onAddProduto(widget.estadio),
                   onDeleteProduto: widget.onDeleteProduto,
                   onEditProduto: widget.onEditProduto,
                 ),
@@ -1007,83 +991,20 @@ class _StageCircle extends StatelessWidget {
   }
 }
 
-class _OperationCard extends StatefulWidget {
+class _OperationCard extends StatelessWidget {
   const _OperationCard({
-    required this.plano,
     required this.estadio,
     required this.onAddProduto,
-    required this.onUpdateProduto,
     required this.onDeleteProduto,
     required this.onEditProduto,
   });
 
-  final PlanoEntity plano;
   final EstadioEntity estadio;
-  final Future<void> Function(
-    EstadioEntity estadio, {
-    required String nome,
-    required double dose,
-    required String unidade,
-    required double areaHa,
-  }) onAddProduto;
-  final Future<void> Function(String estadioId, ProdutoAplicacaoEntity produto)
-      onUpdateProduto;
+  final VoidCallback onAddProduto;
   final Future<void> Function(String estadioId, String produtoId)
       onDeleteProduto;
   final void Function(EstadioEntity estadio, ProdutoAplicacaoEntity produto)
       onEditProduto;
-
-  @override
-  State<_OperationCard> createState() => _OperationCardState();
-}
-
-class _OperationCardState extends State<_OperationCard> {
-  final _name = TextEditingController();
-  final _dose = TextEditingController();
-  final _area = TextEditingController();
-  String _unit = AppConstants.unidadesDose.first;
-  bool _showAddForm = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _area.text = widget.plano.areaHaTotal.toStringAsFixed(1);
-    _showAddForm = widget.estadio.produtos.isEmpty;
-  }
-
-  @override
-  void didUpdateWidget(covariant _OperationCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    if (oldWidget.estadio.produtos.isEmpty &&
-        widget.estadio.produtos.isNotEmpty &&
-        _showAddForm) {
-      setState(() => _showAddForm = false);
-    }
-  }
-
-  @override
-  void dispose() {
-    _name.dispose();
-    _dose.dispose();
-    _area.dispose();
-    super.dispose();
-  }
-
-  Future<void> _add() async {
-    final name = _name.text.trim();
-    if (name.isEmpty) return;
-    await widget.onAddProduto(
-      widget.estadio,
-      nome: name,
-      dose: double.tryParse(_dose.text.replaceAll(',', '.')) ?? 0,
-      unidade: _unit,
-      areaHa: double.tryParse(_area.text.replaceAll(',', '.')) ??
-          widget.plano.areaHaTotal,
-    );
-    _name.clear();
-    _dose.clear();
-    if (mounted) setState(() => _showAddForm = false);
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -1094,7 +1015,7 @@ class _OperationCardState extends State<_OperationCard> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (widget.estadio.produtos.isEmpty)
+          if (estadio.produtos.isEmpty)
             Text(
               'Nenhum produto',
               style: AppTypography.caption.copyWith(
@@ -1103,129 +1024,39 @@ class _OperationCardState extends State<_OperationCard> {
               ),
             )
           else
-            ...widget.estadio.produtos.map(
+            ...estadio.produtos.map(
               (produto) => _InlineProductRow(
+                key: ValueKey(produto.id),
                 produto: produto,
-                onEdit: () => widget.onEditProduto(widget.estadio, produto),
-                onDelete: () =>
-                    widget.onDeleteProduto(widget.estadio.id, produto.id),
-                onAreaChanged: (area) => widget.onUpdateProduto(
-                  widget.estadio.id,
-                  produto.copyWith(areaHa: area),
-                ),
+                onEdit: () => onEditProduto(estadio, produto),
+                onDelete: () => onDeleteProduto(estadio.id, produto.id),
               ),
             ),
-          if (widget.estadio.produtos.isNotEmpty)
+          if (estadio.produtos.isNotEmpty)
             Divider(height: 12, color: context.appBorderSoft),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            alignment: Alignment.topCenter,
-            child: _showAddForm
-                ? Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextField(
-                              controller: _name,
-                              autofocus: true,
-                              style: AppTypography.caption,
-                              decoration: const InputDecoration(
-                                hintText: 'Nome do produto',
-                                border: InputBorder.none,
-                                isDense: true,
-                              ),
-                              onSubmitted: (_) => _add(),
-                            ),
-                          ),
-                          IconButton(
-                            onPressed: () => setState(() => _showAddForm = false),
-                            icon: PhosphorIcon(
-                              PhosphorIconsRegular.x,
-                              size: 14,
-                              color: context.appTextDisabled,
-                            ),
-                          ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          SizedBox(
-                            width: 56,
-                            child: TextField(
-                              controller: _dose,
-                              textAlign: TextAlign.center,
-                              keyboardType: const TextInputType.numberWithOptions(
-                                decimal: true,
-                              ),
-                              inputFormatters: [
-                                FilteringTextInputFormatter.allow(
-                                  RegExp(r'[0-9,.]'),
-                                ),
-                              ],
-                              style: AppTypography.label,
-                              decoration: const InputDecoration(
-                                hintText: 'dose',
-                                border: InputBorder.none,
-                              ),
-                            ),
-                          ),
-                          DropdownButton<String>(
-                            value: _unit,
-                            underline: const SizedBox.shrink(),
-                            style: AppTypography.label.copyWith(
-                              color: context.appTextPrimary,
-                            ),
-                            items: AppConstants.unidadesDose
-                                .map(
-                                  (unit) => DropdownMenuItem(
-                                    value: unit,
-                                    child: Text(unit),
-                                  ),
-                                )
-                                .toList(),
-                            onChanged: (value) =>
-                                setState(() => _unit = value ?? _unit),
-                          ),
-                          const Spacer(),
-                          IconButton(
-                            onPressed: _add,
-                            icon: const PhosphorIcon(
-                              PhosphorIconsRegular.plus,
-                              size: 16,
-                              color: AppColors.primary,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  )
-                : GestureDetector(
-                    onTap: () => setState(() => _showAddForm = true),
-                    behavior: HitTestBehavior.opaque,
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 4),
-                      child: Row(
-                        children: [
-                          const PhosphorIcon(
-                            PhosphorIconsRegular.plus,
-                            size: 14,
-                            color: AppColors.primary,
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            'Adicionar produto',
-                            style: AppTypography.caption.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
+          GestureDetector(
+            onTap: onAddProduto,
+            behavior: HitTestBehavior.opaque,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  const PhosphorIcon(
+                    PhosphorIconsRegular.plus,
+                    size: 14,
+                    color: AppColors.primary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Adicionar produto',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
+                ],
+              ),
+            ),
           ),
         ],
       ),
@@ -1233,185 +1064,78 @@ class _OperationCardState extends State<_OperationCard> {
   }
 }
 
-class _InlineProductRow extends StatefulWidget {
+class _InlineProductRow extends StatelessWidget {
   const _InlineProductRow({
+    super.key,
     required this.produto,
     required this.onEdit,
     required this.onDelete,
-    required this.onAreaChanged,
   });
 
   final ProdutoAplicacaoEntity produto;
   final VoidCallback onEdit;
   final VoidCallback onDelete;
-  final ValueChanged<double> onAreaChanged;
-
-  @override
-  State<_InlineProductRow> createState() => _InlineProductRowState();
-}
-
-class _InlineProductRowState extends State<_InlineProductRow> {
-  late final TextEditingController _area;
-  bool _expanded = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _area =
-        TextEditingController(text: widget.produto.areaHa.toStringAsFixed(1));
-  }
-
-  @override
-  void dispose() {
-    _area.dispose();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
-    final produto = widget.produto;
     final unit = produto.doseUnidade.split('/').first;
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Column(
-        children: [
-          InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
-            borderRadius: BorderRadius.circular(6),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 2),
-              child: Row(
-                children: [
-                  Container(
-                    width: 5,
-                    height: 5,
-                    decoration: BoxDecoration(
-                      color: AppColors.success,
-                      shape: BoxShape.circle,
-                    ),
-                  ),
-                  const SizedBox(width: 7),
-                  Expanded(
-                    child: GestureDetector(
-                      onTap: widget.onEdit,
-                      child: Text(
-                        produto.produtoNome,
-                        style: AppTypography.caption.copyWith(
-                          fontWeight: FontWeight.w700,
-                        ),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
-                  Text(
-                    '${produto.dose} ${produto.doseUnidade}',
-                    style: AppTypography.label.copyWith(
-                      color: context.appTextSecondary,
-                    ),
-                  ),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${produto.totalFinal.toStringAsFixed(1)} $unit',
-                    style: AppTypography.caption.copyWith(
-                      fontWeight: FontWeight.w800,
-                    ),
-                  ),
-                  AnimatedRotation(
-                    turns: _expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: PhosphorIcon(
-                      PhosphorIconsRegular.caretDown,
-                      size: 12,
-                      color: context.appTextDisabled,
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: widget.onDelete,
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(
-                      minWidth: 28,
-                      minHeight: 28,
-                    ),
-                    icon: PhosphorIcon(
-                      PhosphorIconsRegular.x,
-                      size: 14,
-                      color: context.appTextDisabled,
-                    ),
-                  ),
-                ],
+      child: InkWell(
+        onTap: onEdit,
+        borderRadius: BorderRadius.circular(6),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 2),
+          child: Row(
+            children: [
+              Container(
+                width: 5,
+                height: 5,
+                decoration: const BoxDecoration(
+                  color: AppColors.success,
+                  shape: BoxShape.circle,
+                ),
               ),
-            ),
+              const SizedBox(width: 7),
+              Expanded(
+                child: Text(
+                  produto.produtoNome,
+                  style: AppTypography.caption.copyWith(
+                    fontWeight: FontWeight.w700,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              Text(
+                '${produto.dose} ${produto.doseUnidade}',
+                style: AppTypography.label.copyWith(
+                  color: context.appTextSecondary,
+                ),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '${produto.totalFinal.toStringAsFixed(1)} $unit',
+                style: AppTypography.caption.copyWith(
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              IconButton(
+                onPressed: onDelete,
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(
+                  minWidth: 28,
+                  minHeight: 28,
+                ),
+                icon: PhosphorIcon(
+                  PhosphorIconsRegular.x,
+                  size: 14,
+                  color: context.appTextDisabled,
+                ),
+              ),
+            ],
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            alignment: Alignment.topCenter,
-            child: _expanded
-                ? Padding(
-                    padding: const EdgeInsets.only(left: 12, top: 2, bottom: 4),
-                    child: Row(
-                      children: [
-                        Text(
-                          'Área aplicada',
-                          style: AppTypography.label.copyWith(
-                            color: context.appTextSecondary,
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        SizedBox(
-                          width: 52,
-                          child: TextField(
-                            controller: _area,
-                            textAlign: TextAlign.center,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[0-9,.]'),
-                              ),
-                            ],
-                            style: AppTypography.label,
-                            decoration: const InputDecoration(
-                              border: InputBorder.none,
-                              isDense: true,
-                            ),
-                            onSubmitted: (value) {
-                              final parsed =
-                                  double.tryParse(value.replaceAll(',', '.'));
-                              if (parsed != null) widget.onAreaChanged(parsed);
-                            },
-                          ),
-                        ),
-                        Text(
-                          'ha',
-                          style: AppTypography.label.copyWith(
-                            color: context.appTextSecondary,
-                          ),
-                        ),
-                        const Spacer(),
-                        TextButton(
-                          onPressed: widget.onEdit,
-                          style: TextButton.styleFrom(
-                            padding: EdgeInsets.zero,
-                            minimumSize: Size.zero,
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                          ),
-                          child: Text(
-                            'Editar',
-                            style: AppTypography.label.copyWith(
-                              color: AppColors.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox(width: double.infinity),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -1468,8 +1192,8 @@ class _PlanSummaryCard extends ConsumerWidget {
   }
 }
 
-class _FooterCard extends StatefulWidget {
-  const _FooterCard({
+class _ConsultorCard extends StatefulWidget {
+  const _ConsultorCard({
     required this.plano,
     required this.onPickLogo,
     required this.onConsultorChanged,
@@ -1480,12 +1204,11 @@ class _FooterCard extends StatefulWidget {
   final ValueChanged<String> onConsultorChanged;
 
   @override
-  State<_FooterCard> createState() => _FooterCardState();
+  State<_ConsultorCard> createState() => _ConsultorCardState();
 }
 
-class _FooterCardState extends State<_FooterCard> {
+class _ConsultorCardState extends State<_ConsultorCard> {
   late final TextEditingController _consultor;
-  bool _expanded = false;
 
   bool get _hasConsultor => _consultor.text.trim().isNotEmpty;
 
@@ -1493,14 +1216,13 @@ class _FooterCardState extends State<_FooterCard> {
   void initState() {
     super.initState();
     _consultor = TextEditingController(text: widget.plano.consultorNome ?? '');
-    _expanded = !_hasConsultor;
     _consultor.addListener(() {
       if (mounted) setState(() {});
     });
   }
 
   @override
-  void didUpdateWidget(covariant _FooterCard oldWidget) {
+  void didUpdateWidget(covariant _ConsultorCard oldWidget) {
     super.didUpdateWidget(oldWidget);
     final nome = widget.plano.consultorNome ?? '';
     if (oldWidget.plano.consultorNome != widget.plano.consultorNome &&
@@ -1517,110 +1239,29 @@ class _FooterCardState extends State<_FooterCard> {
 
   @override
   Widget build(BuildContext context) {
-    final bottomInset = MediaQuery.of(context).padding.bottom;
-    return Container(
-      padding: EdgeInsets.only(
-        left: 10,
-        right: 10,
-        top: 8,
-        bottom: 8 + bottomInset,
+    return SummaryExpandableCard(
+      initiallyExpanded: !_hasConsultor,
+      leading: _FooterLogo(
+        logoPath: widget.plano.logoLocalPath,
+        size: 32,
+        onTap: widget.onPickLogo,
       ),
-      decoration: BoxDecoration(
-        color: context.appSurface.withValues(alpha: 0.96),
-        border: Border(top: BorderSide(color: context.appBorderSoft)),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 6,
-            offset: const Offset(0, -1),
-          ),
-        ],
+      summary: SummaryDetailLine(
+        primary: _hasConsultor ? _consultor.text.trim() : 'Consultor',
+        secondary: _hasConsultor
+            ? 'Logo e identificação do consultor'
+            : 'Toque para preencher nome e logo',
       ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
-            borderRadius: BorderRadius.circular(8),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Row(
-                children: [
-                  _FooterLogo(
-                    logoPath: widget.plano.logoLocalPath,
-                    size: _expanded ? 42 : 32,
-                    onTap: widget.onPickLogo,
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: SummaryDetailLine(
-                      primary: _hasConsultor
-                          ? _consultor.text.trim()
-                          : 'Consultor',
-                      secondary: _hasConsultor
-                          ? 'Logo e identificação do consultor'
-                          : 'Toque para preencher nome e logo',
-                    ),
-                  ),
-                  AnimatedRotation(
-                    turns: _expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: PhosphorIcon(
-                      PhosphorIconsRegular.caretDown,
-                      size: 14,
-                      color: context.appTextDisabled,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 220),
-            curve: Curves.easeInOut,
-            alignment: Alignment.topCenter,
-            child: _expanded
-                ? Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Row(
-                      children: [
-                        GestureDetector(
-                          onTap: widget.onPickLogo,
-                          child: _FooterLogo(
-                            logoPath: widget.plano.logoLocalPath,
-                            size: 42,
-                            onTap: widget.onPickLogo,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Text(
-                          'Consultor'.toUpperCase(),
-                          style: AppTypography.label.copyWith(
-                            color: context.appTextDisabled,
-                            fontWeight: FontWeight.w700,
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: TextField(
-                            controller: _consultor,
-                            autofocus: !_hasConsultor,
-                            decoration: const InputDecoration(
-                              hintText: 'Nome do consultor',
-                              border: InputBorder.none,
-                            ),
-                            onSubmitted: widget.onConsultorChanged,
-                            onTapOutside: (_) =>
-                                widget.onConsultorChanged(_consultor.text),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox(width: double.infinity),
-          ),
-        ],
+      detail: TextField(
+        controller: _consultor,
+        autofocus: !_hasConsultor,
+        decoration: const InputDecoration(
+          hintText: 'Nome do consultor',
+          border: InputBorder.none,
+          isDense: true,
+        ),
+        onSubmitted: widget.onConsultorChanged,
+        onTapOutside: (_) => widget.onConsultorChanged(_consultor.text),
       ),
     );
   }
@@ -1924,7 +1565,6 @@ class _ConsolidationRow extends StatefulWidget {
 
 class _ConsolidationRowState extends State<_ConsolidationRow> {
   late final TextEditingController _price;
-  bool _expanded = false;
 
   @override
   void initState() {
@@ -1932,7 +1572,6 @@ class _ConsolidationRowState extends State<_ConsolidationRow> {
     _price = TextEditingController(
       text: widget.initialPrice?.toStringAsFixed(2) ?? '',
     );
-    _expanded = widget.initialPrice == null;
   }
 
   @override
@@ -1941,9 +1580,6 @@ class _ConsolidationRowState extends State<_ConsolidationRow> {
     if (oldWidget.initialPrice != widget.initialPrice) {
       final next = widget.initialPrice?.toStringAsFixed(2) ?? '';
       if (_price.text != next) _price.text = next;
-      if (widget.initialPrice != null && _expanded) {
-        setState(() => _expanded = false);
-      }
     }
   }
 
@@ -1971,108 +1607,69 @@ class _ConsolidationRowState extends State<_ConsolidationRow> {
       decoration: BoxDecoration(
         border: Border(bottom: BorderSide(color: context.appBorderSoft)),
       ),
-      child: Column(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+      child: Row(
         children: [
-          InkWell(
-            onTap: () => setState(() => _expanded = !_expanded),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      widget.itemName,
-                      style: AppTypography.caption.copyWith(
-                        fontWeight: FontWeight.w700,
-                      ),
-                      maxLines: _expanded ? 2 : 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  if (!_expanded) ...[
-                    Text(
-                      widget.quantity,
-                      style: AppTypography.label.copyWith(
-                        color: context.appTextSecondary,
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                  ],
-                  Text(
-                    totalText,
-                    style: AppTypography.label.copyWith(
-                      fontWeight: FontWeight.w800,
-                      color: widget.total == null
-                          ? context.appTextDisabled
-                          : context.appTextPrimary,
-                    ),
-                  ),
-                  AnimatedRotation(
-                    turns: _expanded ? 0.5 : 0,
-                    duration: const Duration(milliseconds: 200),
-                    child: PhosphorIcon(
-                      PhosphorIconsRegular.caretDown,
-                      size: 12,
-                      color: context.appTextDisabled,
-                    ),
-                  ),
-                ],
+          Expanded(
+            child: Text(
+              widget.itemName,
+              style: AppTypography.caption.copyWith(
+                fontWeight: FontWeight.w700,
               ),
+              maxLines: 2,
+              overflow: TextOverflow.ellipsis,
             ),
           ),
-          AnimatedSize(
-            duration: const Duration(milliseconds: 200),
-            curve: Curves.easeInOut,
-            alignment: Alignment.topCenter,
-            child: _expanded
-                ? Padding(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 10),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            widget.quantity,
-                            style: AppTypography.label.copyWith(
-                              color: context.appTextSecondary,
-                            ),
-                          ),
-                        ),
-                        SizedBox(
-                          width: 96,
-                          child: TextField(
-                            controller: _price,
-                            textAlign: TextAlign.right,
-                            keyboardType: const TextInputType.numberWithOptions(
-                              decimal: true,
-                            ),
-                            inputFormatters: [
-                              FilteringTextInputFormatter.allow(
-                                RegExp(r'[0-9,.]'),
-                              ),
-                            ],
-                            decoration: InputDecoration(
-                              hintText: 'R\$ unit.',
-                              isDense: true,
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(8),
-                                borderSide: BorderSide(
-                                  color: context.appBorderSoft,
-                                ),
-                              ),
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 8,
-                                vertical: 8,
-                              ),
-                            ),
-                            style: AppTypography.label,
-                            onSubmitted: (_) => _save(),
-                            onTapOutside: (_) => _save(),
-                          ),
-                        ),
-                      ],
-                    ),
-                  )
-                : const SizedBox(width: double.infinity),
+          SizedBox(
+            width: 78,
+            child: Text(
+              widget.quantity,
+              style: AppTypography.label.copyWith(
+                color: context.appTextSecondary,
+              ),
+              textAlign: TextAlign.right,
+            ),
+          ),
+          SizedBox(
+            width: 86,
+            child: TextField(
+              controller: _price,
+              textAlign: TextAlign.right,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
+              ],
+              decoration: InputDecoration(
+                hintText: 'R\$ unit.',
+                isDense: true,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(8),
+                  borderSide: BorderSide(color: context.appBorderSoft),
+                ),
+                contentPadding: const EdgeInsets.symmetric(
+                  horizontal: 8,
+                  vertical: 8,
+                ),
+              ),
+              style: AppTypography.label,
+              onSubmitted: (_) => _save(),
+              onTapOutside: (_) => _save(),
+            ),
+          ),
+          SizedBox(
+            width: 86,
+            child: Text(
+              totalText,
+              style: AppTypography.label.copyWith(
+                fontWeight: FontWeight.w800,
+                color: widget.total == null
+                    ? context.appTextDisabled
+                    : context.appTextPrimary,
+              ),
+              textAlign: TextAlign.right,
+            ),
           ),
         ],
       ),

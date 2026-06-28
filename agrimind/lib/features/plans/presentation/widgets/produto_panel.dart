@@ -15,17 +15,9 @@ const _unidades = ['L/ha', 'mL/ha', 'kg/ha', 'g/ha', 'unid/ha'];
 
 // ── ProdutoPanel ─────────────────────────────────────────────────────────────
 
-/// Bottom sheet completo para adicionar ou editar um ProdutoAplicacao.
+/// Bottom sheet para adicionar ou editar um ProdutoAplicacao.
 ///
-/// Fluxo:
-/// 1. Busca de produto no catálogo (campo de texto por ora — Sprint 4 = dropdown real)
-/// 2. Dose + unidade
-/// 3. Seletor de área (Fazenda / Talhão / Personalizado)
-/// 4. Total calculado
-/// 5. Override manual (opcional)
-/// 6. Preço unitário (opcional)
-/// 7. Data prevista (opcional)
-/// 8. Observação (opcional)
+/// Aberto diretamente ao tocar em "Adicionar produto" ou em um produto existente.
 class ProdutoPanel extends StatefulWidget {
   const ProdutoPanel({
     super.key,
@@ -34,6 +26,8 @@ class ProdutoPanel extends StatefulWidget {
     required this.fazendaNome,
     required this.talhoes,
     this.produtoInicial,
+    this.nomeSugerido,
+    this.categoriaSugerida,
     required this.onSalvar,
   });
 
@@ -45,6 +39,12 @@ class ProdutoPanel extends StatefulWidget {
   /// Produto existente (modo edição). Null = adicionar novo.
   final ProdutoAplicacaoEntity? produtoInicial;
 
+  /// Pré-preenche o nome ao adicionar (ex.: referência técnica).
+  final String? nomeSugerido;
+
+  /// Pré-preenche a categoria ao adicionar via referência.
+  final String? categoriaSugerida;
+
   final void Function(Map<String, dynamic> dados) onSalvar;
 
   /// Abre o painel de produto.
@@ -55,6 +55,8 @@ class ProdutoPanel extends StatefulWidget {
     required String fazendaNome,
     required List<TalhaoOption> talhoes,
     ProdutoAplicacaoEntity? produtoInicial,
+    String? nomeSugerido,
+    String? categoriaSugerida,
     required void Function(Map<String, dynamic>) onSalvar,
   }) {
     return showAppBottomSheet(
@@ -65,6 +67,8 @@ class ProdutoPanel extends StatefulWidget {
         fazendaNome: fazendaNome,
         talhoes: talhoes,
         produtoInicial: produtoInicial,
+        nomeSugerido: nomeSugerido,
+        categoriaSugerida: categoriaSugerida,
         onSalvar: onSalvar,
       ),
     );
@@ -78,7 +82,6 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
   final _formKey = GlobalKey<FormState>();
   final _nomeCtrl = TextEditingController();
   final _doseCtrl = TextEditingController();
-  final _precoCtrl = TextEditingController();
   final _overrideCtrl = TextEditingController();
   final _motivoCtrl = TextEditingController();
   final _obsCtrl = TextEditingController();
@@ -86,7 +89,6 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
   late String _unidade;
   late double _areaHa;
   bool _overrideAtivo = false;
-  DateTime? _dataPrevista;
 
   bool get _isEdit => widget.produtoInicial != null;
 
@@ -105,12 +107,13 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
         _overrideCtrl.text = p.totalOverride!.toString();
       }
       _motivoCtrl.text = p.overrideMotivo ?? '';
-      _precoCtrl.text = p.precoUnitario?.toString() ?? '';
       _obsCtrl.text = p.observacao ?? '';
-      _dataPrevista = p.dataPrevista;
     } else {
       _unidade = _unidades.first;
       _areaHa = widget.areaHaFazenda;
+      if (widget.nomeSugerido != null) {
+        _nomeCtrl.text = widget.nomeSugerido!;
+      }
     }
   }
 
@@ -118,7 +121,6 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
   void dispose() {
     _nomeCtrl.dispose();
     _doseCtrl.dispose();
-    _precoCtrl.dispose();
     _overrideCtrl.dispose();
     _motivoCtrl.dispose();
     _obsCtrl.dispose();
@@ -140,7 +142,9 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
     widget.onSalvar({
       'estadioId': widget.estadioId,
       'produtoNome': _nomeCtrl.text.trim(),
-      'produtoCategoria': 'Geral', // Sprint 4: usar categoria do catálogo
+      'produtoCategoria': _isEdit
+          ? widget.produtoInicial!.produtoCategoria
+          : (widget.categoriaSugerida ?? 'Geral'),
       'dose': _dose,
       'doseUnidade': _unidade,
       'areaHa': _areaHa,
@@ -148,23 +152,10 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
       'overrideMotivo': _overrideAtivo && _motivoCtrl.text.isNotEmpty
           ? _motivoCtrl.text.trim()
           : null,
-      'precoUnitario': double.tryParse(_precoCtrl.text.replaceAll(',', '.')),
       'observacao': _obsCtrl.text.isNotEmpty ? _obsCtrl.text.trim() : null,
-      'dataPrevista': _dataPrevista,
     });
 
     if (mounted) Navigator.of(context).pop();
-  }
-
-  Future<void> _pickDate() async {
-    final now = DateTime.now();
-    final date = await showDatePicker(
-      context: context,
-      initialDate: _dataPrevista ?? now,
-      firstDate: DateTime(now.year - 1),
-      lastDate: DateTime(now.year + 5),
-    );
-    if (date != null && mounted) setState(() => _dataPrevista = date);
   }
 
   @override
@@ -298,34 +289,6 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
                       ),
                     ],
 
-                    const SizedBox(height: AppSpacing.md),
-                    Divider(color: context.appBorderSoft),
-                    const SizedBox(height: AppSpacing.sm),
-
-                    // Preço unitário (opcional)
-                    const _FieldLabel('Preço Unitário (opcional)'),
-                    const SizedBox(height: 6),
-                    _PanelTextField(
-                      controller: _precoCtrl,
-                      hint: 'R\$ por unidade',
-                      keyboardType: const TextInputType.numberWithOptions(
-                        decimal: true,
-                      ),
-                      inputFormatters: [
-                        FilteringTextInputFormatter.allow(RegExp(r'[0-9,.]')),
-                        LengthLimitingTextInputFormatter(9),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
-
-                    // Data prevista
-                    const _FieldLabel('Data Prevista (opcional)'),
-                    const SizedBox(height: 6),
-                    _DatePickerTile(
-                      date: _dataPrevista,
-                      onTap: _pickDate,
-                      onClear: () => setState(() => _dataPrevista = null),
-                    ),
                     const SizedBox(height: AppSpacing.md),
 
                     // Observação
@@ -605,65 +568,6 @@ class _TotalCalculado extends StatelessWidget {
             ],
           ),
         ],
-      ),
-    );
-  }
-}
-
-class _DatePickerTile extends StatelessWidget {
-  const _DatePickerTile({
-    required this.date,
-    required this.onTap,
-    required this.onClear,
-  });
-
-  final DateTime? date;
-  final VoidCallback onTap;
-  final VoidCallback onClear;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: BoxDecoration(
-          border: Border.all(color: context.appBorder),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        child: Row(
-          children: [
-            Icon(
-              Icons.calendar_today_outlined,
-              size: 18,
-              color: context.appTextSecondary,
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                date != null
-                    ? '${date!.day.toString().padLeft(2, '0')}/'
-                        '${date!.month.toString().padLeft(2, '0')}/'
-                        '${date!.year}'
-                    : 'Selecionar data',
-                style: AppTypography.body.copyWith(
-                  color: date != null
-                      ? context.appTextPrimary
-                      : context.appTextDisabled,
-                ),
-              ),
-            ),
-            if (date != null)
-              GestureDetector(
-                onTap: onClear,
-                child: Icon(
-                  Icons.close,
-                  size: 18,
-                  color: context.appTextSecondary,
-                ),
-              ),
-          ],
-        ),
       ),
     );
   }

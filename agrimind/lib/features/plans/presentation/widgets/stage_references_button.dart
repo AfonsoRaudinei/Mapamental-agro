@@ -82,18 +82,13 @@ class StageReferencesButton extends ConsumerWidget {
       estadioCodigo: estadio.codigo,
       itens: itens,
       onUsarNoPlano: (item) async {
+        if (context.mounted) Navigator.of(context).pop();
         await onAddProdutoFromReferencia(
           estadio,
           nome: item.titulo,
           produtoCategoria: selected.filtroCatalogo ?? 'Geral',
           areaHa: plano.areaHaTotal,
         );
-        if (context.mounted) {
-          Navigator.of(context).pop();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${item.titulo} adicionado ao plano')),
-          );
-        }
       },
     );
   }
