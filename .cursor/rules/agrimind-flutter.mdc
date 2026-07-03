@@ -1,0 +1,15 @@
+# AgriMind Flutter — Cursor Rules
+
+## Tema
+- Modo escuro black é **padrão** ao iniciar.
+- Consultar `.agents/dark-mode-designer.md` antes de alterar cores.
+
+## Estrutura
+- `lib/core/` — tema, database
+- `lib/features/plan/` — tela Plano
+- `lib/app/` — shell e navegação
+
+## Validação
+```sh
+flutter pub get && flutter analyze && flutter test
+```
