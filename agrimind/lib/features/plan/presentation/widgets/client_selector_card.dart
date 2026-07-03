@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/dark_surface_card.dart';
 import '../../domain/plan_models.dart';
 
 class ClientSelectorCard extends StatelessWidget {
@@ -16,37 +17,37 @@ class ClientSelectorCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      color: AppColors.surfaceContainer,
-      child: InkWell(
-        borderRadius: BorderRadius.circular(16),
-        onTap: () => _showPicker(context),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Row(
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      client.name,
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      client.subtitle,
-                      style: Theme.of(context).textTheme.bodySmall,
-                    ),
-                  ],
-                ),
+    return DarkSurfaceCard(
+      onTap: () => _showPicker(context),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    client.name,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                          color: AppColors.onSurface,
+                        ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    client.subtitle,
+                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: AppColors.onSurfaceMuted,
+                        ),
+                  ),
+                ],
               ),
-              const Icon(
-                Icons.keyboard_arrow_down_rounded,
-                color: AppColors.onSurfaceMuted,
-              ),
-            ],
-          ),
+            ),
+            const Icon(
+              Icons.keyboard_arrow_down_rounded,
+              color: AppColors.onSurfaceMuted,
+            ),
+          ],
         ),
       ),
     );

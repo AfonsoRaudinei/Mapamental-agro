@@ -35,6 +35,7 @@ class _MainShellState extends ConsumerState<MainShell> {
     ];
 
     return Scaffold(
+      backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const SizedBox.shrink(),
         bottom: PreferredSize(

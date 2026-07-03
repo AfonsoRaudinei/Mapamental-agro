@@ -4,7 +4,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'app/main_shell.dart';
 import 'core/database/app_database.dart';
 import 'core/database/data_importer.dart';
-import 'core/theme/app_theme.dart';
+import 'core/theme/app_colors.dart';
+import 'core/theme/theme_dark_black.dart';
 import 'core/theme/theme_provider.dart';
 
 Future<void> main() async {
@@ -28,12 +29,23 @@ class AgriMindApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final theme = ref.watch(themeProvider);
+
     return MaterialApp(
       title: 'AgriMind',
       debugShowCheckedModeBanner: false,
-      theme: AppThemeData.light(),
-      darkTheme: AppThemeData.dark(),
+      theme: theme.data,
+      darkTheme: darkBlackTheme,
       themeMode: theme.isDark ? ThemeMode.dark : ThemeMode.light,
+      builder: (context, child) {
+        if (!theme.isDark || child == null) return child ?? const SizedBox.shrink();
+        return Theme(
+          data: darkBlackTheme,
+          child: ColoredBox(
+            color: AppColors.background,
+            child: child,
+          ),
+        );
+      },
       home: const MainShell(),
     );
   }

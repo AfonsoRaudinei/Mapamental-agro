@@ -13,4 +13,23 @@ abstract final class AppColors {
   static const onSurfaceMuted = Color(0xFF9CA3AF);
   static const onSurfaceDim = Color(0xFF6B7280);
   static const error = Color(0xFFEF4444);
+
+  /// ColorScheme M3 completo — evita cards brancos por tokens de superfície ausentes.
+  static ColorScheme get darkScheme => const ColorScheme.dark(
+        brightness: Brightness.dark,
+        primary: primary,
+        onPrimary: onPrimary,
+        secondary: onSurfaceMuted,
+        onSecondary: onPrimary,
+        error: error,
+        onError: onPrimary,
+        surface: surface,
+        onSurface: onSurface,
+        outline: border,
+        surfaceContainerLowest: background,
+        surfaceContainerLow: surface,
+        surfaceContainer: surfaceContainer,
+        surfaceContainerHigh: surfaceElevated,
+        surfaceContainerHighest: surfaceElevated,
+      );
 }

@@ -6,29 +6,45 @@ final ThemeData darkBlackTheme = ThemeData(
   useMaterial3: true,
   brightness: Brightness.dark,
   scaffoldBackgroundColor: AppColors.background,
+  canvasColor: AppColors.background,
   primaryColor: AppColors.primary,
-  colorScheme: const ColorScheme.dark(
-    primary: AppColors.primary,
-    onPrimary: AppColors.onPrimary,
-    surface: AppColors.surface,
-    onSurface: AppColors.onSurface,
-    error: AppColors.error,
-    outline: AppColors.border,
-  ),
+  colorScheme: AppColors.darkScheme,
   appBarTheme: const AppBarTheme(
     backgroundColor: AppColors.surface,
     foregroundColor: AppColors.onSurface,
     elevation: 0,
     scrolledUnderElevation: 0,
+    surfaceTintColor: Colors.transparent,
   ),
   cardTheme: const CardThemeData(
     color: AppColors.surfaceContainer,
+    surfaceTintColor: Colors.transparent,
     elevation: 0,
     margin: EdgeInsets.zero,
     shape: RoundedRectangleBorder(
       borderRadius: BorderRadius.all(Radius.circular(16)),
       side: BorderSide(color: AppColors.border),
     ),
+  ),
+  dialogTheme: const DialogThemeData(
+    backgroundColor: AppColors.surfaceContainer,
+    surfaceTintColor: Colors.transparent,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.all(Radius.circular(16)),
+      side: BorderSide(color: AppColors.border),
+    ),
+  ),
+  bottomSheetTheme: const BottomSheetThemeData(
+    backgroundColor: AppColors.surfaceContainer,
+    surfaceTintColor: Colors.transparent,
+    shape: RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+    ),
+  ),
+  listTileTheme: const ListTileThemeData(
+    tileColor: Colors.transparent,
+    textColor: AppColors.onSurface,
+    iconColor: AppColors.onSurfaceMuted,
   ),
   inputDecorationTheme: InputDecorationTheme(
     filled: true,

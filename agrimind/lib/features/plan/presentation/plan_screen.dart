@@ -23,7 +23,9 @@ class PlanScreen extends ConsumerWidget {
       ),
       data: (planState) {
         final client = ref.watch(selectedClientProvider)!;
-        return Stack(
+        return ColoredBox(
+          color: AppColors.background,
+          child: Stack(
           children: [
             RefreshIndicator(
               color: AppColors.primary,
@@ -75,6 +77,7 @@ class PlanScreen extends ConsumerWidget {
               ),
             ),
           ],
+        ),
         );
       },
     );

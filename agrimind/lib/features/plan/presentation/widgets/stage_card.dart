@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/dark_surface_card.dart';
 import '../../data/plan_repository.dart';
 import '../../domain/plan_models.dart';
 
@@ -52,8 +53,7 @@ class _StageCardState extends ConsumerState<StageCard> {
         ? 'Nenhum produto — toque para adicionar'
         : products.map((p) => p.name).join(', ');
 
-    return Card(
-      color: AppColors.surfaceContainer,
+    return DarkSurfaceCard(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -74,14 +74,18 @@ class _StageCardState extends ConsumerState<StageCard> {
                       children: [
                         Text(
                           stage.displayTitle,
-                          style: Theme.of(context).textTheme.titleMedium,
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                color: AppColors.onSurface,
+                              ),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
                         const SizedBox(height: 4),
                         Text(
                           productHint,
-                          style: Theme.of(context).textTheme.bodySmall,
+                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                color: AppColors.onSurfaceMuted,
+                              ),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                         ),

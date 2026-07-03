@@ -21,9 +21,9 @@ O **modo escuro black** é o tema **padrão** ao iniciar o app. Nunca usar cards
 ## Regras de componentes
 
 ### Cards
-- Sempre `surfaceContainer` (#1E1E1E), nunca branco.
-- Borda sutil `border` 1px, radius 16.
-- Sem elevação Material (elevation: 0).
+- Usar **`DarkSurfaceCard`** (`lib/core/widgets/dark_surface_card.dart`) — **não** `Card` M3.
+- M3 `Card` com `ColorScheme` incompleto renderiza superfície clara/branca.
+- Cor: `AppColors.surfaceContainer` (#1E1E1E), borda `#3D3D3D`.
 
 ### Inputs
 - `fillColor`: `surfaceElevated` (#2D2D2D).
