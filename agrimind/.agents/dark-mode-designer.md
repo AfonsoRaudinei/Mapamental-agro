@@ -53,4 +53,7 @@ O **modo escuro black** é o tema **padrão** ao iniciar o app. Nunca usar cards
 ## Referência de implementação
 
 - `lib/core/theme/theme_dark_black.dart`
+- `lib/core/theme/app_theme.dart` — bridge IDs legados SoloForte
 - `lib/core/theme/theme_provider.dart` (default: dark)
+- `lib/core/database/data_importer.dart` — import JSON + migração prefs
+- `docs/INTEGRACAO.md` — guia de merge com código local

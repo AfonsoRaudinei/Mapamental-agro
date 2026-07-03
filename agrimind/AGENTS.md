@@ -17,6 +17,10 @@ flutter test
 |--------|---------|
 | Modo escuro | `.agents/dark-mode-designer.md` |
 
+## Integração
+
+Guia para mesclar código local: `docs/INTEGRACAO.md`
+
 ## Tema padrão
 
 Dark Black (`AppTheme.darkBlack`) — ver agente designer.

@@ -3,10 +3,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import 'app/main_shell.dart';
 import 'core/database/app_database.dart';
+import 'core/database/data_importer.dart';
+import 'core/theme/app_theme.dart';
 import 'core/theme/theme_provider.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await DataImporter.migrateLegacyThemePreference();
+
   final db = await AppDatabase.open();
   await db.seedDemoData();
 
@@ -27,8 +31,8 @@ class AgriMindApp extends ConsumerWidget {
     return MaterialApp(
       title: 'AgriMind',
       debugShowCheckedModeBanner: false,
-      theme: AppTheme.light.data,
-      darkTheme: AppTheme.darkBlack.data,
+      theme: AppThemeData.light(),
+      darkTheme: AppThemeData.dark(),
       themeMode: theme.isDark ? ThemeMode.dark : ThemeMode.light,
       home: const MainShell(),
     );

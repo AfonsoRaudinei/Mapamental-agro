@@ -32,3 +32,7 @@ flutter test
 ## Preview
 
 Simulador iOS via terminal ou F5 (`.vscode/launch.json`).
+
+## Integração
+
+Após trazer código local, siga `agrimind/docs/INTEGRACAO.md` e rode o skill `agrimind-flutter-check`.

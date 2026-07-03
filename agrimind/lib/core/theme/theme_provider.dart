@@ -16,6 +16,23 @@ extension AppThemeX on AppTheme {
       };
 
   String get storageId => name;
+
+  /// ID legado SoloForte (`dark`, `blue`, `green`).
+  String get legacyId => isDark ? 'dark' : 'blue';
+
+  static AppTheme fromLegacyId(String? id) {
+    switch (id) {
+      case 'blue':
+      case 'green':
+      case 'light':
+        return AppTheme.light;
+      case 'dark':
+      case 'darkBlack':
+      case null:
+      default:
+        return AppTheme.darkBlack;
+    }
+  }
 }
 
 final themeProvider =
@@ -29,12 +46,8 @@ class ThemeNotifier extends StateNotifier<AppTheme> {
   Future<void> _load() async {
     try {
       final prefs = await SharedPreferences.getInstance();
-      final id = prefs.getString(_themeKey);
-      if (id == AppTheme.light.storageId) {
-        state = AppTheme.light;
-      } else {
-        state = AppTheme.darkBlack;
-      }
+      final themeId = prefs.getString(_themeKey);
+      state = AppThemeX.fromLegacyId(themeId);
     } catch (_) {
       state = AppTheme.darkBlack;
     }
