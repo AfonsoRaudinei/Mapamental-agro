@@ -122,7 +122,7 @@ class _StageCardState extends ConsumerState<StageCard> {
             ),
           ),
           if (stage.isExpanded) ...[
-            const Divider(height: 1),
+            const Divider(height: 1, color: AppColors.border),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(

@@ -9,6 +9,7 @@ import 'package:agrimind/core/theme/theme_provider.dart';
 import 'package:agrimind/core/widgets/dark_surface_card.dart';
 import 'package:agrimind/features/plan/data/plan_repository.dart';
 import 'package:agrimind/features/plan/domain/plan_models.dart';
+import 'package:agrimind/features/plan/presentation/plan_screen.dart';
 import 'package:agrimind/features/plan/presentation/widgets/client_selector_card.dart';
 import 'package:agrimind/features/plan/presentation/widgets/stage_card.dart';
 
@@ -24,15 +25,15 @@ void main() {
       ),
     );
 
-    final box = tester.widget<DecoratedBox>(
+    final material = tester.widget<Material>(
       find.descendant(
         of: find.byType(DarkSurfaceCard),
-        matching: find.byType(DecoratedBox),
+        matching: find.byType(Material),
       ).first,
     );
-    final decoration = box.decoration as BoxDecoration;
-    expect(decoration.color, AppColors.surfaceContainer);
-    expect(decoration.color, isNot(Colors.white));
+    expect(material.color, AppColors.surfaceContainer);
+    expect(material.color, isNot(Colors.white));
+    expect(material.surfaceTintColor, Colors.transparent);
   });
 
   testWidgets('StageCard usa DarkSurfaceCard escuro', (tester) async {
@@ -83,6 +84,67 @@ void main() {
 
     expect(find.byType(DarkSurfaceCard), findsOneWidget);
     expect(find.byType(Card), findsNothing);
+  });
+
+  testWidgets('PlanScreen renderiza cards escuros no modo dark', (tester) async {
+    const client = ClientModel(
+      id: 'client-1',
+      name: 'Adriel Pasqualli',
+      areaHa: 1000,
+      harvest: '2026/27',
+    );
+    const stage = StageModel(
+      id: 'stage-r2',
+      planId: 'plan-1',
+      code: 'R2',
+      name: 'Florescimento Pleno',
+      sortOrder: 0,
+      isExpanded: true,
+    );
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: [
+          selectedClientProvider.overrideWith((ref) => client),
+          planStateProvider.overrideWith(
+            () => _StaticPlanNotifier(
+              PlanState(
+                plan: PlanModel(id: 'plan-1', clientId: client.id),
+                stages: const [stage],
+                productsByStage: const {},
+              ),
+            ),
+          ),
+          planRepositoryProvider.overrideWith(
+            (ref) => _FakePlanRepository([client]),
+          ),
+        ],
+        child: MaterialApp(
+          theme: darkBlackTheme,
+          darkTheme: darkBlackTheme,
+          themeMode: ThemeMode.dark,
+          home: const Scaffold(body: PlanScreen()),
+        ),
+      ),
+    );
+
+    await tester.pumpAndSettle();
+
+    expect(find.text('Adriel Pasqualli'), findsOneWidget);
+    expect(find.text('R2 — Florescimento Pleno'), findsOneWidget);
+    expect(find.byType(DarkSurfaceCard), findsNWidgets(2));
+    expect(find.byType(Card), findsNothing);
+
+    for (var i = 0; i < 2; i++) {
+      final material = tester.widget<Material>(
+        find.descendant(
+          of: find.byType(DarkSurfaceCard).at(i),
+          matching: find.byType(Material),
+        ).first,
+      );
+      expect(material.color, AppColors.surfaceContainer);
+      expect(material.color, isNot(Colors.white));
+    }
   });
 
   testWidgets('M3 Card com ColorScheme incompleto pode ficar claro — Plano não usa Card', (tester) async {
@@ -159,4 +221,27 @@ class _FakePlanNotifier extends PlanNotifier {
       productsByStage: const {},
     );
   }
+}
+
+class _StaticPlanNotifier extends PlanNotifier {
+  _StaticPlanNotifier(this._state);
+
+  final PlanState _state;
+
+  @override
+  Future<PlanState> build() async => _state;
+}
+
+class _FakePlanRepository extends PlanRepository {
+  _FakePlanRepository(this._clients) : super(_ThrowingDatabase());
+
+  final List<ClientModel> _clients;
+
+  @override
+  Future<List<ClientModel>> getClients() async => _clients;
+}
+
+class _ThrowingDatabase implements AppDatabase {
+  @override
+  dynamic noSuchMethod(Invocation invocation) => throw UnimplementedError();
 }

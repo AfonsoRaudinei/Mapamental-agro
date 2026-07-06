@@ -18,26 +18,28 @@ class DarkSurfaceCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final decorated = DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
-        borderRadius: borderRadius,
-        border: Border.all(color: AppColors.border),
-      ),
-      child: padding != null ? Padding(padding: padding!, child: child) : child,
-    );
-
-    if (onTap == null) return decorated;
+    final content =
+        padding != null ? Padding(padding: padding!, child: child) : child;
 
     return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onTap,
+      color: AppColors.surfaceContainer,
+      elevation: 0,
+      shadowColor: Colors.transparent,
+      surfaceTintColor: Colors.transparent,
+      shape: RoundedRectangleBorder(
         borderRadius: borderRadius,
-        splashColor: AppColors.primary.withValues(alpha: 0.12),
-        highlightColor: AppColors.primary.withValues(alpha: 0.06),
-        child: decorated,
+        side: const BorderSide(color: AppColors.border),
       ),
+      clipBehavior: Clip.antiAlias,
+      child: onTap == null
+          ? content
+          : InkWell(
+              onTap: onTap,
+              borderRadius: borderRadius,
+              splashColor: AppColors.primary.withValues(alpha: 0.12),
+              highlightColor: AppColors.primary.withValues(alpha: 0.06),
+              child: content,
+            ),
     );
   }
 }
