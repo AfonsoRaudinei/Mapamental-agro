@@ -58,19 +58,22 @@ class _SummaryExpandableCardState extends State<SummaryExpandableCard> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = context.isDark;
     return Container(
       margin: const EdgeInsets.only(bottom: 14),
       decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.96),
+        color: context.appSurface.withValues(alpha: 0.96),
         border: Border.all(color: context.appBorderSoft),
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        boxShadow: isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ],
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(

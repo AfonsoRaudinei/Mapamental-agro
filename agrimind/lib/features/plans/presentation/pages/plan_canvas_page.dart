@@ -499,44 +499,65 @@ class _PlanningView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
-    return ListView(
-      padding: EdgeInsets.only(
-        left: 14,
-        right: 14,
-        top: 16,
-        bottom: 16 + bottomInset,
-      ),
+    return Column(
       children: [
-        _PlanHeaderCard(
-          plano: plano,
-          produtor: produtor,
-          fazenda: fazenda,
-          onChanged: onPlanoChanged,
-        ),
-        if (plano.estadios.isEmpty)
-          _CanvasHint(onTap: onAddEstadio)
-        else ...[
-          ...plano.estadios.map(
-            (estadio) => _StageBlock(
-              plano: plano,
-              estadio: estadio,
-              onPickStageImage: onPickStageImage,
-              onAddProduto: onAddProduto,
-              onAddProdutoFromReferencia: onAddProdutoFromReferencia,
-              onDeleteProduto: onDeleteProduto,
-              onEditProduto: onEditProduto,
-              onUpdateEstadio: onUpdateEstadio,
-              onRemoveEstadio: onRemoveEstadio,
-            ),
+        Expanded(
+          child: ListView(
+            padding: const EdgeInsets.only(left: 14, right: 14, top: 16, bottom: 8),
+            children: [
+              _PlanHeaderCard(
+                plano: plano,
+                produtor: produtor,
+                fazenda: fazenda,
+                onChanged: onPlanoChanged,
+              ),
+              if (plano.estadios.isEmpty)
+                _CanvasHint(onTap: onAddEstadio)
+              else ...[
+                ...plano.estadios.map(
+                  (estadio) => _StageBlock(
+                    plano: plano,
+                    estadio: estadio,
+                    onPickStageImage: onPickStageImage,
+                    onAddProduto: onAddProduto,
+                    onAddProdutoFromReferencia: onAddProdutoFromReferencia,
+                    onDeleteProduto: onDeleteProduto,
+                    onEditProduto: onEditProduto,
+                    onUpdateEstadio: onUpdateEstadio,
+                    onRemoveEstadio: onRemoveEstadio,
+                  ),
+                ),
+              ],
+            ],
           ),
-          _AddStageHint(onTap: onAddEstadio),
-        ],
-        _PlanSummaryCard(planoId: plano.id, areaHa: plano.areaHaTotal),
-        _ConsultorCard(
-          plano: plano,
-          onPickLogo: onPickLogo,
-          onConsultorChanged: (value) => onPlanoChanged(
-            plano.copyWith(consultorNome: value.trim()),
+        ),
+        Container(
+          decoration: BoxDecoration(
+            color: context.appSurface.withValues(alpha: 0.98),
+            border: Border(top: BorderSide(color: context.appBorderSoft)),
+          ),
+          padding: EdgeInsets.only(
+            left: 14,
+            right: 14,
+            top: 8,
+            bottom: 8 + bottomInset,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _AddStageHint(onTap: onAddEstadio),
+              _PlanSummaryCard(planoId: plano.id, areaHa: plano.areaHaTotal),
+              _ConsultorCard(
+                plano: plano,
+                onPickLogo: onPickLogo,
+                onConsultorChanged: (value) => onPlanoChanged(
+                  plano.copyWith(consultorNome: value.trim()),
+                ),
+                onExibirNomeChanged: (value) => onPlanoChanged(
+                  plano.copyWith(consultorExibirNome: value),
+                ),
+              ),
+            ],
           ),
         ),
       ],
@@ -780,7 +801,7 @@ class _HeaderField extends StatelessWidget {
             decoration: InputDecoration(
               isDense: true,
               filled: true,
-              fillColor: context.appSurface,
+              fillColor: context.appBackground,
               contentPadding:
                   const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
               border: OutlineInputBorder(
@@ -851,14 +872,11 @@ class _StageBlockState extends State<_StageBlock> {
     final produtos = widget.estadio.produtos;
     if (produtos.isEmpty) return 'Nenhum produto — toque para adicionar';
     if (produtos.length == 1) {
-      return '1 produto · ${produtos.first.produtoNome}';
+      return _formatProdutoResumo(produtos.first);
     }
-    final preview = produtos
-        .take(2)
-        .map((p) => p.produtoNome)
-        .join(', ');
-    final extra = produtos.length > 2 ? ' +${produtos.length - 2}' : '';
-    return '${produtos.length} produtos · $preview$extra';
+    final lines = produtos.take(2).map(_formatProdutoResumo);
+    final extra = produtos.length > 2 ? ' · +${produtos.length - 2}' : '';
+    return '${lines.join(' · ')}$extra';
   }
 
   @override
@@ -883,9 +901,11 @@ class _StageBlockState extends State<_StageBlock> {
   Widget build(BuildContext context) {
     return SummaryExpandableCard(
       initiallyExpanded: _initiallyExpanded,
-      leading: GestureDetector(
-        onTap: () => widget.onPickStageImage(widget.estadio),
-        child: _StageCircle(estadio: widget.estadio, compact: true),
+      leading: _StageLeadingCluster(
+        estadio: widget.estadio,
+        plano: widget.plano,
+        onPickStageImage: () => widget.onPickStageImage(widget.estadio),
+        onAddProdutoFromReferencia: widget.onAddProdutoFromReferencia,
       ),
       summary: SummaryDetailLine(
         primary: widget.estadio.label,
@@ -938,18 +958,56 @@ class _StageBlockState extends State<_StageBlock> {
                   onDeleteProduto: widget.onDeleteProduto,
                   onEditProduto: widget.onEditProduto,
                 ),
-                const SizedBox(width: 9),
-                StageReferencesButton(
-                  estadio: widget.estadio,
-                  plano: widget.plano,
-                  onAddProdutoFromReferencia:
-                      widget.onAddProdutoFromReferencia,
-                ),
               ],
             ),
           ),
         ],
       ),
+    );
+  }
+}
+
+String _formatProdutoResumo(ProdutoAplicacaoEntity produto) {
+  final unit = produto.doseUnidade.split('/').first;
+  return '${produto.produtoNome} · ${produto.dose} ${produto.doseUnidade} · '
+      '${produto.totalFinal.toStringAsFixed(1)} $unit';
+}
+
+class _StageLeadingCluster extends ConsumerWidget {
+  const _StageLeadingCluster({
+    required this.estadio,
+    required this.plano,
+    required this.onPickStageImage,
+    required this.onAddProdutoFromReferencia,
+  });
+
+  final EstadioEntity estadio;
+  final PlanoEntity plano;
+  final VoidCallback onPickStageImage;
+  final Future<void> Function(
+    EstadioEntity estadio, {
+    required String nome,
+    required String produtoCategoria,
+    required double areaHa,
+  }) onAddProdutoFromReferencia;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        GestureDetector(
+          onTap: onPickStageImage,
+          child: _StageCircle(estadio: estadio, compact: true),
+        ),
+        const SizedBox(width: 6),
+        StageReferencesButton(
+          estadio: estadio,
+          plano: plano,
+          compact: true,
+          onAddProdutoFromReferencia: onAddProdutoFromReferencia,
+        ),
+      ],
     );
   }
 }
@@ -1197,11 +1255,13 @@ class _ConsultorCard extends StatefulWidget {
     required this.plano,
     required this.onPickLogo,
     required this.onConsultorChanged,
+    required this.onExibirNomeChanged,
   });
 
   final PlanoEntity plano;
   final VoidCallback onPickLogo;
   final ValueChanged<String> onConsultorChanged;
+  final ValueChanged<bool> onExibirNomeChanged;
 
   @override
   State<_ConsultorCard> createState() => _ConsultorCardState();
@@ -1239,29 +1299,85 @@ class _ConsultorCardState extends State<_ConsultorCard> {
 
   @override
   Widget build(BuildContext context) {
+    final exibirNome = widget.plano.consultorExibirNome;
+    final hasName = _hasConsultor;
+
+    // Logo-only: no text space reserved. Tap logo to show name.
+    if (hasName && !exibirNome) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Align(
+          alignment: Alignment.centerLeft,
+          child: _FooterLogo(
+            logoPath: widget.plano.logoLocalPath,
+            size: 32,
+            onTap: () => widget.onExibirNomeChanged(true),
+          ),
+        ),
+      );
+    }
+
+    final primary = hasName
+        ? (exibirNome ? _consultor.text.trim() : '')
+        : 'Consultor';
+    final secondary =
+        hasName ? null : 'Toque para preencher nome e logo';
+
     return SummaryExpandableCard(
-      initiallyExpanded: !_hasConsultor,
+      initiallyExpanded: !hasName,
       leading: _FooterLogo(
         logoPath: widget.plano.logoLocalPath,
         size: 32,
         onTap: widget.onPickLogo,
       ),
       summary: SummaryDetailLine(
-        primary: _hasConsultor ? _consultor.text.trim() : 'Consultor',
-        secondary: _hasConsultor
-            ? 'Logo e identificação do consultor'
-            : 'Toque para preencher nome e logo',
+        primary: primary,
+        secondary: secondary,
       ),
-      detail: TextField(
-        controller: _consultor,
-        autofocus: !_hasConsultor,
-        decoration: const InputDecoration(
-          hintText: 'Nome do consultor',
-          border: InputBorder.none,
-          isDense: true,
-        ),
-        onSubmitted: widget.onConsultorChanged,
-        onTapOutside: (_) => widget.onConsultorChanged(_consultor.text),
+      trailing: hasName
+          ? IconButton(
+              onPressed: () =>
+                  widget.onExibirNomeChanged(!exibirNome),
+              tooltip: exibirNome ? 'Ocultar nome' : 'Exibir nome',
+              icon: PhosphorIcon(
+                exibirNome
+                    ? PhosphorIconsRegular.eye
+                    : PhosphorIconsRegular.eyeSlash,
+                size: 18,
+                color: context.appTextDisabled,
+              ),
+            )
+          : null,
+      detail: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TextField(
+            controller: _consultor,
+            autofocus: !hasName,
+            decoration: const InputDecoration(
+              hintText: 'Nome do consultor',
+              border: InputBorder.none,
+              isDense: true,
+            ),
+            onSubmitted: widget.onConsultorChanged,
+            onTapOutside: (_) => widget.onConsultorChanged(_consultor.text),
+          ),
+          if (hasName) ...[
+            const SizedBox(height: 4),
+            SwitchListTile(
+              contentPadding: EdgeInsets.zero,
+              dense: true,
+              title: Text(
+                'Exibir nome no plano',
+                style: AppTypography.caption.copyWith(
+                  color: context.appTextSecondary,
+                ),
+              ),
+              value: exibirNome,
+              onChanged: widget.onExibirNomeChanged,
+            ),
+          ],
+        ],
       ),
     );
   }
@@ -1355,7 +1471,7 @@ class _ConsolidationView extends ConsumerWidget {
                           vertical: 8,
                         ),
                         color: context.appBorderSoft,
-                        child: Row(
+                        child: const Row(
                           children: [
                             Expanded(child: _TableHead('Produto')),
                             SizedBox(width: 78, child: _TableHead('Qtd.')),
@@ -1836,38 +1952,37 @@ class _AddStageHint extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 30),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 28,
-              height: 28,
-              decoration: BoxDecoration(
-                color: context.appBorderSoft,
-                shape: BoxShape.circle,
-              ),
-              child: Center(
-                child: PhosphorIcon(
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: Center(
+        child: GestureDetector(
+          onTap: onTap,
+          behavior: HitTestBehavior.opaque,
+          child: Container(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            decoration: BoxDecoration(
+              color: AppColors.primary,
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const PhosphorIcon(
                   PhosphorIconsRegular.plus,
-                  size: 14,
-                  color: context.appTextDisabled,
+                  size: 16,
+                  color: Colors.white,
                 ),
-              ),
+                const SizedBox(width: 6),
+                Text(
+                  'Adicionar estádio',
+                  style: AppTypography.caption.copyWith(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
             ),
-            const SizedBox(width: 8),
-            Text(
-              'Adicionar estádio',
-              style: AppTypography.caption.copyWith(
-                color: context.appTextSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );
@@ -1897,13 +2012,15 @@ class _Card extends StatelessWidget {
         color: context.appSurface.withValues(alpha: 0.96),
         border: Border.all(color: context.appBorderSoft),
         borderRadius: BorderRadius.circular(10),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 6,
-            offset: const Offset(0, 1),
-          ),
-        ],
+        boxShadow: context.isDark
+            ? null
+            : [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.06),
+                  blurRadius: 6,
+                  offset: const Offset(0, 1),
+                ),
+              ],
       ),
       child: child,
     );
