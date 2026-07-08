@@ -6,9 +6,34 @@ Guia para puxar widgets base do repo e corrigir telas locais de laboratório e a
 
 ```sh
 cd ~/Projects/Mapamental-agro   # ajuste o caminho
-git pull origin main
+git pull origin cursor/macbook-lab-dark-fixes-7428   # ou main após merge
 cd agrimind
-flutter pub get
+```
+
+### Flutter no Mac (obrigatório)
+
+Se `flutter: command not found`:
+
+```sh
+# Verifique onde está o Flutter:
+ls ~/flutter/bin/flutter 2>/dev/null
+ls .fvm/flutter_sdk/bin/flutter 2>/dev/null
+which flutter 2>/dev/null
+
+# Adicione ao PATH (escolha o que existir no seu Mac):
+export PATH="$HOME/flutter/bin:$PATH"
+# ou FVM:
+export PATH="$PWD/.fvm/flutter_sdk/bin:$PATH"
+# ou Homebrew:
+export PATH="/opt/homebrew/bin:$PATH"
+
+flutter doctor
+```
+
+Validação automática (detecta Flutter sozinho):
+
+```sh
+bash ../scripts/validate-ui.sh
 ```
 
 ## 2. Substituir padrões bugados
