@@ -75,6 +75,14 @@ flutter analyze    # 0 issues
 flutter test       # todos passando
 ```
 
+## Passo 6 — Corrigir telas lab/análise (MacBook)
+
+O código completo (Modelos de Lab, Análise de Solo, etc.) fica no Mac. Após integrar:
+
+1. Leia `docs/MACBOOK-APLICAR-CORRECOES.md`
+2. Substitua cards pretos, botão voltar e dropdowns pelos widgets em `lib/core/widgets/`
+3. Siga `.agents/macbook-first-workflow.md` — correções de UI no Mac, não na nuvem
+
 ## Conflitos comuns
 
 | Conflito | Resolução |
