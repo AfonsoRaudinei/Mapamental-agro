@@ -51,18 +51,28 @@ void main() {
   });
 
   testWidgets('ReferencesScreen exibe grid e Circular fungicidas', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(400, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+
     await tester.pumpWidget(
       MaterialApp(
         theme: darkBlackTheme,
         home: const Scaffold(body: ReferencesScreen()),
       ),
     );
+    await tester.pumpAndSettle();
 
     expect(find.text('Referências'), findsOneWidget);
     expect(find.text('Doenças'), findsOneWidget);
     expect(find.text('Insetos'), findsOneWidget);
     expect(find.text('Nutrição'), findsOneWidget);
     expect(find.text('Fisiologia'), findsOneWidget);
+
+    await tester.scrollUntilVisible(
+      find.text('Circular fungicidas'),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
     expect(find.text('Circular fungicidas'), findsOneWidget);
     expect(find.text('Campeões CESB'), findsOneWidget);
     expect(find.byType(GoldenBookIcon), findsOneWidget);

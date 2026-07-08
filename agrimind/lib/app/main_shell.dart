@@ -109,7 +109,7 @@ class _SettingsTab extends ConsumerWidget {
             style: TextStyle(color: AppColors.onSurfaceMuted),
           ),
           value: theme.isDark,
-          activeColor: AppColors.primary,
+          activeThumbColor: AppColors.primary,
           onChanged: (v) => ref
               .read(themeProvider.notifier)
               .setTheme(v ? AppTheme.darkBlack : AppTheme.light),

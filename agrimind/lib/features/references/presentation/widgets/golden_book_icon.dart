@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../../core/theme/app_colors.dart';
+import '../../../../core/theme/app_colors.dart';
 
 /// Ícone de livro dourado — referência técnica (Circular fungicidas).
 /// Reutilizável no Plano (estádios) e na aba Referências.

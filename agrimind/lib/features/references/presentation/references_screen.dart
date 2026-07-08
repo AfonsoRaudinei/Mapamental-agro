@@ -37,7 +37,7 @@ class ReferencesScreen extends StatelessWidget {
             physics: const NeverScrollableScrollPhysics(),
             mainAxisSpacing: 12,
             crossAxisSpacing: 12,
-            childAspectRatio: 1.05,
+            childAspectRatio: 0.98,
             children: [
               for (final kind in _gridKinds)
                 ReferenceGridCard(

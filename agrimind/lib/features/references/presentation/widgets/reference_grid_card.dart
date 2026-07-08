@@ -23,15 +23,18 @@ class ReferenceGridCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min,
         children: [
           _CategoryIcon(kind: kind),
-          const Spacer(),
+          const SizedBox(height: 12),
           Text(
             kind.title,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
                   color: AppColors.onSurface,
                   fontWeight: FontWeight.w700,
                 ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
           ),
           const SizedBox(height: 4),
           Text(
@@ -44,7 +47,7 @@ class ReferenceGridCard extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
           ),
           if (!available) ...[
-            const SizedBox(height: 8),
+            const SizedBox(height: 6),
             Text(
               'Em breve',
               style: Theme.of(context).textTheme.labelSmall?.copyWith(
