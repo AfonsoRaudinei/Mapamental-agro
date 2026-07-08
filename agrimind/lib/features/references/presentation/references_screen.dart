@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../core/theme/app_colors.dart';
 import '../domain/reference_models.dart';
-import 'circular_fungicidas_screen.dart';
+import 'widgets/circular_fungicidas_card.dart';
 import 'widgets/reference_featured_card.dart';
 import 'widgets/reference_grid_card.dart';
 
@@ -47,11 +47,7 @@ class ReferencesScreen extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 12),
-          ReferenceFeaturedCard(
-            kind: ReferenceKind.circularFungicidas,
-            useGoldenBookIcon: true,
-            onTap: () => _openCircularFungicidas(context),
-          ),
+          const CircularFungicidasCard(),
           const SizedBox(height: 12),
           ReferenceFeaturedBorderedCard(
             kind: ReferenceKind.campeoesCesb,
@@ -63,11 +59,7 @@ class ReferencesScreen extends StatelessWidget {
   }
 
   void _openCircularFungicidas(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => const CircularFungicidasScreen(),
-      ),
-    );
+    CircularFungicidasCard.open(context);
   }
 
   void _onReferenceTap(BuildContext context, ReferenceKind kind) {

@@ -7,7 +7,7 @@ import 'package:agrimind/features/references/data/circular_fungicidas_data.dart'
 import 'package:agrimind/features/references/domain/reference_models.dart';
 import 'package:agrimind/features/references/presentation/references_screen.dart';
 import 'package:agrimind/features/references/presentation/widgets/golden_book_icon.dart';
-import 'package:agrimind/features/references/presentation/widgets/reference_featured_card.dart';
+import 'package:agrimind/features/references/presentation/widgets/circular_fungicidas_card.dart';
 import 'package:agrimind/features/references/presentation/widgets/reference_grid_card.dart';
 
 void main() {
@@ -91,16 +91,12 @@ void main() {
     expect(find.text('Em breve'), findsOneWidget);
   });
 
-  testWidgets('ReferenceFeaturedCard com livro dourado navega', (tester) async {
+  testWidgets('CircularFungicidasCard com livro dourado', (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: darkBlackTheme,
-        home: Scaffold(
-          body: ReferenceFeaturedCard(
-            kind: ReferenceKind.circularFungicidas,
-            useGoldenBookIcon: true,
-            onTap: () {},
-          ),
+        home: const Scaffold(
+          body: CircularFungicidasCard(),
         ),
       ),
     );
