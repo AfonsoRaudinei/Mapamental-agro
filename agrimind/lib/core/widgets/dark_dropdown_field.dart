@@ -19,7 +19,7 @@ class DarkDropdownField<T> extends StatelessWidget {
   final String? label;
   final String? hint;
 
-  static TextStyle get _valueStyle => const TextStyle(
+  static TextStyle get valueStyle => const TextStyle(
         color: AppColors.primary,
         fontSize: 15,
         fontWeight: FontWeight.w500,
@@ -41,20 +41,11 @@ class DarkDropdownField<T> extends StatelessWidget {
           ),
           const SizedBox(height: 8),
         ],
-        DropdownButtonFormField<T>(
-          value: value,
-          items: items,
-          onChanged: onChanged,
-          hint: hint != null
-              ? Text(hint!, style: const TextStyle(color: AppColors.onSurfaceDim))
-              : null,
-          style: _valueStyle,
-          dropdownColor: AppColors.surfaceElevated,
-          iconEnabledColor: AppColors.primary,
+        InputDecorator(
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surfaceElevated,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppColors.border),
@@ -62,6 +53,20 @@ class DarkDropdownField<T> extends StatelessWidget {
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppColors.border),
+            ),
+          ),
+          child: DropdownButtonHideUnderline(
+            child: DropdownButton<T>(
+              value: value,
+              isExpanded: true,
+              hint: hint != null
+                  ? Text(hint!, style: const TextStyle(color: AppColors.onSurfaceDim))
+                  : null,
+              items: items,
+              onChanged: onChanged,
+              style: valueStyle,
+              dropdownColor: AppColors.surfaceElevated,
+              iconEnabledColor: AppColors.primary,
             ),
           ),
         ),

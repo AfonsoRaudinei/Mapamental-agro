@@ -32,12 +32,28 @@ void main() {
     await tester.pumpWidget(
       MaterialApp(
         theme: darkBlackTheme,
-        home: Scaffold(
-          appBar: DarkAppBar(title: 'Novo Template'),
-          body: const SizedBox.shrink(),
+        home: Builder(
+          builder: (context) => Scaffold(
+            body: Center(
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => Scaffold(
+                      appBar: DarkAppBar(title: 'Novo Template'),
+                      body: const SizedBox.shrink(),
+                    ),
+                  ),
+                ),
+                child: const Text('Abrir'),
+              ),
+            ),
+          ),
         ),
       ),
     );
+
+    await tester.tap(find.text('Abrir'));
+    await tester.pumpAndSettle();
 
     final icon = tester.widget<Icon>(find.byIcon(Icons.chevron_left));
     expect(icon.color, AppColors.primary);
@@ -84,10 +100,13 @@ void main() {
       ),
     );
 
-    final dropdown = tester.widget<DropdownButtonFormField<String>>(
-      find.byType(DropdownButtonFormField<String>),
+    final dropdown = tester.widget<DropdownButton<String>>(
+      find.byType(DropdownButton<String>),
     );
     expect(dropdown.style?.color, AppColors.primary);
     expect(dropdown.dropdownColor, AppColors.surfaceElevated);
+
+    final decorator = tester.widget<InputDecorator>(find.byType(InputDecorator));
+    expect(decorator.decoration.fillColor, AppColors.surfaceElevated);
   });
 }
