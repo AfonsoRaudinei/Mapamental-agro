@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/theme/app_colors.dart';
 import '../../core/theme/theme_provider.dart';
 import '../features/plan/presentation/plan_screen.dart';
+import '../features/references/presentation/references_screen.dart';
 import '../features/shared/placeholder_tab_screen.dart';
 
 class MainShell extends ConsumerStatefulWidget {
@@ -20,7 +21,7 @@ class _MainShellState extends ConsumerState<MainShell> {
     _Tab('Plano', Icons.event_note_outlined, Icons.event_note),
     _Tab('Clientes', Icons.people_outline, Icons.people),
     _Tab('Catálogo', Icons.inventory_2_outlined, Icons.inventory_2),
-    _Tab('Safra', Icons.agriculture_outlined, Icons.agriculture),
+    _Tab('Refs', Icons.menu_book_outlined, Icons.menu_book),
     _Tab('Config', Icons.settings_outlined, Icons.settings),
   ];
 
@@ -30,34 +31,38 @@ class _MainShellState extends ConsumerState<MainShell> {
       const PlanScreen(),
       const PlaceholderTabScreen(title: 'Clientes'),
       const PlaceholderTabScreen(title: 'Catálogo'),
-      const PlaceholderTabScreen(title: 'Safra'),
+      const ReferencesScreen(),
       _SettingsTab(),
     ];
+
+    final showSearch = _index != 3;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         title: const SizedBox.shrink(),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(48),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
-            child: TextField(
-              decoration: InputDecoration(
-                hintText: 'Buscar...',
-                prefixIcon: const Icon(Icons.search, color: AppColors.onSurfaceMuted),
-                filled: true,
-                fillColor: AppColors.surfaceElevated,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
+        bottom: showSearch
+            ? PreferredSize(
+                preferredSize: const Size.fromHeight(48),
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
+                  child: TextField(
+                    decoration: InputDecoration(
+                      hintText: 'Buscar...',
+                      prefixIcon: const Icon(Icons.search, color: AppColors.onSurfaceMuted),
+                      filled: true,
+                      fillColor: AppColors.surfaceElevated,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: BorderSide.none,
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(vertical: 0),
+                    ),
+                    style: const TextStyle(color: AppColors.onSurface),
+                  ),
                 ),
-                contentPadding: const EdgeInsets.symmetric(vertical: 0),
-              ),
-              style: const TextStyle(color: AppColors.onSurface),
-            ),
-          ),
-        ),
+              )
+            : null,
         actions: [
           IconButton(icon: const Icon(Icons.shield_outlined), onPressed: () {}),
           IconButton(icon: const Icon(Icons.pause_outlined), onPressed: () {}),

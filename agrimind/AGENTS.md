@@ -16,6 +16,7 @@ flutter test
 | Agente | Arquivo |
 |--------|---------|
 | Modo escuro | `.agents/dark-mode-designer.md` |
+| Referências | `.agents/references-prompt.md` |
 
 ## Integração
 
