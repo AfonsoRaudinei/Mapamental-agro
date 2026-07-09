@@ -2,6 +2,10 @@
 
 Workspace do app **AgriMind** (`agrimind/`).
 
+## Onde fazer correções
+
+**MacBook (Cursor Alberto) — padrão.** Nuvem (Cloud Agent) só em casos extremamente expressos (CI, infra de repo, widgets base). Ver `agrimind/.agents/macbook-first-workflow.md`.
+
 ## Onde está cada coisa
 
 | Ferramenta | Configuração |
@@ -19,6 +23,7 @@ Workspace do app **AgriMind** (`agrimind/`).
 | Validação | `flutter-check` | `agrimind-flutter-check` |
 | Nova feature | `new-feature` | `agrimind-new-feature` |
 | Build IPA | `build-ipa` | `agrimind-build-ipa` |
+| Correções lab (Mac) | — | `docs/MACBOOK-APLICAR-CORRECOES.md` |
 
 ## Comandos padrão
 
@@ -36,3 +41,5 @@ Simulador iOS via terminal ou F5 (`.vscode/launch.json`).
 ## Integração
 
 Após trazer código local, siga `agrimind/docs/INTEGRACAO.md` e rode o skill `agrimind-flutter-check`.
+
+Correções de UI/lab: `agrimind/docs/MACBOOK-APLICAR-CORRECOES.md`.

@@ -1,13 +1,22 @@
 # AgriMind Flutter — Cursor Rules
 
+## Workflow
+- **Correções de UI/telas → MacBook (Alberto), nunca na nuvem** salvo pedido expresso.
+- Consultar `.agents/macbook-first-workflow.md` antes de editar features.
+- Widgets base vivem em `lib/core/widgets/`; telas completas (lab, análise) no Mac.
+
 ## Tema
 - Modo escuro black é **padrão** ao iniciar.
 - Consultar `.agents/dark-mode-designer.md` antes de alterar cores.
+- Lab/templates: usar `LabTemplateCard`, `DarkAppBar`, `PrimaryBackLink`, `DarkDropdownField`.
 
 ## Estrutura
-- `lib/core/` — tema, database
+- `lib/core/` — tema, database, widgets dark
 - `lib/features/plan/` — tela Plano
 - `lib/app/` — shell e navegação
+
+## MacBook — aplicar correções lab
+- `docs/MACBOOK-APLICAR-CORRECOES.md`
 
 ## Validação
 ```sh

@@ -83,6 +83,34 @@ final ThemeData darkBlackTheme = ThemeData(
     shape: StadiumBorder(),
   ),
   dividerTheme: const DividerThemeData(color: AppColors.border, thickness: 1),
+  switchTheme: SwitchThemeData(
+    thumbColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.selected)) return AppColors.onPrimary;
+      return AppColors.onSurfaceMuted;
+    }),
+    trackColor: WidgetStateProperty.resolveWith((states) {
+      if (states.contains(WidgetState.selected)) return AppColors.primary;
+      return AppColors.surfaceElevated;
+    }),
+  ),
+  dropdownMenuTheme: const DropdownMenuThemeData(
+    menuStyle: MenuStyle(
+      backgroundColor: WidgetStatePropertyAll(AppColors.surfaceElevated),
+    ),
+    textStyle: TextStyle(color: AppColors.onSurface, fontSize: 15),
+  ),
+  iconButtonTheme: IconButtonThemeData(
+    style: IconButton.styleFrom(
+      foregroundColor: AppColors.primary,
+      minimumSize: const Size(48, 48),
+    ),
+  ),
+  textButtonTheme: TextButtonThemeData(
+    style: TextButton.styleFrom(
+      foregroundColor: AppColors.primary,
+      minimumSize: const Size(48, 48),
+    ),
+  ),
   textTheme: const TextTheme(
     titleLarge: TextStyle(
       color: AppColors.onSurface,
