@@ -1,33 +1,46 @@
 import 'package:drift/drift.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/database/local_user_scope.dart';
 import '../../domain/entities/estadio_entity.dart';
 import '../../domain/entities/plano_entity.dart';
 import '../../domain/entities/produto_aplicacao_entity.dart';
 
 class PlansLocalDatasource {
-  PlansLocalDatasource(this._database);
+  PlansLocalDatasource(this._database, {String? userId})
+      : _scope = LocalUserScope(userId);
 
   final AppDatabase _database;
+  final LocalUserScope _scope;
 
   Future<List<PlanoEntity>> getAll() async {
+    final userId = _scope.userId;
     final rows = await (_database.select(_database.planos)
-          ..where((row) => row.deletedAt.isNull()))
+          ..where(
+            (row) => row.userId.equals(userId) & row.deletedAt.isNull(),
+          ))
         .get();
     return Future.wait(rows.map(_hydratePlano));
   }
 
   Stream<List<PlanoEntity>> watchAll() {
+    final userId = _scope.userId;
     final query = _database.select(_database.planos)
-      ..where((row) => row.deletedAt.isNull());
+      ..where((row) => row.userId.equals(userId) & row.deletedAt.isNull());
     return query
         .watch()
         .asyncMap((rows) => Future.wait(rows.map(_hydratePlano)));
   }
 
   Future<PlanoEntity?> getById(String uid) async {
+    final userId = _scope.userId;
     final row = await (_database.select(_database.planos)
-          ..where((table) => table.uid.equals(uid) & table.deletedAt.isNull()))
+          ..where(
+            (table) =>
+                table.uid.equals(uid) &
+                table.userId.equals(userId) &
+                table.deletedAt.isNull(),
+          ))
         .getSingleOrNull();
     return row == null ? null : _hydratePlano(row);
   }
@@ -49,10 +62,13 @@ class PlansLocalDatasource {
   }
 
   Future<void> delete(String uid) async {
+    final userId = _scope.userId;
     final now = DateTime.now();
     await _database.transaction(() async {
       final stages = await (_database.select(_database.estadios)
-            ..where((row) => row.planoId.equals(uid)))
+            ..where(
+              (row) => row.planoId.equals(uid) & row.userId.equals(userId),
+            ))
           .get();
       for (final stage in stages) {
         await (_database.update(_database.produtosAplicacao)
@@ -66,7 +82,9 @@ class PlansLocalDatasource {
         );
       }
       await (_database.update(_database.estadios)
-            ..where((row) => row.planoId.equals(uid)))
+            ..where(
+              (row) => row.planoId.equals(uid) & row.userId.equals(userId),
+            ))
           .write(
         EstadiosCompanion(
           deletedAt: Value(now),
@@ -75,7 +93,9 @@ class PlansLocalDatasource {
         ),
       );
       await (_database.update(_database.planos)
-            ..where((row) => row.uid.equals(uid)))
+            ..where(
+              (row) => row.uid.equals(uid) & row.userId.equals(userId),
+            ))
           .write(
         PlanosCompanion(
           deletedAt: Value(now),
@@ -91,19 +111,25 @@ class PlansLocalDatasource {
     required String produtoNome,
     required double? precoUnitario,
   }) async {
+    final userId = _scope.userId;
     final normalized = produtoNome.trim().toLowerCase();
     if (normalized.isEmpty) return;
 
     final stages = await (_database.select(_database.estadios)
           ..where(
-            (row) => row.planoId.equals(planoId) & row.deletedAt.isNull(),
+            (row) =>
+                row.planoId.equals(planoId) &
+                row.userId.equals(userId) &
+                row.deletedAt.isNull(),
           ))
         .get();
     final stageIds = stages.map((stage) => stage.uid).toSet();
     if (stageIds.isEmpty) return;
 
     final products = await (_database.select(_database.produtosAplicacao)
-          ..where((row) => row.deletedAt.isNull()))
+          ..where(
+            (row) => row.userId.equals(userId) & row.deletedAt.isNull(),
+          ))
         .get();
     final now = DateTime.now();
     for (final product in products) {
@@ -135,8 +161,14 @@ class PlansLocalDatasource {
   }
 
   Future<EstadioEntity> updateEstadio(EstadioEntity estadio) async {
+    final userId = _scope.userId;
     final current = await (_database.select(_database.estadios)
-          ..where((row) => row.uid.equals(estadio.id) & row.deletedAt.isNull()))
+          ..where(
+            (row) =>
+                row.uid.equals(estadio.id) &
+                row.userId.equals(userId) &
+                row.deletedAt.isNull(),
+          ))
         .getSingleOrNull();
     if (current == null) {
       throw StateError('Estádio ${estadio.id} não encontrado.');
@@ -148,10 +180,13 @@ class PlansLocalDatasource {
   }
 
   Future<void> deleteEstadio(String uid) async {
+    final userId = _scope.userId;
     final now = DateTime.now();
     await _database.transaction(() async {
       await (_database.update(_database.produtosAplicacao)
-            ..where((row) => row.estadioId.equals(uid)))
+            ..where(
+              (row) => row.estadioId.equals(uid) & row.userId.equals(userId),
+            ))
           .write(
         ProdutosAplicacaoCompanion(
           deletedAt: Value(now),
@@ -160,7 +195,9 @@ class PlansLocalDatasource {
         ),
       );
       await (_database.update(_database.estadios)
-            ..where((row) => row.uid.equals(uid)))
+            ..where(
+              (row) => row.uid.equals(uid) & row.userId.equals(userId),
+            ))
           .write(
         EstadiosCompanion(
           deletedAt: Value(now),
@@ -189,8 +226,14 @@ class PlansLocalDatasource {
     String estadioId,
     ProdutoAplicacaoEntity produto,
   ) async {
+    final userId = _scope.userId;
     final stage = await (_database.select(_database.estadios)
-          ..where((row) => row.uid.equals(estadioId) & row.deletedAt.isNull()))
+          ..where(
+            (row) =>
+                row.uid.equals(estadioId) &
+                row.userId.equals(userId) &
+                row.deletedAt.isNull(),
+          ))
         .getSingleOrNull();
     if (stage == null) {
       throw StateError('Estádio $estadioId não encontrado.');
@@ -205,8 +248,14 @@ class PlansLocalDatasource {
   Future<ProdutoAplicacaoEntity> updateProdutoAplicacao(
     ProdutoAplicacaoEntity produto,
   ) async {
+    final userId = _scope.userId;
     final current = await (_database.select(_database.produtosAplicacao)
-          ..where((row) => row.uid.equals(produto.id) & row.deletedAt.isNull()))
+          ..where(
+            (row) =>
+                row.uid.equals(produto.id) &
+                row.userId.equals(userId) &
+                row.deletedAt.isNull(),
+          ))
         .getSingleOrNull();
     if (current == null) {
       throw StateError('Produto ${produto.id} não encontrado.');
@@ -218,9 +267,12 @@ class PlansLocalDatasource {
   }
 
   Future<void> deleteProdutoAplicacao(String uid) async {
+    final userId = _scope.userId;
     final now = DateTime.now();
     await (_database.update(_database.produtosAplicacao)
-          ..where((row) => row.uid.equals(uid)))
+          ..where(
+            (row) => row.uid.equals(uid) & row.userId.equals(userId),
+          ))
         .write(
       ProdutosAplicacaoCompanion(
         deletedAt: Value(now),
@@ -231,21 +283,33 @@ class PlansLocalDatasource {
   }
 
   Future<PlanoEntity> _hydratePlano(Plano row) async {
+    final userId = _scope.userId;
     final stages = await (_database.select(_database.estadios)
           ..where(
-            (stage) => stage.planoId.equals(row.uid) & stage.deletedAt.isNull(),
+            (stage) =>
+                stage.planoId.equals(row.uid) &
+                stage.userId.equals(userId) &
+                stage.deletedAt.isNull(),
           )
           ..orderBy([(stage) => OrderingTerm.asc(stage.ordem)]))
         .get();
     final cliente = row.clienteId == null
         ? null
         : await (_database.select(_database.clientes)
-              ..where((item) => item.uid.equals(row.clienteId!)))
+              ..where(
+                (item) =>
+                    item.uid.equals(row.clienteId!) &
+                    item.userId.equals(userId),
+              ))
             .getSingleOrNull();
     final fazenda = row.fazendaId == null
         ? null
         : await (_database.select(_database.fazendas)
-              ..where((item) => item.uid.equals(row.fazendaId!)))
+              ..where(
+                (item) =>
+                    item.uid.equals(row.fazendaId!) &
+                    item.userId.equals(userId),
+              ))
             .getSingleOrNull();
 
     return PlanoEntity(
@@ -265,6 +329,7 @@ class PlansLocalDatasource {
       fazendaNomeLivre: row.fazendaNomeLivre,
       cidadeUf: row.cidadeUf,
       consultorNome: row.consultorNome,
+      consultorExibirNome: row.consultorExibirNome,
       logoLocalPath: row.logoLocalPath,
       precoGraoSc60: row.precoGraoSc60,
       dataVencimento: row.dataVencimento,
@@ -315,12 +380,14 @@ class PlansLocalDatasource {
 
   PlanosCompanion _planoCompanion(PlanoEntity entity) => PlanosCompanion.insert(
         uid: entity.id,
+        userId: Value(_scope.userId),
         clienteId: Value(entity.clienteId),
         fazendaId: Value(entity.fazendaId),
         produtorNomeLivre: Value(entity.produtorNomeLivre),
         fazendaNomeLivre: Value(entity.fazendaNomeLivre),
         cidadeUf: Value(entity.cidadeUf),
         consultorNome: Value(entity.consultorNome),
+        consultorExibirNome: Value(entity.consultorExibirNome),
         logoLocalPath: Value(entity.logoLocalPath),
         precoGraoSc60: Value(entity.precoGraoSc60),
         dataVencimento: Value(entity.dataVencimento),
@@ -336,6 +403,7 @@ class PlansLocalDatasource {
   EstadiosCompanion _estadioCompanion(EstadioEntity entity) =>
       EstadiosCompanion.insert(
         uid: entity.id,
+        userId: Value(_scope.userId),
         planoId: entity.planoId,
         codigo: entity.codigo,
         label: entity.label,
@@ -352,6 +420,7 @@ class PlansLocalDatasource {
   ) =>
       ProdutosAplicacaoCompanion.insert(
         uid: entity.id,
+        userId: Value(_scope.userId),
         estadioId: entity.estadioId,
         produtoNome: entity.produtoNome,
         produtoCategoria: entity.produtoCategoria,

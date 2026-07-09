@@ -1,0 +1,12 @@
+# Workspace — Cultiva Mind / AgriMind
+
+.DS_Store
+**/.DS_Store
+**/.temp/
+*.swp
+
+# Supabase CLI cache (fonte canônica: agrimind/supabase/)
+/supabase/
+
+# Flutter build artifacts at repo root
+/build/

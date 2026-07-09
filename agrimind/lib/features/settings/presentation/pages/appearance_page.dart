@@ -68,7 +68,7 @@ class AppearancePage extends ConsumerWidget {
                       color: const Color(0xFF1C1C1E),
                       borderRadius: BorderRadius.circular(8),
                     ),
-                    child: PhosphorIcon(
+                    child: const PhosphorIcon(
                       PhosphorIconsRegular.moon,
                       size: 18,
                       color: Colors.white,

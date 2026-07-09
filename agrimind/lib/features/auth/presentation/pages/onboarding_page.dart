@@ -57,7 +57,7 @@ class _OnboardingPageState extends ConsumerState<OnboardingPage> {
               alignment: Alignment.topRight,
               child: TextButton(
                 onPressed: () => context.go(AppRoutes.login),
-                child: Text('Pular'),
+                child: const Text('Pular'),
               ),
             ),
             Expanded(

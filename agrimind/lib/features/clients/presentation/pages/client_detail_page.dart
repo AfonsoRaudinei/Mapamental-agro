@@ -46,7 +46,7 @@ class ClientDetailPage extends ConsumerWidget {
                 leading: CupertinoButton(
                   padding: EdgeInsets.zero,
                   onPressed: () => context.pop(),
-                  child: PhosphorIcon(
+                  child: const PhosphorIcon(
                     PhosphorIconsRegular.caretLeft,
                     size: 22,
                     color: AppColors.primary,

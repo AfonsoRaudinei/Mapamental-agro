@@ -8,6 +8,7 @@ import '../../domain/usecases/register_usecase.dart';
 import '../../domain/usecases/recover_password_usecase.dart';
 import '../../domain/usecases/logout_usecase.dart';
 import '../../domain/usecases/delete_account_usecase.dart';
+import '../../../../core/database/database_service.dart';
 import '../../../../core/di/providers.dart';
 import '../../data/datasources/auth_remote_datasource.dart';
 
@@ -22,6 +23,9 @@ class AuthNotifier extends _$AuthNotifier {
     final repo = ref.read(authRepoProvider);
 
     final currentUser = await repo.currentUser;
+    if (currentUser != null) {
+      await DatabaseService.bindOwner(currentUser.id);
+    }
 
     // Mantém a UI sincronizada com a sessão persistida do Supabase.
     final sub = repo.authStateChanges.listen(
@@ -67,7 +71,9 @@ class AuthNotifier extends _$AuthNotifier {
   Future<void> loginWithGoogle() async {
     state = const AsyncLoading();
     try {
-      state = AsyncData(await ref.read(authRepoProvider).loginWithGoogle());
+      final user = await ref.read(authRepoProvider).loginWithGoogle();
+      await DatabaseService.bindOwner(user.id);
+      state = AsyncData(user);
     } on AuthFlowCancelledException {
       state = AsyncData(await ref.read(authRepoProvider).currentUser);
     } catch (error, stackTrace) {
@@ -80,7 +86,9 @@ class AuthNotifier extends _$AuthNotifier {
   Future<void> loginWithApple() async {
     state = const AsyncLoading();
     try {
-      state = AsyncData(await ref.read(authRepoProvider).loginWithApple());
+      final user = await ref.read(authRepoProvider).loginWithApple();
+      await DatabaseService.bindOwner(user.id);
+      state = AsyncData(user);
     } on AuthFlowCancelledException {
       state = AsyncData(await ref.read(authRepoProvider).currentUser);
     } catch (error, stackTrace) {
@@ -108,7 +116,9 @@ class AuthNotifier extends _$AuthNotifier {
   Future<AsyncValue<UserEntity?>> _guard(
       Future<UserEntity> Function() task) async {
     try {
-      return AsyncData(await task());
+      final user = await task();
+      await DatabaseService.bindOwner(user.id);
+      return AsyncData(user);
     } catch (error, stackTrace) {
       _logFailure('E-mail/senha', error, stackTrace);
       return AsyncError(error, stackTrace);

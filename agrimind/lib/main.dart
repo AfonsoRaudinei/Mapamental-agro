@@ -56,7 +56,7 @@ class _AgriMindBootstrapState extends State<AgriMindBootstrap> {
       ).timeout(const Duration(seconds: 20));
 
       await DatabaseService.initialize(
-        ownerUserId: Supabase.instance.client.auth.currentUser?.id,
+        sessionUserId: Supabase.instance.client.auth.currentUser?.id,
       ).timeout(const Duration(seconds: 15));
 
       // Garante que todos os dados de referência e catálogo estejam no banco local
@@ -176,7 +176,7 @@ class _StartupScreen extends StatelessWidget {
                     child: CircularProgressIndicator(strokeWidth: 2.5),
                   ),
                 ] else ...[
-                  Text(
+                  const Text(
                     'Não foi possível iniciar o AgriMind',
                     style: AppTypography.h3,
                     textAlign: TextAlign.center,

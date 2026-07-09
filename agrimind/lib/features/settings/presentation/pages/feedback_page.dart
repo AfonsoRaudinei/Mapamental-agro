@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 import 'package:share_plus/share_plus.dart';
@@ -9,19 +10,21 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/providers/package_info_provider.dart';
+import '../../../../core/utils/extensions.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
-import '../../../../core/utils/extensions.dart';
 
-class FeedbackPage extends StatelessWidget {
+class FeedbackPage extends ConsumerWidget {
   const FeedbackPage({super.key});
 
-  Future<void> _sendEmail(BuildContext context) async {
+  Future<void> _sendEmail(BuildContext context, WidgetRef ref) async {
+    final version = await ref.read(packageInfoProvider.future);
     final uri = Uri(
       scheme: 'mailto',
       path: AppConstants.supportEmail,
       queryParameters: {
-        'subject': 'Feedback AgriMind ${AppConstants.appVersion}',
+        'subject': 'Feedback AgriMind ${version.compactLabel}',
         'body': 'Descreva aqui sua dúvida, erro ou sugestão:\n\n',
       },
     );
@@ -36,16 +39,17 @@ class FeedbackPage extends StatelessWidget {
     }
   }
 
-  Future<void> _sendWhatsApp(BuildContext context) async {
+  Future<void> _sendWhatsApp(BuildContext context, WidgetRef ref) async {
+    final version = await ref.read(packageInfoProvider.future);
     final text = Uri.encodeComponent(
-      'Olá, preciso de suporte no AgriMind ${AppConstants.appVersion}.',
+      'Olá, preciso de suporte no AgriMind ${version.compactLabel}.',
     );
     final uri = Uri.parse('https://wa.me/?text=$text');
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!context.mounted) return;
       await SharePlus.instance.share(
         ShareParams(
-          text: 'Olá, preciso de suporte no AgriMind.',
+          text: 'Olá, preciso de suporte no AgriMind ${version.compactLabel}.',
           subject: 'Suporte AgriMind',
         ),
       );
@@ -53,7 +57,7 @@ class FeedbackPage extends StatelessWidget {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -62,7 +66,7 @@ class FeedbackPage extends StatelessWidget {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.pop(),
-          child: PhosphorIcon(
+          child: const PhosphorIcon(
             PhosphorIconsRegular.caretLeft,
             size: 22,
             color: AppColors.primary,
@@ -73,52 +77,54 @@ class FeedbackPage extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.only(bottom: AppSpacing.xxl),
         children: [
+          Padding(
+            padding: const EdgeInsets.all(AppSpacing.md),
+            child: Text(
+              'Envie dúvidas, relatos de erro ou sugestões. Incluímos a versão do app automaticamente.',
+              style: AppTypography.body.copyWith(
+                color: context.appTextSecondary,
+              ),
+            ),
+          ),
           SettingsSection(
-            title: 'Contato',
+            title: 'Canais',
             children: [
               SettingsTile(
-                title: 'Enviar por email',
+                title: 'E-mail',
                 subtitle: AppConstants.supportEmail,
+                onTap: () => _sendEmail(context, ref),
                 leading: _iconBox(
                   PhosphorIconsRegular.envelopeSimple,
                   AppColors.primary,
                 ),
-                onTap: () => _sendEmail(context),
               ),
               SettingsTile(
-                title: 'Enviar pelo WhatsApp',
-                subtitle: 'Abre o WhatsApp com mensagem pronta',
+                title: 'WhatsApp',
+                subtitle: 'Compartilhar mensagem de suporte',
+                onTap: () => _sendWhatsApp(context, ref),
                 leading: _iconBox(
-                  PhosphorIconsRegular.whatsappLogo,
-                  AppColors.success,
+                  PhosphorIconsRegular.chatCircle,
+                  AppColors.catDoencas,
                 ),
-                onTap: () => _sendWhatsApp(context),
               ),
             ],
-          ),
-          Padding(
-            padding: const EdgeInsets.all(AppSpacing.md),
-            child: Text(
-              'Inclua o que estava fazendo, o cliente/plano envolvido e uma captura de tela quando possível.',
-              style: AppTypography.caption.copyWith(
-                color: context.appTextSecondary,
-              ),
-            ),
           ),
         ],
       ),
     );
   }
 
-  Widget _iconBox(IconData icon, Color color) {
+  Widget _iconBox(PhosphorIconData icon, Color color) {
     return Container(
-      width: 30,
-      height: 30,
+      width: 32,
+      height: 32,
       decoration: BoxDecoration(
         color: color.withValues(alpha: 0.12),
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Center(child: PhosphorIcon(icon, size: 18, color: color)),
+      child: Center(
+        child: PhosphorIcon(icon, color: color, size: 18),
+      ),
     );
   }
 }

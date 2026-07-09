@@ -40,7 +40,7 @@ class _CesbDetailPageState extends ConsumerState<CesbDetailPage> {
       body: CustomScrollView(
         slivers: [
           CupertinoSliverNavigationBar(
-            largeTitle: Text('Campeões CESB'),
+            largeTitle: const Text('Campeões CESB'),
             backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
             border: Border.all(color: Colors.transparent),
             leading: CupertinoButton(

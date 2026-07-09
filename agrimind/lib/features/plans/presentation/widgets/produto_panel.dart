@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/widgets/app_bottom_sheet.dart';
+import '../../../catalog/domain/entities/produto_catalogo_entity.dart';
+import '../../../catalog/presentation/widgets/produto_search_dropdown.dart';
 import '../../domain/entities/produto_aplicacao_entity.dart';
 import 'area_selector_widget.dart';
 import '../../../../core/utils/extensions.dart';
@@ -18,7 +21,7 @@ const _unidades = ['L/ha', 'mL/ha', 'kg/ha', 'g/ha', 'unid/ha'];
 /// Bottom sheet para adicionar ou editar um ProdutoAplicacao.
 ///
 /// Aberto diretamente ao tocar em "Adicionar produto" ou em um produto existente.
-class ProdutoPanel extends StatefulWidget {
+class ProdutoPanel extends ConsumerStatefulWidget {
   const ProdutoPanel({
     super.key,
     required this.estadioId,
@@ -75,10 +78,10 @@ class ProdutoPanel extends StatefulWidget {
   }
 
   @override
-  State<ProdutoPanel> createState() => _ProdutoPanelState();
+  ConsumerState<ProdutoPanel> createState() => _ProdutoPanelState();
 }
 
-class _ProdutoPanelState extends State<ProdutoPanel> {
+class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
   final _formKey = GlobalKey<FormState>();
   final _nomeCtrl = TextEditingController();
   final _doseCtrl = TextEditingController();
@@ -89,6 +92,7 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
   late String _unidade;
   late double _areaHa;
   bool _overrideAtivo = false;
+  String _categoriaSelecionada = 'Geral';
 
   bool get _isEdit => widget.produtoInicial != null;
 
@@ -99,6 +103,7 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
     if (p != null) {
       // Modo edição — preenche campos com dados existentes
       _nomeCtrl.text = p.produtoNome;
+      _categoriaSelecionada = p.produtoCategoria;
       _doseCtrl.text = p.dose.toString();
       _unidade = p.doseUnidade;
       _areaHa = p.areaHa;
@@ -111,10 +116,28 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
     } else {
       _unidade = _unidades.first;
       _areaHa = widget.areaHaFazenda;
+      _categoriaSelecionada = widget.categoriaSugerida ?? 'Geral';
       if (widget.nomeSugerido != null) {
         _nomeCtrl.text = widget.nomeSugerido!;
       }
     }
+  }
+
+  void _onCatalogoSelected(ProdutoCatalogoEntity produto) {
+    _nomeCtrl.text = produto.nomeComercial;
+    _categoriaSelecionada = produto.categoria;
+    if (_unidades.contains(produto.unidadePadrao)) {
+      _unidade = produto.unidadePadrao;
+    }
+    final doseSugerida = produto.doseMin != null &&
+            produto.doseMax != null &&
+            produto.doseMin == produto.doseMax
+        ? produto.doseMin!
+        : (produto.doseMin ?? 0);
+    if (doseSugerida > 0) {
+      _doseCtrl.text = doseSugerida.toString();
+    }
+    setState(() {});
   }
 
   @override
@@ -137,6 +160,12 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
   }
 
   void _salvar() {
+    if (_nomeCtrl.text.trim().isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Informe o produto')),
+      );
+      return;
+    }
     if (!_formKey.currentState!.validate()) return;
 
     widget.onSalvar({
@@ -144,7 +173,7 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
       'produtoNome': _nomeCtrl.text.trim(),
       'produtoCategoria': _isEdit
           ? widget.produtoInicial!.produtoCategoria
-          : (widget.categoriaSugerida ?? 'Geral'),
+          : _categoriaSelecionada,
       'dose': _dose,
       'doseUnidade': _unidade,
       'areaHa': _areaHa,
@@ -176,16 +205,13 @@ class _ProdutoPanelState extends State<ProdutoPanel> {
                 padding: const EdgeInsets.all(AppSpacing.md),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
-                    // Nome do produto
+                    // Nome do produto (catálogo)
                     const _FieldLabel('Produto'),
                     const SizedBox(height: 6),
-                    _PanelTextField(
+                    ProdutoSearchDropdown(
                       controller: _nomeCtrl,
-                      hint: 'Ex: Fox Xpro, Engeo Pleno...',
-                      // TODO Sprint 4: substituir por dropdown do catálogo
-                      validator: (v) => (v == null || v.trim().isEmpty)
-                          ? 'Informe o produto'
-                          : null,
+                      hintText: 'Buscar no catálogo...',
+                      onSelected: _onCatalogoSelected,
                     ),
                     const SizedBox(height: AppSpacing.md),
 

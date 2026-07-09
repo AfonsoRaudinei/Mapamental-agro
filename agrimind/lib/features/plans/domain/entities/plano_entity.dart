@@ -25,6 +25,7 @@ class PlanoEntity with _$PlanoEntity {
     String? fazendaNomeLivre,
     String? cidadeUf,
     String? consultorNome,
+    @Default(true) bool consultorExibirNome,
     String? logoLocalPath,
     double? precoGraoSc60,
     DateTime? dataVencimento,

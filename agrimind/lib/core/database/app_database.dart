@@ -128,6 +128,8 @@ class Planos extends Table {
   TextColumn get fazendaNomeLivre => text().nullable()();
   TextColumn get cidadeUf => text().nullable()();
   TextColumn get consultorNome => text().nullable()();
+  BoolColumn get consultorExibirNome =>
+      boolean().withDefault(const Constant(true))();
   TextColumn get logoLocalPath => text().nullable()();
   RealColumn get precoGraoSc60 => real().nullable()();
   DateTimeColumn get dataVencimento => dateTime().nullable()();
@@ -220,7 +222,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'agrimind'));
 
   @override
-  int get schemaVersion => 3;
+  int get schemaVersion => 4;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -240,6 +242,9 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 3) {
             await migrateEstadioV8ToV7(this);
+          }
+          if (from < 4) {
+            await migrator.addColumn(planos, planos.consultorExibirNome);
           }
         },
         beforeOpen: (details) async {

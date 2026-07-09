@@ -34,6 +34,7 @@ mixin _$PlanoEntity {
   String? get fazendaNomeLivre => throw _privateConstructorUsedError;
   String? get cidadeUf => throw _privateConstructorUsedError;
   String? get consultorNome => throw _privateConstructorUsedError;
+  bool get consultorExibirNome => throw _privateConstructorUsedError;
   String? get logoLocalPath => throw _privateConstructorUsedError;
   double? get precoGraoSc60 => throw _privateConstructorUsedError;
   DateTime? get dataVencimento =>
@@ -70,6 +71,7 @@ abstract class $PlanoEntityCopyWith<$Res> {
       String? fazendaNomeLivre,
       String? cidadeUf,
       String? consultorNome,
+      bool consultorExibirNome,
       String? logoLocalPath,
       double? precoGraoSc60,
       DateTime? dataVencimento,
@@ -107,6 +109,7 @@ class _$PlanoEntityCopyWithImpl<$Res, $Val extends PlanoEntity>
     Object? fazendaNomeLivre = freezed,
     Object? cidadeUf = freezed,
     Object? consultorNome = freezed,
+    Object? consultorExibirNome = null,
     Object? logoLocalPath = freezed,
     Object? precoGraoSc60 = freezed,
     Object? dataVencimento = freezed,
@@ -177,6 +180,10 @@ class _$PlanoEntityCopyWithImpl<$Res, $Val extends PlanoEntity>
           ? _value.consultorNome
           : consultorNome // ignore: cast_nullable_to_non_nullable
               as String?,
+      consultorExibirNome: null == consultorExibirNome
+          ? _value.consultorExibirNome
+          : consultorExibirNome // ignore: cast_nullable_to_non_nullable
+              as bool,
       logoLocalPath: freezed == logoLocalPath
           ? _value.logoLocalPath
           : logoLocalPath // ignore: cast_nullable_to_non_nullable
@@ -222,6 +229,7 @@ abstract class _$$PlanoEntityImplCopyWith<$Res>
       String? fazendaNomeLivre,
       String? cidadeUf,
       String? consultorNome,
+      bool consultorExibirNome,
       String? logoLocalPath,
       double? precoGraoSc60,
       DateTime? dataVencimento,
@@ -257,6 +265,7 @@ class __$$PlanoEntityImplCopyWithImpl<$Res>
     Object? fazendaNomeLivre = freezed,
     Object? cidadeUf = freezed,
     Object? consultorNome = freezed,
+    Object? consultorExibirNome = null,
     Object? logoLocalPath = freezed,
     Object? precoGraoSc60 = freezed,
     Object? dataVencimento = freezed,
@@ -327,6 +336,10 @@ class __$$PlanoEntityImplCopyWithImpl<$Res>
           ? _value.consultorNome
           : consultorNome // ignore: cast_nullable_to_non_nullable
               as String?,
+      consultorExibirNome: null == consultorExibirNome
+          ? _value.consultorExibirNome
+          : consultorExibirNome // ignore: cast_nullable_to_non_nullable
+              as bool,
       logoLocalPath: freezed == logoLocalPath
           ? _value.logoLocalPath
           : logoLocalPath // ignore: cast_nullable_to_non_nullable
@@ -367,6 +380,7 @@ class _$PlanoEntityImpl implements _PlanoEntity {
       this.fazendaNomeLivre,
       this.cidadeUf,
       this.consultorNome,
+      this.consultorExibirNome = true,
       this.logoLocalPath,
       this.precoGraoSc60,
       this.dataVencimento,
@@ -408,6 +422,9 @@ class _$PlanoEntityImpl implements _PlanoEntity {
   @override
   final String? consultorNome;
   @override
+  @JsonKey()
+  final bool consultorExibirNome;
+  @override
   final String? logoLocalPath;
   @override
   final double? precoGraoSc60;
@@ -426,7 +443,7 @@ class _$PlanoEntityImpl implements _PlanoEntity {
 
   @override
   String toString() {
-    return 'PlanoEntity(id: $id, nome: $nome, cultura: $cultura, safra: $safra, areaHaTotal: $areaHaTotal, status: $status, createdAt: $createdAt, updatedAt: $updatedAt, clienteId: $clienteId, clienteNome: $clienteNome, fazendaId: $fazendaId, fazendaNome: $fazendaNome, produtorNomeLivre: $produtorNomeLivre, fazendaNomeLivre: $fazendaNomeLivre, cidadeUf: $cidadeUf, consultorNome: $consultorNome, logoLocalPath: $logoLocalPath, precoGraoSc60: $precoGraoSc60, dataVencimento: $dataVencimento, estadios: $estadios)';
+    return 'PlanoEntity(id: $id, nome: $nome, cultura: $cultura, safra: $safra, areaHaTotal: $areaHaTotal, status: $status, createdAt: $createdAt, updatedAt: $updatedAt, clienteId: $clienteId, clienteNome: $clienteNome, fazendaId: $fazendaId, fazendaNome: $fazendaNome, produtorNomeLivre: $produtorNomeLivre, fazendaNomeLivre: $fazendaNomeLivre, cidadeUf: $cidadeUf, consultorNome: $consultorNome, consultorExibirNome: $consultorExibirNome, logoLocalPath: $logoLocalPath, precoGraoSc60: $precoGraoSc60, dataVencimento: $dataVencimento, estadios: $estadios)';
   }
 
   @override
@@ -461,6 +478,8 @@ class _$PlanoEntityImpl implements _PlanoEntity {
                 other.cidadeUf == cidadeUf) &&
             (identical(other.consultorNome, consultorNome) ||
                 other.consultorNome == consultorNome) &&
+            (identical(other.consultorExibirNome, consultorExibirNome) ||
+                other.consultorExibirNome == consultorExibirNome) &&
             (identical(other.logoLocalPath, logoLocalPath) ||
                 other.logoLocalPath == logoLocalPath) &&
             (identical(other.precoGraoSc60, precoGraoSc60) ||
@@ -489,6 +508,7 @@ class _$PlanoEntityImpl implements _PlanoEntity {
         fazendaNomeLivre,
         cidadeUf,
         consultorNome,
+        consultorExibirNome,
         logoLocalPath,
         precoGraoSc60,
         dataVencimento,
@@ -522,6 +542,7 @@ abstract class _PlanoEntity implements PlanoEntity {
       final String? fazendaNomeLivre,
       final String? cidadeUf,
       final String? consultorNome,
+      final bool consultorExibirNome,
       final String? logoLocalPath,
       final double? precoGraoSc60,
       final DateTime? dataVencimento,
@@ -560,6 +581,8 @@ abstract class _PlanoEntity implements PlanoEntity {
   String? get cidadeUf;
   @override
   String? get consultorNome;
+  @override
+  bool get consultorExibirNome;
   @override
   String? get logoLocalPath;
   @override

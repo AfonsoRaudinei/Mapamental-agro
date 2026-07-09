@@ -30,7 +30,7 @@ class CesbTipCard extends StatelessWidget {
           // Título com ícone troféu
           Row(
             children: [
-              PhosphorIcon(
+              const PhosphorIcon(
                 PhosphorIconsRegular.trophy,
                 size: 18,
                 color: AppColors.catCESB,

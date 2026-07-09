@@ -237,7 +237,7 @@ class _CesbTile extends StatelessWidget {
         children: [
           Row(
             children: [
-              PhosphorIcon(
+              const PhosphorIcon(
                 PhosphorIconsRegular.trophy,
                 color: AppColors.catCESB,
                 size: 16,

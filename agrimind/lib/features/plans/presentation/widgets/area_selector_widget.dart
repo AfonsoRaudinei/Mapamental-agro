@@ -249,7 +249,7 @@ class _CustomAreaField extends StatelessWidget {
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide(
+                borderSide: const BorderSide(
                   color: AppColors.primary,
                   width: 2,
                 ),

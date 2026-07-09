@@ -1,5 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
@@ -7,15 +8,18 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/providers/package_info_provider.dart';
+import '../../../../core/utils/extensions.dart';
 import '../widgets/settings_section.dart';
 import '../widgets/settings_tile.dart';
-import '../../../../core/utils/extensions.dart';
 
-class AboutPage extends StatelessWidget {
+class AboutPage extends ConsumerWidget {
   const AboutPage({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final versionAsync = ref.watch(packageInfoProvider);
+
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       appBar: AppBar(
@@ -24,7 +28,7 @@ class AboutPage extends StatelessWidget {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.pop(),
-          child: PhosphorIcon(
+          child: const PhosphorIcon(
             PhosphorIconsRegular.caretLeft,
             size: 22,
             color: AppColors.primary,
@@ -56,10 +60,24 @@ class AboutPage extends StatelessWidget {
                 ),
                 const SizedBox(height: AppSpacing.md),
                 const Text(AppConstants.appName, style: AppTypography.h2),
-                Text(
-                  'Versão ${AppConstants.appVersion}',
-                  style: AppTypography.caption.copyWith(
-                    color: context.appTextSecondary,
+                versionAsync.when(
+                  data: (info) => Text(
+                    'Versão ${info.displayLabel}',
+                    style: AppTypography.caption.copyWith(
+                      color: context.appTextSecondary,
+                    ),
+                  ),
+                  loading: () => Text(
+                    'Versão …',
+                    style: AppTypography.caption.copyWith(
+                      color: context.appTextSecondary,
+                    ),
+                  ),
+                  error: (_, __) => Text(
+                    'Versão indisponível',
+                    style: AppTypography.caption.copyWith(
+                      color: context.appTextSecondary,
+                    ),
                   ),
                 ),
               ],

@@ -3724,6 +3724,16 @@ class $PlanosTable extends Planos with TableInfo<$PlanosTable, Plano> {
   late final GeneratedColumn<String> consultorNome = GeneratedColumn<String>(
       'consultor_nome', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _consultorExibirNomeMeta =
+      const VerificationMeta('consultorExibirNome');
+  @override
+  late final GeneratedColumn<bool> consultorExibirNome = GeneratedColumn<bool>(
+      'consultor_exibir_nome', aliasedName, false,
+      type: DriftSqlType.bool,
+      requiredDuringInsert: false,
+      defaultConstraints: GeneratedColumn.constraintIsAlways(
+          'CHECK ("consultor_exibir_nome" IN (0, 1))'),
+      defaultValue: const Constant(true));
   static const VerificationMeta _logoLocalPathMeta =
       const VerificationMeta('logoLocalPath');
   @override
@@ -3801,6 +3811,7 @@ class $PlanosTable extends Planos with TableInfo<$PlanosTable, Plano> {
         fazendaNomeLivre,
         cidadeUf,
         consultorNome,
+        consultorExibirNome,
         logoLocalPath,
         precoGraoSc60,
         dataVencimento,
@@ -3868,6 +3879,12 @@ class $PlanosTable extends Planos with TableInfo<$PlanosTable, Plano> {
           _consultorNomeMeta,
           consultorNome.isAcceptableOrUnknown(
               data['consultor_nome']!, _consultorNomeMeta));
+    }
+    if (data.containsKey('consultor_exibir_nome')) {
+      context.handle(
+          _consultorExibirNomeMeta,
+          consultorExibirNome.isAcceptableOrUnknown(
+              data['consultor_exibir_nome']!, _consultorExibirNomeMeta));
     }
     if (data.containsKey('logo_local_path')) {
       context.handle(
@@ -3960,6 +3977,8 @@ class $PlanosTable extends Planos with TableInfo<$PlanosTable, Plano> {
           .read(DriftSqlType.string, data['${effectivePrefix}cidade_uf']),
       consultorNome: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}consultor_nome']),
+      consultorExibirNome: attachedDatabase.typeMapping.read(
+          DriftSqlType.bool, data['${effectivePrefix}consultor_exibir_nome'])!,
       logoLocalPath: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}logo_local_path']),
       precoGraoSc60: attachedDatabase.typeMapping
@@ -4001,6 +4020,7 @@ class Plano extends DataClass implements Insertable<Plano> {
   final String? fazendaNomeLivre;
   final String? cidadeUf;
   final String? consultorNome;
+  final bool consultorExibirNome;
   final String? logoLocalPath;
   final double? precoGraoSc60;
   final DateTime? dataVencimento;
@@ -4022,6 +4042,7 @@ class Plano extends DataClass implements Insertable<Plano> {
       this.fazendaNomeLivre,
       this.cidadeUf,
       this.consultorNome,
+      required this.consultorExibirNome,
       this.logoLocalPath,
       this.precoGraoSc60,
       this.dataVencimento,
@@ -4059,6 +4080,7 @@ class Plano extends DataClass implements Insertable<Plano> {
     if (!nullToAbsent || consultorNome != null) {
       map['consultor_nome'] = Variable<String>(consultorNome);
     }
+    map['consultor_exibir_nome'] = Variable<bool>(consultorExibirNome);
     if (!nullToAbsent || logoLocalPath != null) {
       map['logo_local_path'] = Variable<String>(logoLocalPath);
     }
@@ -4105,6 +4127,7 @@ class Plano extends DataClass implements Insertable<Plano> {
       consultorNome: consultorNome == null && nullToAbsent
           ? const Value.absent()
           : Value(consultorNome),
+      consultorExibirNome: Value(consultorExibirNome),
       logoLocalPath: logoLocalPath == null && nullToAbsent
           ? const Value.absent()
           : Value(logoLocalPath),
@@ -4141,6 +4164,8 @@ class Plano extends DataClass implements Insertable<Plano> {
       fazendaNomeLivre: serializer.fromJson<String?>(json['fazendaNomeLivre']),
       cidadeUf: serializer.fromJson<String?>(json['cidadeUf']),
       consultorNome: serializer.fromJson<String?>(json['consultorNome']),
+      consultorExibirNome:
+          serializer.fromJson<bool>(json['consultorExibirNome']),
       logoLocalPath: serializer.fromJson<String?>(json['logoLocalPath']),
       precoGraoSc60: serializer.fromJson<double?>(json['precoGraoSc60']),
       dataVencimento: serializer.fromJson<DateTime?>(json['dataVencimento']),
@@ -4167,6 +4192,7 @@ class Plano extends DataClass implements Insertable<Plano> {
       'fazendaNomeLivre': serializer.toJson<String?>(fazendaNomeLivre),
       'cidadeUf': serializer.toJson<String?>(cidadeUf),
       'consultorNome': serializer.toJson<String?>(consultorNome),
+      'consultorExibirNome': serializer.toJson<bool>(consultorExibirNome),
       'logoLocalPath': serializer.toJson<String?>(logoLocalPath),
       'precoGraoSc60': serializer.toJson<double?>(precoGraoSc60),
       'dataVencimento': serializer.toJson<DateTime?>(dataVencimento),
@@ -4191,6 +4217,7 @@ class Plano extends DataClass implements Insertable<Plano> {
           Value<String?> fazendaNomeLivre = const Value.absent(),
           Value<String?> cidadeUf = const Value.absent(),
           Value<String?> consultorNome = const Value.absent(),
+          bool? consultorExibirNome,
           Value<String?> logoLocalPath = const Value.absent(),
           Value<double?> precoGraoSc60 = const Value.absent(),
           Value<DateTime?> dataVencimento = const Value.absent(),
@@ -4217,6 +4244,7 @@ class Plano extends DataClass implements Insertable<Plano> {
         cidadeUf: cidadeUf.present ? cidadeUf.value : this.cidadeUf,
         consultorNome:
             consultorNome.present ? consultorNome.value : this.consultorNome,
+        consultorExibirNome: consultorExibirNome ?? this.consultorExibirNome,
         logoLocalPath:
             logoLocalPath.present ? logoLocalPath.value : this.logoLocalPath,
         precoGraoSc60:
@@ -4249,6 +4277,9 @@ class Plano extends DataClass implements Insertable<Plano> {
       consultorNome: data.consultorNome.present
           ? data.consultorNome.value
           : this.consultorNome,
+      consultorExibirNome: data.consultorExibirNome.present
+          ? data.consultorExibirNome.value
+          : this.consultorExibirNome,
       logoLocalPath: data.logoLocalPath.present
           ? data.logoLocalPath.value
           : this.logoLocalPath,
@@ -4282,6 +4313,7 @@ class Plano extends DataClass implements Insertable<Plano> {
           ..write('fazendaNomeLivre: $fazendaNomeLivre, ')
           ..write('cidadeUf: $cidadeUf, ')
           ..write('consultorNome: $consultorNome, ')
+          ..write('consultorExibirNome: $consultorExibirNome, ')
           ..write('logoLocalPath: $logoLocalPath, ')
           ..write('precoGraoSc60: $precoGraoSc60, ')
           ..write('dataVencimento: $dataVencimento, ')
@@ -4298,27 +4330,29 @@ class Plano extends DataClass implements Insertable<Plano> {
   }
 
   @override
-  int get hashCode => Object.hash(
-      uid,
-      userId,
-      clienteId,
-      fazendaId,
-      nome,
-      produtorNomeLivre,
-      fazendaNomeLivre,
-      cidadeUf,
-      consultorNome,
-      logoLocalPath,
-      precoGraoSc60,
-      dataVencimento,
-      cultura,
-      safra,
-      areaHaTotal,
-      status,
-      createdAt,
-      updatedAt,
-      syncState,
-      deletedAt);
+  int get hashCode => Object.hashAll([
+        uid,
+        userId,
+        clienteId,
+        fazendaId,
+        nome,
+        produtorNomeLivre,
+        fazendaNomeLivre,
+        cidadeUf,
+        consultorNome,
+        consultorExibirNome,
+        logoLocalPath,
+        precoGraoSc60,
+        dataVencimento,
+        cultura,
+        safra,
+        areaHaTotal,
+        status,
+        createdAt,
+        updatedAt,
+        syncState,
+        deletedAt
+      ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -4332,6 +4366,7 @@ class Plano extends DataClass implements Insertable<Plano> {
           other.fazendaNomeLivre == this.fazendaNomeLivre &&
           other.cidadeUf == this.cidadeUf &&
           other.consultorNome == this.consultorNome &&
+          other.consultorExibirNome == this.consultorExibirNome &&
           other.logoLocalPath == this.logoLocalPath &&
           other.precoGraoSc60 == this.precoGraoSc60 &&
           other.dataVencimento == this.dataVencimento &&
@@ -4355,6 +4390,7 @@ class PlanosCompanion extends UpdateCompanion<Plano> {
   final Value<String?> fazendaNomeLivre;
   final Value<String?> cidadeUf;
   final Value<String?> consultorNome;
+  final Value<bool> consultorExibirNome;
   final Value<String?> logoLocalPath;
   final Value<double?> precoGraoSc60;
   final Value<DateTime?> dataVencimento;
@@ -4377,6 +4413,7 @@ class PlanosCompanion extends UpdateCompanion<Plano> {
     this.fazendaNomeLivre = const Value.absent(),
     this.cidadeUf = const Value.absent(),
     this.consultorNome = const Value.absent(),
+    this.consultorExibirNome = const Value.absent(),
     this.logoLocalPath = const Value.absent(),
     this.precoGraoSc60 = const Value.absent(),
     this.dataVencimento = const Value.absent(),
@@ -4400,6 +4437,7 @@ class PlanosCompanion extends UpdateCompanion<Plano> {
     this.fazendaNomeLivre = const Value.absent(),
     this.cidadeUf = const Value.absent(),
     this.consultorNome = const Value.absent(),
+    this.consultorExibirNome = const Value.absent(),
     this.logoLocalPath = const Value.absent(),
     this.precoGraoSc60 = const Value.absent(),
     this.dataVencimento = const Value.absent(),
@@ -4430,6 +4468,7 @@ class PlanosCompanion extends UpdateCompanion<Plano> {
     Expression<String>? fazendaNomeLivre,
     Expression<String>? cidadeUf,
     Expression<String>? consultorNome,
+    Expression<bool>? consultorExibirNome,
     Expression<String>? logoLocalPath,
     Expression<double>? precoGraoSc60,
     Expression<DateTime>? dataVencimento,
@@ -4453,6 +4492,8 @@ class PlanosCompanion extends UpdateCompanion<Plano> {
       if (fazendaNomeLivre != null) 'fazenda_nome_livre': fazendaNomeLivre,
       if (cidadeUf != null) 'cidade_uf': cidadeUf,
       if (consultorNome != null) 'consultor_nome': consultorNome,
+      if (consultorExibirNome != null)
+        'consultor_exibir_nome': consultorExibirNome,
       if (logoLocalPath != null) 'logo_local_path': logoLocalPath,
       if (precoGraoSc60 != null) 'preco_grao_sc60': precoGraoSc60,
       if (dataVencimento != null) 'data_vencimento': dataVencimento,
@@ -4478,6 +4519,7 @@ class PlanosCompanion extends UpdateCompanion<Plano> {
       Value<String?>? fazendaNomeLivre,
       Value<String?>? cidadeUf,
       Value<String?>? consultorNome,
+      Value<bool>? consultorExibirNome,
       Value<String?>? logoLocalPath,
       Value<double?>? precoGraoSc60,
       Value<DateTime?>? dataVencimento,
@@ -4500,6 +4542,7 @@ class PlanosCompanion extends UpdateCompanion<Plano> {
       fazendaNomeLivre: fazendaNomeLivre ?? this.fazendaNomeLivre,
       cidadeUf: cidadeUf ?? this.cidadeUf,
       consultorNome: consultorNome ?? this.consultorNome,
+      consultorExibirNome: consultorExibirNome ?? this.consultorExibirNome,
       logoLocalPath: logoLocalPath ?? this.logoLocalPath,
       precoGraoSc60: precoGraoSc60 ?? this.precoGraoSc60,
       dataVencimento: dataVencimento ?? this.dataVencimento,
@@ -4544,6 +4587,9 @@ class PlanosCompanion extends UpdateCompanion<Plano> {
     }
     if (consultorNome.present) {
       map['consultor_nome'] = Variable<String>(consultorNome.value);
+    }
+    if (consultorExibirNome.present) {
+      map['consultor_exibir_nome'] = Variable<bool>(consultorExibirNome.value);
     }
     if (logoLocalPath.present) {
       map['logo_local_path'] = Variable<String>(logoLocalPath.value);
@@ -4596,6 +4642,7 @@ class PlanosCompanion extends UpdateCompanion<Plano> {
           ..write('fazendaNomeLivre: $fazendaNomeLivre, ')
           ..write('cidadeUf: $cidadeUf, ')
           ..write('consultorNome: $consultorNome, ')
+          ..write('consultorExibirNome: $consultorExibirNome, ')
           ..write('logoLocalPath: $logoLocalPath, ')
           ..write('precoGraoSc60: $precoGraoSc60, ')
           ..write('dataVencimento: $dataVencimento, ')
@@ -8815,6 +8862,7 @@ typedef $$PlanosTableCreateCompanionBuilder = PlanosCompanion Function({
   Value<String?> fazendaNomeLivre,
   Value<String?> cidadeUf,
   Value<String?> consultorNome,
+  Value<bool> consultorExibirNome,
   Value<String?> logoLocalPath,
   Value<double?> precoGraoSc60,
   Value<DateTime?> dataVencimento,
@@ -8838,6 +8886,7 @@ typedef $$PlanosTableUpdateCompanionBuilder = PlanosCompanion Function({
   Value<String?> fazendaNomeLivre,
   Value<String?> cidadeUf,
   Value<String?> consultorNome,
+  Value<bool> consultorExibirNome,
   Value<String?> logoLocalPath,
   Value<double?> precoGraoSc60,
   Value<DateTime?> dataVencimento,
@@ -8930,6 +8979,10 @@ class $$PlanosTableFilterComposer
 
   ColumnFilters<String> get consultorNome => $composableBuilder(
       column: $table.consultorNome, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<bool> get consultorExibirNome => $composableBuilder(
+      column: $table.consultorExibirNome,
+      builder: (column) => ColumnFilters(column));
 
   ColumnFilters<String> get logoLocalPath => $composableBuilder(
       column: $table.logoLocalPath, builder: (column) => ColumnFilters(column));
@@ -9060,6 +9113,10 @@ class $$PlanosTableOrderingComposer
       column: $table.consultorNome,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<bool> get consultorExibirNome => $composableBuilder(
+      column: $table.consultorExibirNome,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<String> get logoLocalPath => $composableBuilder(
       column: $table.logoLocalPath,
       builder: (column) => ColumnOrderings(column));
@@ -9166,6 +9223,9 @@ class $$PlanosTableAnnotationComposer
 
   GeneratedColumn<String> get consultorNome => $composableBuilder(
       column: $table.consultorNome, builder: (column) => column);
+
+  GeneratedColumn<bool> get consultorExibirNome => $composableBuilder(
+      column: $table.consultorExibirNome, builder: (column) => column);
 
   GeneratedColumn<String> get logoLocalPath => $composableBuilder(
       column: $table.logoLocalPath, builder: (column) => column);
@@ -9295,6 +9355,7 @@ class $$PlanosTableTableManager extends RootTableManager<
             Value<String?> fazendaNomeLivre = const Value.absent(),
             Value<String?> cidadeUf = const Value.absent(),
             Value<String?> consultorNome = const Value.absent(),
+            Value<bool> consultorExibirNome = const Value.absent(),
             Value<String?> logoLocalPath = const Value.absent(),
             Value<double?> precoGraoSc60 = const Value.absent(),
             Value<DateTime?> dataVencimento = const Value.absent(),
@@ -9318,6 +9379,7 @@ class $$PlanosTableTableManager extends RootTableManager<
             fazendaNomeLivre: fazendaNomeLivre,
             cidadeUf: cidadeUf,
             consultorNome: consultorNome,
+            consultorExibirNome: consultorExibirNome,
             logoLocalPath: logoLocalPath,
             precoGraoSc60: precoGraoSc60,
             dataVencimento: dataVencimento,
@@ -9341,6 +9403,7 @@ class $$PlanosTableTableManager extends RootTableManager<
             Value<String?> fazendaNomeLivre = const Value.absent(),
             Value<String?> cidadeUf = const Value.absent(),
             Value<String?> consultorNome = const Value.absent(),
+            Value<bool> consultorExibirNome = const Value.absent(),
             Value<String?> logoLocalPath = const Value.absent(),
             Value<double?> precoGraoSc60 = const Value.absent(),
             Value<DateTime?> dataVencimento = const Value.absent(),
@@ -9364,6 +9427,7 @@ class $$PlanosTableTableManager extends RootTableManager<
             fazendaNomeLivre: fazendaNomeLivre,
             cidadeUf: cidadeUf,
             consultorNome: consultorNome,
+            consultorExibirNome: consultorExibirNome,
             logoLocalPath: logoLocalPath,
             precoGraoSc60: precoGraoSc60,
             dataVencimento: dataVencimento,

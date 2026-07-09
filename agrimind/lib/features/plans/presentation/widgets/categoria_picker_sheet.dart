@@ -50,7 +50,7 @@ class CategoriaPickerSheet extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Referências', style: AppTypography.h3),
+              const Text('Referências', style: AppTypography.h3),
               Text(
                 'Estádio $estadioCodigo',
                 style: AppTypography.caption.copyWith(

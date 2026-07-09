@@ -79,7 +79,7 @@ ${_table(c)}
 <div class="sumrow"><span>Custo em sacas</span><strong>${custoSc == null ? '—' : '${_num.format(custoSc)} sc / ha'}</strong></div>
 ${plano.dataVencimento == null ? '' : '<div class="sumrow"><span>Vencimento</span><strong>${_date.format(plano.dataVencimento!)}</strong></div>'}
 </div>
-<div class="card footer"><div class="logo">${logoData == null ? 'Logo' : '<img src="$logoData">'}</div><div><div class="lbl">Consultor</div><div class="val">${_esc(plano.consultorNome ?? '—')}</div></div></div>
+<div class="card footer"><div class="logo">${logoData == null ? 'Logo' : '<img src="$logoData">'}</div>${plano.consultorExibirNome ? '<div><div class="lbl">Consultor</div><div class="val">${_esc(plano.consultorNome ?? '—')}</div></div>' : ''}</div>
 </div>
 </body>
 </html>

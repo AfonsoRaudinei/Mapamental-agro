@@ -379,7 +379,7 @@ class _FarmFormPageState extends ConsumerState<FarmFormPage> {
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
               borderSide:
-                  BorderSide(color: AppColors.primary, width: 1.5),
+                  const BorderSide(color: AppColors.primary, width: 1.5),
             ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.sm,
@@ -435,7 +435,7 @@ class _TalhoesSection extends ConsumerWidget {
                 onPressed: () => context.push(
                   '/clients/$clienteId/farms/$fazendaId/talhoes/new',
                 ),
-                child: Text(
+                child: const Text(
                   '+ Adicionar',
                   style: TextStyle(
                     fontSize: 13,

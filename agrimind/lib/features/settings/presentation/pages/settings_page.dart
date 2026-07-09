@@ -5,9 +5,9 @@ import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/constants/app_colors.dart';
-import '../../../../core/constants/app_constants.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
+import '../../../../core/providers/package_info_provider.dart';
 import '../../../../core/router/app_routes.dart';
 import '../../../../core/widgets/loading_skeleton.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
@@ -25,6 +25,10 @@ class SettingsPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final settingsAsync = ref.watch(settingsNotifierProvider);
+    final versionLabel = ref.watch(packageInfoProvider).maybeWhen(
+          data: (info) => info.displayLabel,
+          orElse: () => '…',
+        );
     final theme = Theme.of(context);
     final colorScheme = theme.colorScheme;
     final isDark = theme.brightness == Brightness.dark;
@@ -77,7 +81,7 @@ class SettingsPage extends ConsumerWidget {
                             color: const Color(0xFF1C1C1E),
                             borderRadius: BorderRadius.circular(8),
                           ),
-                          child: PhosphorIcon(
+                          child: const PhosphorIcon(
                             PhosphorIconsRegular.moon,
                             size: 18,
                             color: Colors.white,
@@ -169,7 +173,7 @@ class SettingsPage extends ConsumerWidget {
                       ),
                       SettingsTile(
                         title: 'Sobre o AgriMind',
-                        subtitle: 'Versão ${AppConstants.appVersion}',
+                        subtitle: 'Versão $versionLabel',
                         onTap: () => context.push(AppRoutes.about),
                         leading: _iconBox(
                           PhosphorIconsRegular.info,

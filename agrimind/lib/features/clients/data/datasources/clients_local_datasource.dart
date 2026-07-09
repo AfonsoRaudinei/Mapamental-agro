@@ -2,14 +2,17 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/database/local_user_scope.dart';
 import '../../domain/entities/cliente_entity.dart';
 import '../../domain/entities/fazenda_entity.dart';
 import '../../domain/entities/talhao_entity.dart';
 
 class ClientsLocalDatasource {
-  ClientsLocalDatasource(this._database);
+  ClientsLocalDatasource(this._database, {String? userId})
+      : _scope = LocalUserScope(userId);
 
   final AppDatabase _database;
+  final LocalUserScope _scope;
   final _uuid = const Uuid();
 
   ClienteEntity _clienteToEntity(Cliente row) => ClienteEntity(
@@ -50,17 +53,28 @@ class ClientsLocalDatasource {
       );
 
   Future<List<ClienteEntity>> getAll({bool includeInactive = false}) async {
+    final userId = _scope.userId;
     final query = _database.select(_database.clientes);
     if (!includeInactive) {
-      query.where((row) => row.ativo.equals(true) & row.deletedAt.isNull());
+      query.where(
+        (row) =>
+            row.userId.equals(userId) &
+            row.ativo.equals(true) &
+            row.deletedAt.isNull(),
+      );
+    } else {
+      query.where((row) => row.userId.equals(userId));
     }
     final rows = await query.get();
     return rows.map(_clienteToEntity).toList();
   }
 
   Future<ClienteEntity?> getById(String uid) async {
+    final userId = _scope.userId;
     final row = await (_database.select(_database.clientes)
-          ..where((table) => table.uid.equals(uid)))
+          ..where(
+            (table) => table.uid.equals(uid) & table.userId.equals(userId),
+          ))
         .getSingleOrNull();
     return row == null ? null : _clienteToEntity(row);
   }
@@ -90,9 +104,12 @@ class ClientsLocalDatasource {
   }
 
   Future<void> delete(String uid) async {
+    final userId = _scope.userId;
     final now = DateTime.now();
     await (_database.update(_database.clientes)
-          ..where((table) => table.uid.equals(uid)))
+          ..where(
+            (table) => table.uid.equals(uid) & table.userId.equals(userId),
+          ))
         .write(
       ClientesCompanion(
         ativo: const Value(false),
@@ -104,9 +121,11 @@ class ClientsLocalDatasource {
   }
 
   Future<List<FazendaEntity>> getFazendas(String clienteUid) async {
+    final userId = _scope.userId;
     final rows = await (_database.select(_database.fazendas)
           ..where(
             (table) =>
+                table.userId.equals(userId) &
                 table.clienteId.equals(clienteUid) &
                 table.ativo.equals(true) &
                 table.deletedAt.isNull(),
@@ -132,8 +151,11 @@ class ClientsLocalDatasource {
   }
 
   Future<FazendaEntity> updateFazenda(FazendaEntity fazenda) async {
+    final userId = _scope.userId;
     final exists = await (_database.select(_database.fazendas)
-          ..where((table) => table.uid.equals(fazenda.id)))
+          ..where(
+            (table) => table.uid.equals(fazenda.id) & table.userId.equals(userId),
+          ))
         .getSingleOrNull();
     if (exists == null) {
       throw StateError('Fazenda não encontrada: ${fazenda.id}');
@@ -146,9 +168,12 @@ class ClientsLocalDatasource {
   }
 
   Future<void> deleteFazenda(String uid) async {
+    final userId = _scope.userId;
     final now = DateTime.now();
     await (_database.update(_database.fazendas)
-          ..where((table) => table.uid.equals(uid)))
+          ..where(
+            (table) => table.uid.equals(uid) & table.userId.equals(userId),
+          ))
         .write(
       FazendasCompanion(
         ativo: const Value(false),
@@ -160,9 +185,11 @@ class ClientsLocalDatasource {
   }
 
   Future<List<TalhaoEntity>> getTalhoes(String fazendaUid) async {
+    final userId = _scope.userId;
     final rows = await (_database.select(_database.talhoes)
           ..where(
             (table) =>
+                table.userId.equals(userId) &
                 table.fazendaId.equals(fazendaUid) &
                 table.ativo.equals(true) &
                 table.deletedAt.isNull(),
@@ -172,8 +199,13 @@ class ClientsLocalDatasource {
   }
 
   Future<TalhaoEntity> createTalhao(TalhaoEntity talhao) async {
+    final userId = _scope.userId;
     final fazenda = await (_database.select(_database.fazendas)
-          ..where((table) => table.uid.equals(talhao.fazendaId)))
+          ..where(
+            (table) =>
+                table.uid.equals(talhao.fazendaId) &
+                table.userId.equals(userId),
+          ))
         .getSingleOrNull();
     if (fazenda == null) {
       throw StateError('Fazenda não encontrada: ${talhao.fazendaId}');
@@ -189,8 +221,11 @@ class ClientsLocalDatasource {
   }
 
   Future<TalhaoEntity> updateTalhao(TalhaoEntity talhao) async {
+    final userId = _scope.userId;
     final exists = await (_database.select(_database.talhoes)
-          ..where((table) => table.uid.equals(talhao.id)))
+          ..where(
+            (table) => table.uid.equals(talhao.id) & table.userId.equals(userId),
+          ))
         .getSingleOrNull();
     if (exists == null) {
       throw StateError('Talhão não encontrado: ${talhao.id}');
@@ -202,9 +237,12 @@ class ClientsLocalDatasource {
   }
 
   Future<void> deleteTalhao(String uid) async {
+    final userId = _scope.userId;
     final now = DateTime.now();
     await (_database.update(_database.talhoes)
-          ..where((table) => table.uid.equals(uid)))
+          ..where(
+            (table) => table.uid.equals(uid) & table.userId.equals(userId),
+          ))
         .write(
       TalhoesCompanion(
         ativo: const Value(false),
@@ -218,6 +256,7 @@ class ClientsLocalDatasource {
   ClientesCompanion _clienteCompanion(ClienteEntity entity) =>
       ClientesCompanion.insert(
         uid: entity.id,
+        userId: Value(_scope.userId),
         nome: entity.nome,
         cpfCnpj: Value(entity.cpfCnpj),
         telefone: Value(entity.telefone),
@@ -232,6 +271,7 @@ class ClientsLocalDatasource {
   FazendasCompanion _fazendaCompanion(FazendaEntity entity) =>
       FazendasCompanion.insert(
         uid: entity.id,
+        userId: Value(_scope.userId),
         clienteId: entity.clienteId,
         nome: entity.nome,
         areaHa: entity.areaHa,
@@ -247,6 +287,7 @@ class ClientsLocalDatasource {
   TalhoesCompanion _talhaoCompanion(TalhaoEntity entity) =>
       TalhoesCompanion.insert(
         uid: entity.id,
+        userId: Value(_scope.userId),
         fazendaId: entity.fazendaId,
         nome: entity.nome,
         areaHa: entity.areaHa,

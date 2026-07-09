@@ -111,7 +111,7 @@ class ProdutoListTile extends StatelessWidget {
                 GestureDetector(
                   onTap: onEdit,
                   child: Padding(
-                    padding: EdgeInsets.all(4),
+                    padding: const EdgeInsets.all(4),
                     child: PhosphorIcon(
                       PhosphorIconsRegular.pencilSimple,
                       size: 18,

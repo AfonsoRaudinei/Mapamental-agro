@@ -2,14 +2,17 @@ import 'package:drift/drift.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../../core/database/app_database.dart';
+import '../../../../core/database/local_user_scope.dart';
 import '../../domain/entities/produto_catalogo_entity.dart';
 
 /// Datasource local Drift para Catálogo de Produtos.
 /// Inclui seed com ~30 produtos pré-cadastrados.
 class CatalogLocalDatasource {
-  CatalogLocalDatasource(this._database);
+  CatalogLocalDatasource(this._database, {String? userId})
+      : _scope = LocalUserScope(userId);
 
   final AppDatabase _database;
+  final LocalUserScope _scope;
   final _uuid = const Uuid();
 
   // ── Mapeamento ─────────────────────────────────────────────────────────────
@@ -34,6 +37,7 @@ class CatalogLocalDatasource {
   CatalogoProdutosCompanion _toCompanion(ProdutoCatalogoEntity e) =>
       CatalogoProdutosCompanion.insert(
         uid: e.id,
+        userId: e.isSeed ? const Value.absent() : Value(_scope.userId),
         nomeComercial: e.nomeComercial,
         ingredienteAtivo: Value(e.ingredienteAtivo),
         categoria: e.categoria,
@@ -54,9 +58,27 @@ class CatalogLocalDatasource {
   Future<List<ProdutoCatalogoEntity>> getAll({
     bool includeInactive = false,
   }) async {
+    final userId = _scope.optionalUserId;
     final query = _database.select(_database.catalogoProdutos);
-    if (!includeInactive) {
-      query.where((row) => row.ativo.equals(true) & row.deletedAt.isNull());
+    if (userId != null) {
+      if (!includeInactive) {
+        query.where(
+          (row) =>
+              (row.isSeed.equals(true) | row.userId.equals(userId)) &
+              row.ativo.equals(true) &
+              row.deletedAt.isNull(),
+        );
+      } else {
+        query.where(
+          (row) => row.isSeed.equals(true) | row.userId.equals(userId),
+        );
+      }
+    } else if (!includeInactive) {
+      query.where(
+        (row) => row.isSeed.equals(true) & row.ativo.equals(true) & row.deletedAt.isNull(),
+      );
+    } else {
+      query.where((row) => row.isSeed.equals(true));
     }
     return (await query.get()).map(_toEntity).toList();
   }
@@ -77,8 +99,14 @@ class CatalogLocalDatasource {
   }
 
   Future<ProdutoCatalogoEntity?> getById(String uid) async {
+    final userId = _scope.optionalUserId;
     final m = await (_database.select(_database.catalogoProdutos)
-          ..where((row) => row.uid.equals(uid)))
+          ..where((row) {
+            final owned = userId == null
+                ? row.isSeed.equals(true)
+                : row.isSeed.equals(true) | row.userId.equals(userId);
+            return row.uid.equals(uid) & owned;
+          }))
         .getSingleOrNull();
     if (m == null) return null;
     return _toEntity(m);
@@ -108,6 +136,8 @@ class CatalogLocalDatasource {
   }
 
   Future<void> toggleAtivo(String uid) async {
+    final existing = await getById(uid);
+    if (existing == null || existing.isSeed) return;
     final m = await (_database.select(_database.catalogoProdutos)
           ..where((row) => row.uid.equals(uid)))
         .getSingleOrNull();

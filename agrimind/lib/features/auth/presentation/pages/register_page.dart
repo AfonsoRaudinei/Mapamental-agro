@@ -67,7 +67,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
           icon: Icon(Icons.arrow_back_ios, color: context.appTextPrimary),
           onPressed: () => context.pop(),
         ),
-        title: Text('Criar conta', style: AppTypography.h3),
+        title: const Text('Criar conta', style: AppTypography.h3),
       ),
       body: SafeArea(
         child: SingleChildScrollView(

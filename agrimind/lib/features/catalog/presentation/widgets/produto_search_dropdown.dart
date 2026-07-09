@@ -29,6 +29,7 @@ class ProdutoSearchDropdown extends ConsumerStatefulWidget {
     this.onCadastrarNovo,
     this.hintText = 'Buscar produto...',
     this.initialValue,
+    this.controller,
   });
 
   final ValueChanged<ProdutoCatalogoEntity> onSelected;
@@ -36,6 +37,7 @@ class ProdutoSearchDropdown extends ConsumerStatefulWidget {
   final ValueChanged<String>? onCadastrarNovo;
   final String hintText;
   final ProdutoCatalogoEntity? initialValue;
+  final TextEditingController? controller;
 
   @override
   ConsumerState<ProdutoSearchDropdown> createState() =>
@@ -43,10 +45,11 @@ class ProdutoSearchDropdown extends ConsumerStatefulWidget {
 }
 
 class _ProdutoSearchDropdownState extends ConsumerState<ProdutoSearchDropdown> {
-  final _controller = TextEditingController();
+  late final TextEditingController _controller;
   final _focusNode = FocusNode();
   bool _showDropdown = false;
   String _query = '';
+  bool _ownsController = false;
 
   // Debounce simples com delay
   DateTime? _lastType;
@@ -54,7 +57,13 @@ class _ProdutoSearchDropdownState extends ConsumerState<ProdutoSearchDropdown> {
   @override
   void initState() {
     super.initState();
-    if (widget.initialValue != null) {
+    if (widget.controller != null) {
+      _controller = widget.controller!;
+    } else {
+      _controller = TextEditingController();
+      _ownsController = true;
+    }
+    if (widget.initialValue != null && _controller.text.isEmpty) {
       _controller.text = widget.initialValue!.nomeComercial;
     }
     _focusNode.addListener(() {
@@ -68,7 +77,9 @@ class _ProdutoSearchDropdownState extends ConsumerState<ProdutoSearchDropdown> {
 
   @override
   void dispose() {
-    _controller.dispose();
+    if (_ownsController) {
+      _controller.dispose();
+    }
     _focusNode.dispose();
     super.dispose();
   }
@@ -119,7 +130,7 @@ class _ProdutoSearchDropdownState extends ConsumerState<ProdutoSearchDropdown> {
           child: Row(
             children: [
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: AppSpacing.sm),
+                padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
                 child: PhosphorIcon(
                   PhosphorIconsRegular.magnifyingGlass,
                   size: 18,

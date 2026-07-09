@@ -4,10 +4,15 @@ class AppConstants {
 
   // ── PUBLICAÇÃO / SUPORTE ──────────────────────────────────────────────────
   static const String appName = 'AgriMind';
-  static const String appVersion = '1.0.0';
   static const String supportEmail = 'suporte@cultivamind.com';
-  static const String privacyPolicyUrl = 'https://cultivamind.com/privacidade';
-  static const String termsUrl = 'https://cultivamind.com/termos';
+  static const String privacyPolicyUrl = String.fromEnvironment(
+    'PRIVACY_POLICY_URL',
+    defaultValue: 'https://cultivamind.com/privacidade',
+  );
+  static const String termsUrl = String.fromEnvironment(
+    'TERMS_URL',
+    defaultValue: 'https://cultivamind.com/termos',
+  );
 
   // ── LIMITES DE ENTRADA ────────────────────────────────────────────────────
   /// Máximo de dígitos em campos numéricos (Apple HIG)

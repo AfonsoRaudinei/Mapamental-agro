@@ -93,7 +93,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     color: AppColors.primary,
                     borderRadius: BorderRadius.circular(16),
                   ),
-                  child: Icon(Icons.eco_rounded,
+                  child: const Icon(Icons.eco_rounded,
                       color: Colors.white, size: 32),
                 ),
                 const SizedBox(height: AppSpacing.lg),
@@ -128,7 +128,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   alignment: Alignment.centerRight,
                   child: TextButton(
                     onPressed: () => context.push(AppRoutes.recover),
-                    child: Text(
+                    child: const Text(
                       'Esqueceu a senha?',
                       style: TextStyle(color: AppColors.primary, fontSize: 14),
                     ),
@@ -145,7 +145,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   children: [
                     Expanded(child: Divider(color: context.appBorder)),
                     Padding(
-                      padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: Text(
                         'ou continue com',
                         style: TextStyle(

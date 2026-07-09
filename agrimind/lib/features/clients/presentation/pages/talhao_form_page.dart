@@ -142,7 +142,7 @@ class _TalhaoFormPageState extends ConsumerState<TalhaoFormPage> {
               onPressed: _loading ? null : _salvar,
               child: _loading
                   ? const CupertinoActivityIndicator()
-                  : Text(
+                  : const Text(
                       'Salvar',
                       style: TextStyle(
                         color: AppColors.primary,

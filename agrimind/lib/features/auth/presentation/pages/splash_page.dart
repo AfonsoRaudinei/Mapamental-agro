@@ -84,7 +84,7 @@ class _SplashPageState extends ConsumerState<SplashPage>
                       ),
                     ],
                   ),
-                  child: Icon(
+                  child: const Icon(
                     Icons.eco_rounded,
                     color: Colors.white,
                     size: 48,

@@ -87,7 +87,7 @@ class _RecoverPasswordPageState extends ConsumerState<RecoverPasswordPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const SizedBox(height: AppSpacing.md),
-          Text('Recuperar senha', style: AppTypography.h2),
+          const Text('Recuperar senha', style: AppTypography.h2),
           const SizedBox(height: AppSpacing.xs),
           Text(
             'Digite seu e-mail para receber um link de recuperação.',
@@ -118,7 +118,7 @@ class _RecoverPasswordPageState extends ConsumerState<RecoverPasswordPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        Icon(Icons.mark_email_read_outlined,
+        const Icon(Icons.mark_email_read_outlined,
             size: 72, color: AppColors.success),
         const SizedBox(height: AppSpacing.lg),
         const Text('E-mail enviado!',

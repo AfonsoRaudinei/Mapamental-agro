@@ -24,6 +24,11 @@ class LegalPage extends StatelessWidget {
   String get _url =>
       _isPrivacy ? AppConstants.privacyPolicyUrl : AppConstants.termsUrl;
 
+  static bool isValidLegalUrl(String url) {
+    final uri = Uri.tryParse(url);
+    return uri != null && uri.hasScheme && uri.host.isNotEmpty;
+  }
+
   List<_LegalBlock> get _blocks => _isPrivacy
       ? const [
           _LegalBlock(
@@ -62,9 +67,32 @@ class LegalPage extends StatelessWidget {
           ),
         ];
 
-  Future<void> _openUrl() async {
+  Future<void> _openUrl(BuildContext context) async {
+    if (!isValidLegalUrl(_url)) {
+      if (!context.mounted) return;
+      _showLaunchError(context, 'URL legal inválida.');
+      return;
+    }
     final uri = Uri.parse(_url);
-    await launchUrl(uri, mode: LaunchMode.externalApplication);
+    final canLaunch = await canLaunchUrl(uri);
+    if (!context.mounted) return;
+    if (!canLaunch) {
+      _showLaunchError(
+        context,
+        'Não foi possível abrir $_url. Use o conteúdo acima ou publique docs/legal/.',
+      );
+      return;
+    }
+    final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+    if (!launched && context.mounted) {
+      _showLaunchError(context, 'Falha ao abrir a versão online.');
+    }
+  }
+
+  void _showLaunchError(BuildContext context, String message) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(message)),
+    );
   }
 
   @override
@@ -77,7 +105,7 @@ class LegalPage extends StatelessWidget {
         leading: CupertinoButton(
           padding: EdgeInsets.zero,
           onPressed: () => context.pop(),
-          child: PhosphorIcon(
+          child: const PhosphorIcon(
             PhosphorIconsRegular.caretLeft,
             size: 22,
             color: AppColors.primary,
@@ -100,9 +128,16 @@ class LegalPage extends StatelessWidget {
             const SizedBox(height: AppSpacing.lg),
           ],
           OutlinedButton.icon(
-            onPressed: _openUrl,
+            onPressed: () => _openUrl(context),
             icon: const PhosphorIcon(PhosphorIconsRegular.arrowSquareOut),
             label: const Text('Abrir versão online'),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            _url,
+            style: AppTypography.caption.copyWith(
+              color: context.appTextSecondary,
+            ),
           ),
         ],
       ),

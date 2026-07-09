@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../../core/utils/extensions.dart';
 
 /// Badge colorido de categoria de produto.
 class CategoriaBadge extends StatelessWidget {

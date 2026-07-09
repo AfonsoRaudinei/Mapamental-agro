@@ -3,7 +3,6 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/constants/app_constants.dart';
-import '../../../../core/constants/app_typography.dart';
 import '../../../../core/constants/categoria_referencia.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../domain/entities/estadio_entity.dart';
@@ -19,6 +18,7 @@ class StageReferencesButton extends ConsumerWidget {
     required this.estadio,
     required this.plano,
     required this.onAddProdutoFromReferencia,
+    this.compact = false,
   });
 
   final EstadioEntity estadio;
@@ -29,6 +29,9 @@ class StageReferencesButton extends ConsumerWidget {
     required String produtoCategoria,
     required double areaHa,
   }) onAddProdutoFromReferencia;
+
+  /// Versão compacta para o header colapsado do estádio (ao lado do badge V5).
+  final bool compact;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -46,13 +49,14 @@ class StageReferencesButton extends ConsumerWidget {
         return _ReferencesIconButton(
           count: count,
           enabled: hasContent,
+          compact: compact,
           onTap: hasContent
               ? () => _openReferences(context, ref, available)
               : null,
         );
       },
-      loading: () => const _ReferencesIconButton(count: 0, enabled: false),
-      error: (_, __) => const _ReferencesIconButton(count: 0, enabled: false),
+      loading: () => _ReferencesIconButton(count: 0, enabled: false, compact: compact),
+      error: (_, __) => _ReferencesIconButton(count: 0, enabled: false, compact: compact),
     );
   }
 
@@ -98,72 +102,48 @@ class _ReferencesIconButton extends StatelessWidget {
   const _ReferencesIconButton({
     required this.count,
     required this.enabled,
+    this.compact = false,
     this.onTap,
   });
 
   final int count;
   final bool enabled;
+  final bool compact;
   final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final size = compact ? 32.0 : AppConstants.minTouchTarget;
+    final iconSize = compact ? 16.0 : 20.0;
     return Opacity(
       opacity: enabled ? 1 : 0.4,
       child: SizedBox(
-        width: AppConstants.minTouchTarget,
-        height: AppConstants.minTouchTarget,
-        child: Stack(
-          clipBehavior: Clip.none,
-          children: [
-            Material(
-              color: context.appSurface,
-              shape: const CircleBorder(),
-              child: InkWell(
-                onTap: onTap,
-                customBorder: const CircleBorder(),
-                child: Container(
-                  width: AppConstants.minTouchTarget,
-                  height: AppConstants.minTouchTarget,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    border: Border.all(color: context.appBorder),
-                  ),
-                  child: Center(
-                    child: PhosphorIcon(
-                      PhosphorIconsRegular.bookOpen,
-                      size: 20,
-                      color: enabled
-                          ? context.appTextPrimary
-                          : context.appTextDisabled,
-                    ),
-                  ),
+        width: size,
+        height: size,
+        child: Material(
+          color: context.appSurface,
+          shape: const CircleBorder(),
+          child: InkWell(
+            onTap: onTap,
+            customBorder: const CircleBorder(),
+            child: Container(
+              width: size,
+              height: size,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                border: Border.all(color: context.appBorder),
+              ),
+              child: Center(
+                child: PhosphorIcon(
+                  PhosphorIconsRegular.bookOpen,
+                  size: iconSize,
+                  color: enabled
+                      ? context.appTextPrimary
+                      : context.appTextDisabled,
                 ),
               ),
             ),
-            if (count > 0)
-              Positioned(
-                top: 2,
-                right: 2,
-                child: Container(
-                  constraints: const BoxConstraints(minWidth: 16, minHeight: 16),
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1428A0),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    '$count',
-                    textAlign: TextAlign.center,
-                    style: AppTypography.label.copyWith(
-                      color: Colors.white,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      height: 1.2,
-                    ),
-                  ),
-                ),
-              ),
-          ],
+          ),
         ),
       ),
     );

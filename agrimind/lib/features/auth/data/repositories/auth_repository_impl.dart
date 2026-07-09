@@ -1,5 +1,6 @@
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../../../../core/database/database_service.dart';
 import '../../domain/entities/user_entity.dart';
 import '../../domain/repositories/auth_repository.dart';
 import '../datasources/auth_remote_datasource.dart';
@@ -60,10 +61,16 @@ class AuthRepositoryImpl implements AuthRepository {
       _datasource.recoverPassword(email);
 
   @override
-  Future<void> logout() => _datasource.logout();
+  Future<void> logout() async {
+    await _datasource.logout();
+    await DatabaseService.clearUserSession();
+  }
 
   @override
-  Future<void> deleteAccount() async => _datasource.deleteAccount();
+  Future<void> deleteAccount() async {
+    await _datasource.deleteAccount();
+    await DatabaseService.clearUserSession();
+  }
 
   UserEntity _mapUser(User user) {
     final now = DateTime.now();
