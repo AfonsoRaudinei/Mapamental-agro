@@ -47,15 +47,19 @@ flutter test
 
 ```sh
 cd "/Users/raudineisilvapereira/dev/Cultiva Mind"
+git pull origin cursor/macbook-refs-integracao-037a
 bash agrimind/scripts/build-ipa.sh 135
 ```
+
+**Saída esperada:** `ipa/Agrimind_v135.ipa` (mesmo padrão v131–v134).
 
 **Alternativa manual:**
 
 ```sh
 cd agrimind
-flutter build ipa --release --build-number=135
-cp build/ios/ipa/*.ipa ../builds/agrimind-135.ipa
+flutter build ipa --release --build-number=135 \
+  --export-options-plist=../ipa/ExportOptions.plist
+cp build/ios/ipa/agrimind.ipa ../ipa/Agrimind_v135.ipa
 ```
 
 Se falhar signing: abra `agrimind/ios/Runner.xcworkspace` no Xcode → Runner → Signing & Capabilities → selecione Team.
@@ -74,8 +78,8 @@ git push origin cursor/macbook-refs-integracao-037a
 
 ## Entregável
 
-- IPA em `builds/agrimind-135.ipa`
+- IPA em `ipa/Agrimind_v135.ipa`
 - Commit pushado
-- Confirme: `flutter build ipa` OK + build number 135 no Xcode/archive
+- Confirme: `ls -lh ipa/Agrimind_v135.ipa`
 
 --- FIM ---
