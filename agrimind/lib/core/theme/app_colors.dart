@@ -13,6 +13,16 @@ abstract final class AppColors {
   static const onSurfaceMuted = Color(0xFF9CA3AF);
   static const onSurfaceDim = Color(0xFF6B7280);
   static const error = Color(0xFFEF4444);
+  static const gold = Color(0xFFD4AF37);
+  static const goldMuted = Color(0xFFCA8A04);
+  static const goldDark = Color(0xFF92670A);
+  static const goldSurface = Color(0xFF2A2210);
+
+  /// Acentos por categoria de referência.
+  static const accentDisease = Color(0xFFEF4444);
+  static const accentInsect = Color(0xFF3B82F6);
+  static const accentNutrition = Color(0xFFA855F7);
+  static const accentPhysiology = Color(0xFF22C55E);
 
   /// ColorScheme M3 completo — evita cards brancos por tokens de superfície ausentes.
   static ColorScheme get darkScheme => const ColorScheme.dark(
