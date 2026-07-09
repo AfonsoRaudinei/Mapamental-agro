@@ -4,33 +4,45 @@ Guia para puxar widgets base do repo e corrigir telas locais de laboratório e a
 
 ## 1. Atualizar repo
 
+### Git — branches divergentes (erro no pull)
+
+Se aparecer `fatal: Need to specify how to reconcile divergent branches`:
+
 ```sh
-cd ~/Projects/Mapamental-agro   # ajuste o caminho
-git pull origin cursor/macbook-lab-dark-fixes-7428   # ou main após merge
-cd agrimind
+cd ~/Cultiva\ Mind          # raiz do repo (onde está a pasta agrimind/)
+git fetch origin cursor/macbook-lab-dark-fixes-7428
+git merge origin/cursor/macbook-lab-dark-fixes-7428 --no-edit
+```
+
+Se houver conflitos, resolva e depois:
+```sh
+git add -A && git commit -m "merge: integra correções modo black lab"
+```
+
+Verificar integração:
+```sh
+bash scripts/check-integration.sh
 ```
 
 ### Flutter no Mac (obrigatório)
 
-Se `flutter: command not found`:
+Seu Flutter está em `~/dev/flutter` (confirmado pelo `which flutter`):
 
 ```sh
-# Verifique onde está o Flutter:
-ls ~/flutter/bin/flutter 2>/dev/null
-ls .fvm/flutter_sdk/bin/flutter 2>/dev/null
-which flutter 2>/dev/null
-
-# Adicione ao PATH (escolha o que existir no seu Mac):
-export PATH="$HOME/flutter/bin:$PATH"
-# ou FVM:
-export PATH="$PWD/.fvm/flutter_sdk/bin:$PATH"
-# ou Homebrew:
-export PATH="/opt/homebrew/bin:$PATH"
-
+export PATH="$HOME/dev/flutter/bin:$PATH"
 flutter doctor
 ```
 
-Validação automática (detecta Flutter sozinho):
+**Não cole linhas com `#`** no terminal — são só comentários.
+
+Validação (rode na **raiz** do repo, não dentro de agrimind/):
+
+```sh
+cd ~/Cultiva\ Mind
+bash scripts/validate-ui.sh
+```
+
+Ou, se já estiver em agrimind/:
 
 ```sh
 bash ../scripts/validate-ui.sh

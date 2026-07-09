@@ -18,6 +18,7 @@ resolve_flutter() {
     "$ROOT/.fvm/flutter_sdk/bin/flutter"
     "$HOME/fvm/default/bin/flutter"
     "$HOME/flutter/bin/flutter"
+    "$HOME/dev/flutter/bin/flutter"
     "$HOME/development/flutter/bin/flutter"
     "$HOME/Developer/flutter/bin/flutter"
     "/opt/homebrew/bin/flutter"
@@ -43,11 +44,9 @@ if [[ -z "${FLUTTER:-}" ]]; then
 No MacBook, instale ou exponha o Flutter e tente de novo:
 
   # Opção A — já tem Flutter, só falta no PATH (comum no Mac):
+  export PATH="$HOME/dev/flutter/bin:$PATH"
+  # ou:
   export PATH="$HOME/flutter/bin:$PATH"
-  # ou, se instalou via Homebrew:
-  export PATH="/opt/homebrew/bin:$PATH"
-  # ou, se usa FVM no projeto:
-  export PATH="$PWD/.fvm/flutter_sdk/bin:$PATH"
 
   # Opção B — instalar Flutter (primeira vez):
   git clone https://github.com/flutter/flutter.git -b stable "$HOME/flutter"
