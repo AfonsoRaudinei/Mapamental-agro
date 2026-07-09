@@ -1,7 +1,5 @@
 import '../domain/reference_models.dart';
 
-/// Dados da Circular Técnica 219 (Embrapa Soja 2024/25) e Fundação MS 2024/25.
-/// Base para popular [ReferenceStageEntry] — extensível para insetos/nutrientes depois.
 abstract final class CircularFungicidasData {
   static const sources = [
     'Embrapa Soja CT-219 (safra 2024/25)',
@@ -16,7 +14,7 @@ abstract final class CircularFungicidasData {
         'Damping-off',
         'Mancha-parda',
         'Míldio',
-        'Crestamento Bacteriano',
+        'Crestamento bacteriano',
       ],
       management:
           'Sem aplicação foliar recomendada em condições normais. Manejo via tratamento de sementes.',
@@ -25,18 +23,18 @@ abstract final class CircularFungicidasData {
     ),
     ReferenceStageEntry(
       stageCode: 'V4',
-      stageName: '4º Nó',
+      stageName: '4º nó',
       diseases: [
         'Mancha-alvo',
         'Oídio',
-        'Crestamento Bacteriano',
+        'Crestamento bacteriano',
         'Míldio',
       ],
       primaryDisease: 'Mancha-alvo',
       management:
-          'Avaliar primeira aplicação se Mancha-alvo + Oídio presentes.',
+          'Avaliar primeira aplicação se Mancha-alvo + Oídio estiverem presentes.',
       incidences: {
-        'Crestamento Bacteriano': '12%',
+        'Crestamento bacteriano': '12%',
         'Míldio': '15%',
       },
       recommendations: [
@@ -81,20 +79,20 @@ abstract final class CircularFungicidasData {
     ),
     ReferenceStageEntry(
       stageCode: 'V5',
-      stageName: '5º Nó',
+      stageName: '5º nó',
       diseases: [
         'Antracnose',
-        'Ferrugem Asiática',
+        'Ferrugem asiática',
         'Mancha-alvo',
-        'Crestamento Bacteriano',
+        'Crestamento bacteriano',
         'Míldio',
       ],
-      primaryDisease: 'Ferrugem Asiática',
+      primaryDisease: 'Ferrugem asiática',
       management:
-          'Primeira aplicação preventiva se pressão de Ferrugem + Mancha-alvo confirmada na região.',
+          'Primeira aplicação preventiva se Ferrugem + Mancha-alvo forem confirmadas na região.',
       incidences: {
         'Antracnose': '~40%',
-        'Crestamento Bacteriano': '18%',
+        'Crestamento bacteriano': '18%',
         'Míldio': '15%',
       },
       recommendations: [
@@ -110,7 +108,8 @@ abstract final class CircularFungicidasData {
         FungicidaRecommendation(
           rank: 2,
           product: 'Fox Ultra + Milcozeb',
-          activeIngredient: 'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
           controlPercent: 75,
           productivityKgHa: 4028,
           fitotoxPercent: 2.7,
@@ -148,21 +147,22 @@ abstract final class CircularFungicidasData {
     ),
     ReferenceStageEntry(
       stageCode: 'V6',
-      stageName: '6º Nó (pré-florescimento)',
+      stageName: '6º nó',
       diseases: [
-        'Ferrugem Asiática',
+        'Ferrugem asiática',
         'Oídio',
         'Mancha-alvo',
-        'Pústula Bacteriana',
+        'Pústula bacteriana',
       ],
-      primaryDisease: 'Ferrugem Asiática',
+      primaryDisease: 'Ferrugem asiática',
       management:
           'Aplicação preventiva de ferrugem se vazio sanitário tardio ou cultivar suscetível.',
       recommendations: [
         FungicidaRecommendation(
           rank: 1,
           product: 'Fox Ultra + Milcozeb',
-          activeIngredient: 'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
           controlPercent: 75,
           productivityKgHa: 4028,
           fitotoxPercent: 2.7,
@@ -208,19 +208,19 @@ abstract final class CircularFungicidasData {
     ),
     ReferenceStageEntry(
       stageCode: 'R1',
-      stageName: 'Início da Floração',
+      stageName: 'Início da floração',
       diseases: [
-        'Ferrugem Asiática',
+        'Ferrugem asiática',
         'Antracnose',
         'Oídio',
         'Míldio',
-        'Crestamento Bacteriano',
+        'Crestamento bacteriano',
       ],
-      primaryDisease: 'Ferrugem Asiática',
+      primaryDisease: 'Ferrugem asiática',
       management:
           'Aplicação obrigatória se ferrugem confirmada na região. Ponto de decisão crítico.',
       incidences: {
-        'Ferrugem Asiática': '5–10%',
+        'Ferrugem asiática': '5–10%',
         'Antracnose': '50%',
         'Oídio': '20,25%',
       },
@@ -228,7 +228,8 @@ abstract final class CircularFungicidasData {
         FungicidaRecommendation(
           rank: 1,
           product: 'Fox Ultra + Milcozeb',
-          activeIngredient: 'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
           controlPercent: 75,
           productivityKgHa: 4028,
           fitotoxPercent: 2.7,
@@ -258,94 +259,39 @@ abstract final class CircularFungicidasData {
           rank: 4,
           product: 'Programa FRAC',
           activeIngredient: 'IDM + IQe + multissítio',
-          controlPercent: 70,
-          productivityKgHa: 3884,
-          fitotoxPercent: 3.6,
+          controlPercent: 71,
           source: 'Embrapa CT-219',
-          notes: 'Rotação ativa recomendada',
+        ),
+        FungicidaRecommendation(
+          rank: 5,
+          product: 'Protect Max',
+          activeIngredient: 'Mancozebe + Azoxistrobina',
+          controlPercent: 70,
+          source: 'Embrapa CT-219',
         ),
       ],
     ),
     ReferenceStageEntry(
       stageCode: 'R3',
-      stageName: 'Início de Vagem',
+      stageName: 'Vagens em formação',
       diseases: [
-        'Ferrugem Asiática',
-        'Mofo Branco',
-        'Antracnose',
+        'Ferrugem asiática',
         'Mancha-alvo',
+        'Antracnose',
       ],
-      primaryDisease: 'Ferrugem Asiática',
+      primaryDisease: 'Ferrugem asiática',
       management:
-          'Período crítico. Terceira aplicação de fungicida para ferrugem.',
-      incidences: {
-        'Ferrugem Asiática': '30–35%',
-        'Mofo Branco': '28%',
-        'Antracnose': '60%',
-      },
-      recommendations: [
-        FungicidaRecommendation(
-          rank: 1,
-          product: 'Tridium',
-          activeIngredient: 'Azoxistrobina + Tebuconazol + Mancozebe',
-          controlPercent: 71,
-          productivityKgHa: 3875,
-          source: 'Embrapa CT-219',
-        ),
-        FungicidaRecommendation(
-          rank: 2,
-          product: 'Programa FRAC',
-          activeIngredient: 'IDM + IQe + multissítio',
-          controlPercent: 70,
-          productivityKgHa: 3884,
-          source: 'Embrapa CT-219',
-          notes: '3ª aplicação — rotação',
-        ),
-        FungicidaRecommendation(
-          rank: 3,
-          product: 'Proteus',
-          activeIngredient: 'Clorotalonil + Tebuconazol',
-          controlPercent: 69,
-          productivityKgHa: 3904,
-          source: 'Embrapa CT-219',
-        ),
-        FungicidaRecommendation(
-          rank: 4,
-          product: 'Cortina Gold',
-          activeIngredient: 'Clorotalonil + Protioconazol',
-          controlPercent: 68,
-          productivityKgHa: 3855,
-          source: 'Embrapa CT-219',
-        ),
-      ],
-    ),
-    ReferenceStageEntry(
-      stageCode: 'R5',
-      stageName: 'Enchimento de Grãos',
-      diseases: [
-        'Ferrugem Asiática',
-        'DFCs (Septoria + Cercospora)',
-        'Oídio',
-        'Mancha-parda',
-      ],
-      primaryDisease: 'Ferrugem Asiática',
-      management:
-          'Estádio mais crítico para Ferrugem. Última janela eficaz de aplicação.',
-      incidences: {
-        'Ferrugem Asiática': '60–85%',
-        'DFCs': '40%',
-        'Oídio': '73,75%',
-      },
+          'Manter cobertura preventiva e rotação de mecanismos de ação.',
       recommendations: [
         FungicidaRecommendation(
           rank: 1,
           product: 'Fox Ultra + Milcozeb',
-          activeIngredient: 'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
           controlPercent: 75,
           productivityKgHa: 4028,
           fitotoxPercent: 2.7,
           source: 'Embrapa CT-219',
-          notes: 'Melhor custo-benefício',
         ),
         FungicidaRecommendation(
           rank: 2,
@@ -355,76 +301,58 @@ abstract final class CircularFungicidasData {
           productivityKgHa: 3808,
           fitotoxPercent: 4.8,
           source: 'Embrapa CT-219',
-          notes: 'Maior controle; maior fitotox.',
         ),
         FungicidaRecommendation(
           rank: 3,
-          product: 'Unizeb Gold',
-          activeIngredient: 'Mancozebe',
-          controlPercent: 60.0,
-          source: 'Fundação MS 2024/25',
-          notes: 'DFCs — Cercospora',
-        ),
-        FungicidaRecommendation(
-          rank: 4,
-          product: 'Manfil 800 WP',
-          activeIngredient: 'Mancozebe',
-          controlPercent: 59.5,
-          source: 'Fundação MS 2024/25',
-          notes: 'DFCs — Cercospora',
+          product: 'Almada',
+          activeIngredient: 'Fluxapiroxade + Protioconazol + Mancozebe',
+          controlPercent: 73,
+          productivityKgHa: 3949,
+          fitotoxPercent: 4.7,
+          source: 'Embrapa CT-219',
         ),
       ],
     ),
     ReferenceStageEntry(
-      stageCode: 'R6',
-      stageName: 'Grão Cheio',
+      stageCode: 'R5',
+      stageName: 'Grão enchendo',
       diseases: [
-        'DFCs',
-        'Ferrugem Asiática',
-        'Mancha-parda',
-        'Cercospora',
-        'Antracnose em vagem',
+        'Ferrugem asiática',
+        'Mancha-alvo',
       ],
-      primaryDisease: 'DFCs',
+      primaryDisease: 'Ferrugem asiática',
       management:
-          'DFCs dominantes. Avaliar custo-benefício de nova aplicação.',
-      incidences: {
-        'DFCs': '60–90%',
-        'Ferrugem Asiática': '95%',
-      },
+          'Última janela de proteção antes do enchimento completo de grãos.',
       recommendations: [
         FungicidaRecommendation(
           rank: 1,
-          product: 'Trizeb',
-          activeIngredient: 'Mancozebe',
-          controlPercent: 57.1,
-          source: 'Fundação MS 2024/25',
-          notes: '80,3 sc/ha — maior produtividade R6',
+          product: 'Fox Ultra + Milcozeb',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          controlPercent: 75,
+          productivityKgHa: 4028,
+          fitotoxPercent: 2.7,
+          source: 'Embrapa CT-219',
         ),
         FungicidaRecommendation(
           rank: 2,
-          product: 'Manfil 800 WP',
-          activeIngredient: 'Mancozebe',
-          controlPercent: 59.5,
-          source: 'Fundação MS 2024/25',
-          notes: '79,6 sc/ha',
+          product: 'Excalia Max + Tróia',
+          activeIngredient: 'Impirfluxam + Tebuconazol + Mancozebe',
+          controlPercent: 73,
+          productivityKgHa: 3926,
+          fitotoxPercent: 3.4,
+          source: 'Embrapa CT-219',
         ),
         FungicidaRecommendation(
           rank: 3,
-          product: 'Unizeb Gold',
-          activeIngredient: 'Mancozebe',
-          controlPercent: 60.0,
-          source: 'Fundação MS 2024/25',
+          product: 'Proteus',
+          activeIngredient: 'Clorotalonil + Tebuconazol',
+          controlPercent: 69,
+          productivityKgHa: 3904,
+          fitotoxPercent: 2.9,
+          source: 'Embrapa CT-219',
         ),
       ],
-    ),
-    ReferenceStageEntry(
-      stageCode: 'R8',
-      stageName: 'Maturação Plena',
-      diseases: ['Macrophomina', 'Mancha-parda'],
-      management: 'Sem aplicação recomendada. Colheita oportuna.',
-      incidences: {'Macrophomina': '85%', 'Mancha-parda': '85%'},
-      recommendations: [],
     ),
   ];
 }

@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:phosphor_flutter/phosphor_flutter.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../../core/widgets/dark_surface_card.dart';
 import '../../data/circular_fungicidas_data.dart';
 import '../../domain/reference_models.dart';
-import '../widgets/golden_book_icon.dart';
 
-/// Tela detalhe — Circular fungicidas (Embrapa CT-219).
+/// Tela detalhe da Circular fungicidas.
 class CircularFungicidasPage extends StatelessWidget {
   const CircularFungicidasPage({super.key});
 
@@ -15,22 +16,44 @@ class CircularFungicidasPage extends StatelessWidget {
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.surface,
+        foregroundColor: AppColors.gold,
+        elevation: 0,
+        titleSpacing: 0,
         title: Row(
           children: [
-            const GoldenBookIcon(size: 32, iconSize: 16),
-            const SizedBox(width: 10),
-            Text(
-              ReferenceKind.circularFungicidas.title,
-              style: const TextStyle(
+            Container(
+              width: 34,
+              height: 34,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: AppColors.goldSurface,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.goldDark.withValues(alpha: 0.5),
+                ),
+              ),
+              child: const PhosphorIcon(
+                PhosphorIconsRegular.bookOpen,
+                size: 18,
                 color: AppColors.gold,
-                fontWeight: FontWeight.w700,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Flexible(
+              child: Text(
+                'Circular fungicidas',
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: AppColors.gold,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
             ),
           ],
         ),
       ),
       body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 8, 16, 24),
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 24),
         children: [
           const _SourcesBanner(),
           const SizedBox(height: 16),
@@ -46,21 +69,13 @@ class CircularFungicidasPage extends StatelessWidget {
   }
 }
 
-/// Alias para compatibilidade com branch cloud.
-typedef CircularFungicidasScreen = CircularFungicidasPage;
-
 class _SourcesBanner extends StatelessWidget {
   const _SourcesBanner();
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return DarkSurfaceCard(
       padding: const EdgeInsets.all(14),
-      decoration: BoxDecoration(
-        color: AppColors.goldSurface,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppColors.goldDark.withValues(alpha: 0.4)),
-      ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -68,20 +83,20 @@ class _SourcesBanner extends StatelessWidget {
             'Fontes',
             style: TextStyle(
               color: AppColors.gold,
-              fontWeight: FontWeight.w700,
               fontSize: 13,
+              fontWeight: FontWeight.w700,
             ),
           ),
-          const SizedBox(height: 6),
+          const SizedBox(height: 8),
           ...CircularFungicidasData.sources.map(
-            (s) => Padding(
+            (source) => Padding(
               padding: const EdgeInsets.only(bottom: 2),
               child: Text(
-                '• $s',
+                '• $source',
                 style: const TextStyle(
                   color: AppColors.onSurfaceMuted,
                   fontSize: 12,
-                  height: 1.4,
+                  height: 1.35,
                 ),
               ),
             ),
@@ -107,14 +122,9 @@ class _StageSectionState extends State<_StageSection> {
   @override
   Widget build(BuildContext context) {
     final entry = widget.entry;
-    final hasProducts = entry.recommendations.isNotEmpty;
 
-    return DecoratedBox(
-      decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.border),
-      ),
+    return DarkSurfaceCard(
+      borderRadius: BorderRadius.circular(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
@@ -126,20 +136,23 @@ class _StageSectionState extends State<_StageSection> {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 6,
+                    ),
                     decoration: BoxDecoration(
                       color: AppColors.goldSurface,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: AppColors.goldDark.withValues(alpha: 0.4),
+                        color: AppColors.goldDark.withValues(alpha: 0.5),
                       ),
                     ),
                     child: Text(
                       entry.stageCode,
                       style: const TextStyle(
                         color: AppColors.gold,
-                        fontWeight: FontWeight.w800,
                         fontSize: 13,
+                        fontWeight: FontWeight.w800,
                       ),
                     ),
                   ),
@@ -152,7 +165,7 @@ class _StageSectionState extends State<_StageSection> {
                           entry.stageName,
                           style: const TextStyle(
                             color: AppColors.onSurface,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                         if (entry.primaryDisease != null) ...[
@@ -179,7 +192,7 @@ class _StageSectionState extends State<_StageSection> {
             ),
           ),
           if (_expanded) ...[
-            const Divider(height: 1),
+            const Divider(height: 1, color: AppColors.border),
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
@@ -193,8 +206,8 @@ class _StageSectionState extends State<_StageSection> {
                       runSpacing: 6,
                       children: entry.diseases
                           .map(
-                            (d) => Chip(
-                              label: Text(d),
+                            (disease) => Chip(
+                              label: Text(disease),
                               labelStyle: const TextStyle(fontSize: 11),
                               visualDensity: VisualDensity.compact,
                               backgroundColor: AppColors.surfaceElevated,
@@ -205,15 +218,19 @@ class _StageSectionState extends State<_StageSection> {
                     ),
                     const SizedBox(height: 12),
                   ],
-                  if (entry.incidences != null && entry.incidences!.isNotEmpty) ...[
+                  if (entry.incidences != null &&
+                      entry.incidences!.isNotEmpty) ...[
                     const _SectionLabel('Incidência'),
                     const SizedBox(height: 4),
                     ...entry.incidences!.entries.map(
-                      (e) => Text(
-                        '${e.key}: ${e.value}',
-                        style: const TextStyle(
-                          color: AppColors.onSurfaceMuted,
-                          fontSize: 12,
+                      (item) => Padding(
+                        padding: const EdgeInsets.only(bottom: 2),
+                        child: Text(
+                          '${item.key}: ${item.value}',
+                          style: const TextStyle(
+                            color: AppColors.onSurfaceMuted,
+                            fontSize: 12,
+                          ),
                         ),
                       ),
                     ),
@@ -229,12 +246,13 @@ class _StageSectionState extends State<_StageSection> {
                       height: 1.4,
                     ),
                   ),
-                  if (hasProducts) ...[
+                  if (entry.recommendations.isNotEmpty) ...[
                     const SizedBox(height: 16),
                     const _SectionLabel('Fungicidas recomendados'),
                     const SizedBox(height: 8),
                     ...entry.recommendations.map(
-                      (r) => _FungicidaTile(recommendation: r),
+                      (recommendation) =>
+                          _RecommendationTile(recommendation: recommendation),
                     ),
                   ],
                 ],
@@ -258,90 +276,113 @@ class _SectionLabel extends StatelessWidget {
       text,
       style: const TextStyle(
         color: AppColors.onSurface,
-        fontWeight: FontWeight.w600,
-        fontSize: 13,
+        fontSize: 12,
+        fontWeight: FontWeight.w700,
       ),
     );
   }
 }
 
-class _FungicidaTile extends StatelessWidget {
-  const _FungicidaTile({required this.recommendation});
+class _RecommendationTile extends StatelessWidget {
+  const _RecommendationTile({required this.recommendation});
 
   final FungicidaRecommendation recommendation;
 
   @override
   Widget build(BuildContext context) {
-    final r = recommendation;
     final metrics = <String>[
-      if (r.controlPercent != null) 'Controle: ${r.controlPercent!.toStringAsFixed(1)}%',
-      if (r.productivityKgHa != null) 'Prod.: ${r.productivityKgHa!.toStringAsFixed(0)} kg/ha',
-      if (r.fitotoxPercent != null) 'Fitotox.: ${r.fitotoxPercent!.toStringAsFixed(1)}%',
+      if (recommendation.controlPercent != null)
+        'Controle ${recommendation.controlPercent!.toStringAsFixed(1)}%',
+      if (recommendation.productivityKgHa != null)
+        'Produtividade ${recommendation.productivityKgHa!.toStringAsFixed(0)} kg/ha',
+      if (recommendation.fitotoxPercent != null)
+        'Fitotox ${recommendation.fitotoxPercent!.toStringAsFixed(1)}%',
     ];
 
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: AppColors.surfaceElevated,
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: AppColors.border),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 22,
-                height: 22,
-                alignment: Alignment.center,
-                decoration: const BoxDecoration(
-                  color: AppColors.goldSurface,
-                  shape: BoxShape.circle,
-                ),
-                child: Text(
-                  '${r.rank}',
-                  style: const TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: DarkSurfaceCard(
+        borderRadius: BorderRadius.circular(12),
+        padding: const EdgeInsets.all(12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 24,
+                  height: 24,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: AppColors.goldSurface,
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(
+                      color: AppColors.goldDark.withValues(alpha: 0.45),
+                    ),
+                  ),
+                  child: Text(
+                    '${recommendation.rank}',
+                    style: const TextStyle(
+                      color: AppColors.gold,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w800,
+                    ),
                   ),
                 ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    recommendation.product,
+                    style: const TextStyle(
+                      color: AppColors.onSurface,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 8),
+            Text(
+              recommendation.activeIngredient,
+              style: const TextStyle(
+                color: AppColors.onSurfaceMuted,
+                fontSize: 12.5,
+                height: 1.35,
               ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  r.product,
-                  style: const TextStyle(
-                    color: AppColors.onSurface,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 13,
-                  ),
+            ),
+            if (metrics.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              Text(
+                metrics.join(' · '),
+                style: const TextStyle(
+                  color: AppColors.onSurfaceDim,
+                  fontSize: 11.5,
                 ),
               ),
             ],
-          ),
-          const SizedBox(height: 4),
-          Text(
-            r.activeIngredient,
-            style: const TextStyle(color: AppColors.onSurfaceMuted, fontSize: 12),
-          ),
-          if (metrics.isNotEmpty) ...[
-            const SizedBox(height: 6),
-            Text(
-              metrics.join(' · '),
-              style: const TextStyle(color: AppColors.onSurfaceDim, fontSize: 11),
-            ),
+            if (recommendation.notes != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                recommendation.notes!,
+                style: const TextStyle(
+                  color: AppColors.gold,
+                  fontSize: 11.5,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+            if (recommendation.source != null) ...[
+              const SizedBox(height: 6),
+              Text(
+                recommendation.source!,
+                style: const TextStyle(
+                  color: AppColors.onSurfaceDim,
+                  fontSize: 11,
+                ),
+              ),
+            ],
           ],
-          if (r.notes != null) ...[
-            const SizedBox(height: 4),
-            Text(
-              r.notes!,
-              style: const TextStyle(color: AppColors.goldMuted, fontSize: 11),
-            ),
-          ],
-        ],
+        ),
       ),
     );
   }
