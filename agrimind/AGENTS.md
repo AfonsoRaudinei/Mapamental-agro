@@ -18,6 +18,7 @@ flutter test
 | Modo escuro | `.agents/dark-mode-designer.md` |
 | Referências | `.agents/references-prompt.md` |
 | **Codex: Circular fungicidas** | `.agents/codex-integrar-circular-fungicidas.md` |
+| **Codex: Build IPA** | `.agents/codex-build-ipa-135.md` |
 
 ## Integração
 
