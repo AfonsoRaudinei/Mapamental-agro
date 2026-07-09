@@ -4,24 +4,25 @@ Guia para puxar widgets base do repo e corrigir telas locais de laboratório e a
 
 ## 1. Atualizar repo
 
-### Git — branches divergentes (erro no pull)
+### ⚠️ `refusing to merge unrelated histories`
 
-Se aparecer `fatal: Need to specify how to reconcile divergent branches`:
+O Cultiva Mind (Mac) e o GitHub **não compartilham histórico Git**. Use cópia de arquivos:
 
 ```sh
-cd ~/Cultiva\ Mind          # raiz do repo (onde está a pasta agrimind/)
+git clone -b cursor/macbook-lab-dark-fixes-7428 --depth 1 \
+  https://github.com/AfonsoRaudinei/Mapamental-agro.git /tmp/mapamental-agro
+
+bash /tmp/mapamental-agro/scripts/apply-fixes-to-local.sh "$HOME/Cultiva Mind"
+```
+
+Guia completo: `docs/MACBOOK-INTEGRACAO-GIT.md`
+
+### Git — branches divergentes (se históricos forem relacionados)
+
+```sh
+cd ~/Cultiva\ Mind
 git fetch origin cursor/macbook-lab-dark-fixes-7428
 git merge origin/cursor/macbook-lab-dark-fixes-7428 --no-edit
-```
-
-Se houver conflitos, resolva e depois:
-```sh
-git add -A && git commit -m "merge: integra correções modo black lab"
-```
-
-Verificar integração:
-```sh
-bash scripts/check-integration.sh
 ```
 
 ### Flutter no Mac (obrigatório)
