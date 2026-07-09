@@ -19,6 +19,7 @@ flutter test
 | Referências | `.agents/references-prompt.md` |
 | **Codex: Circular fungicidas** | `.agents/codex-integrar-circular-fungicidas.md` |
 | **Codex: Build IPA** | `.agents/codex-build-ipa-135.md` |
+| **Codex: Fix IPA v135 Mac** | `.agents/codex-fix-ipa-135-mac.md` |
 
 ## Integração
 
