@@ -18,12 +18,6 @@ abstract final class AppColors {
   static const goldDark = Color(0xFF92670A);
   static const goldSurface = Color(0xFF2A2210);
 
-  /// Dourado — ícones de circular/referência técnica (livro).
-  static const gold = Color(0xFFD4AF37);
-  static const goldMuted = Color(0xFFCA8A04);
-  static const goldDark = Color(0xFF92670A);
-  static const goldSurface = Color(0xFF2A2210);
-
   /// Acentos por categoria de referência.
   static const accentDisease = Color(0xFFEF4444);
   static const accentInsect = Color(0xFF3B82F6);
