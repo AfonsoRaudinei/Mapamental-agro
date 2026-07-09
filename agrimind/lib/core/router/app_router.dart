@@ -20,6 +20,7 @@ import '../../features/clients/presentation/pages/farm_form_page.dart';
 import '../../features/clients/presentation/pages/talhao_form_page.dart';
 import '../../features/catalog/presentation/pages/catalog_list_page.dart';
 import '../../features/catalog/presentation/pages/produto_form_page.dart';
+import '../../features/references/presentation/pages/circular_fungicidas_page.dart';
 import '../../features/references/presentation/pages/references_home_page.dart';
 import '../../features/references/presentation/pages/categoria_detail_page.dart';
 import '../../features/references/presentation/pages/cesb_detail_page.dart';
@@ -198,6 +199,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
           GoRoute(
             path: '/references/cesb',
             builder: (context, state) => const CesbDetailPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.circularFungicidas,
+            builder: (context, state) => const CircularFungicidasPage(),
           ),
           GoRoute(
             path: '/references/:categoria',

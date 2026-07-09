@@ -32,6 +32,7 @@ class AppRoutes {
 
   // ── REFERENCES ────────────────────────────────────────────────────────────
   static const String references = '/references';
+  static const String circularFungicidas = '/references/circular-fungicidas';
   static const String categoriaDetail = '/references/:categoria';
   static const String cesbDetail = '/references/cesb';
 

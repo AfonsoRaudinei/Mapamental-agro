@@ -1,0 +1,358 @@
+import '../domain/reference_models.dart';
+
+abstract final class CircularFungicidasData {
+  static const sources = [
+    'Embrapa Soja CT-219 (safra 2024/25)',
+    'Fundação MS Rede Multissítio 2024/25',
+  ];
+
+  static const stages = <ReferenceStageEntry>[
+    ReferenceStageEntry(
+      stageCode: 'VE–V3',
+      stageName: 'Emergência a 3º nó',
+      diseases: [
+        'Damping-off',
+        'Mancha-parda',
+        'Míldio',
+        'Crestamento bacteriano',
+      ],
+      management:
+          'Sem aplicação foliar recomendada em condições normais. Manejo via tratamento de sementes.',
+      recommendations: [],
+      incidences: {'Damping-off': '5–15%', 'Míldio (V3)': '8%'},
+    ),
+    ReferenceStageEntry(
+      stageCode: 'V4',
+      stageName: '4º nó',
+      diseases: [
+        'Mancha-alvo',
+        'Oídio',
+        'Crestamento bacteriano',
+        'Míldio',
+      ],
+      primaryDisease: 'Mancha-alvo',
+      management:
+          'Avaliar primeira aplicação se Mancha-alvo + Oídio estiverem presentes.',
+      incidences: {
+        'Crestamento bacteriano': '12%',
+        'Míldio': '15%',
+      },
+      recommendations: [
+        FungicidaRecommendation(
+          rank: 1,
+          product: 'Controller NT',
+          activeIngredient: 'Mancozebe',
+          controlPercent: 78.5,
+          source: 'Fundação MS 2024/25',
+        ),
+        FungicidaRecommendation(
+          rank: 2,
+          product: 'Manfil 800 WP',
+          activeIngredient: 'Mancozebe',
+          controlPercent: 78.1,
+          productivityKgHa: 4776,
+          source: 'Fundação MS 2024/25',
+        ),
+        FungicidaRecommendation(
+          rank: 3,
+          product: 'Unizeb Gold',
+          activeIngredient: 'Mancozebe',
+          controlPercent: 74.0,
+          source: 'Fundação MS 2024/25',
+        ),
+        FungicidaRecommendation(
+          rank: 4,
+          product: 'Trizeb',
+          activeIngredient: 'Mancozebe',
+          controlPercent: 69.7,
+          productivityKgHa: 4818,
+          source: 'Fundação MS 2024/25',
+        ),
+        FungicidaRecommendation(
+          rank: 5,
+          product: 'Status',
+          activeIngredient: 'Oxicloreto de cobre',
+          controlPercent: 68.9,
+          source: 'Fundação MS 2024/25',
+        ),
+      ],
+    ),
+    ReferenceStageEntry(
+      stageCode: 'V5',
+      stageName: '5º nó',
+      diseases: [
+        'Antracnose',
+        'Ferrugem asiática',
+        'Mancha-alvo',
+        'Crestamento bacteriano',
+        'Míldio',
+      ],
+      primaryDisease: 'Ferrugem asiática',
+      management:
+          'Primeira aplicação preventiva se Ferrugem + Mancha-alvo forem confirmadas na região.',
+      incidences: {
+        'Antracnose': '~40%',
+        'Crestamento bacteriano': '18%',
+        'Míldio': '15%',
+      },
+      recommendations: [
+        FungicidaRecommendation(
+          rank: 1,
+          product: 'Blindado TOV',
+          activeIngredient: 'Picoxistrobina + Tebuconazol + Mancozebe',
+          controlPercent: 76,
+          productivityKgHa: 3808,
+          fitotoxPercent: 4.8,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 2,
+          product: 'Fox Ultra + Milcozeb',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          controlPercent: 75,
+          productivityKgHa: 4028,
+          fitotoxPercent: 2.7,
+          source: 'Embrapa CT-219',
+          notes: 'Melhor produtividade',
+        ),
+        FungicidaRecommendation(
+          rank: 3,
+          product: 'Fox Supra + Milcozeb',
+          activeIngredient: 'Impirfluxam + Protioconazol + Mancozebe',
+          controlPercent: 74,
+          productivityKgHa: 3957,
+          fitotoxPercent: 2.8,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 4,
+          product: 'Excalia Max + Tróia',
+          activeIngredient: 'Impirfluxam + Tebuconazol + Mancozebe',
+          controlPercent: 73,
+          productivityKgHa: 3926,
+          fitotoxPercent: 3.4,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 5,
+          product: 'Almada',
+          activeIngredient: 'Fluxapiroxade + Protioconazol + Mancozebe',
+          controlPercent: 73,
+          productivityKgHa: 3949,
+          fitotoxPercent: 4.7,
+          source: 'Embrapa CT-219',
+        ),
+      ],
+    ),
+    ReferenceStageEntry(
+      stageCode: 'V6',
+      stageName: '6º nó',
+      diseases: [
+        'Ferrugem asiática',
+        'Oídio',
+        'Mancha-alvo',
+        'Pústula bacteriana',
+      ],
+      primaryDisease: 'Ferrugem asiática',
+      management:
+          'Aplicação preventiva de ferrugem se vazio sanitário tardio ou cultivar suscetível.',
+      recommendations: [
+        FungicidaRecommendation(
+          rank: 1,
+          product: 'Fox Ultra + Milcozeb',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          controlPercent: 75,
+          productivityKgHa: 4028,
+          fitotoxPercent: 2.7,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 2,
+          product: 'Fox Supra + Milcozeb',
+          activeIngredient: 'Impirfluxam + Protioconazol + Mancozebe',
+          controlPercent: 74,
+          productivityKgHa: 3957,
+          fitotoxPercent: 2.8,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 3,
+          product: 'Excalia Max + Tróia',
+          activeIngredient: 'Impirfluxam + Tebuconazol + Mancozebe',
+          controlPercent: 73,
+          productivityKgHa: 3926,
+          fitotoxPercent: 3.4,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 4,
+          product: 'Almada',
+          activeIngredient: 'Fluxapiroxade + Protioconazol + Mancozebe',
+          controlPercent: 73,
+          productivityKgHa: 3949,
+          fitotoxPercent: 4.7,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 5,
+          product: 'Proteus',
+          activeIngredient: 'Clorotalonil + Tebuconazol',
+          controlPercent: 69,
+          productivityKgHa: 3904,
+          fitotoxPercent: 2.9,
+          source: 'Embrapa CT-219',
+        ),
+      ],
+    ),
+    ReferenceStageEntry(
+      stageCode: 'R1',
+      stageName: 'Início da floração',
+      diseases: [
+        'Ferrugem asiática',
+        'Antracnose',
+        'Oídio',
+        'Míldio',
+        'Crestamento bacteriano',
+      ],
+      primaryDisease: 'Ferrugem asiática',
+      management:
+          'Aplicação obrigatória se ferrugem confirmada na região. Ponto de decisão crítico.',
+      incidences: {
+        'Ferrugem asiática': '5–10%',
+        'Antracnose': '50%',
+        'Oídio': '20,25%',
+      },
+      recommendations: [
+        FungicidaRecommendation(
+          rank: 1,
+          product: 'Fox Ultra + Milcozeb',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          controlPercent: 75,
+          productivityKgHa: 4028,
+          fitotoxPercent: 2.7,
+          source: 'Embrapa CT-219',
+          notes: 'Melhor produtividade',
+        ),
+        FungicidaRecommendation(
+          rank: 2,
+          product: 'Blindado TOV',
+          activeIngredient: 'Picoxistrobina + Tebuconazol + Mancozebe',
+          controlPercent: 76,
+          productivityKgHa: 3808,
+          fitotoxPercent: 4.8,
+          source: 'Embrapa CT-219',
+          notes: 'Maior controle',
+        ),
+        FungicidaRecommendation(
+          rank: 3,
+          product: 'Fox Supra + Milcozeb',
+          activeIngredient: 'Impirfluxam + Protioconazol + Mancozebe',
+          controlPercent: 74,
+          productivityKgHa: 3957,
+          fitotoxPercent: 2.8,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 4,
+          product: 'Programa FRAC',
+          activeIngredient: 'IDM + IQe + multissítio',
+          controlPercent: 71,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 5,
+          product: 'Protect Max',
+          activeIngredient: 'Mancozebe + Azoxistrobina',
+          controlPercent: 70,
+          source: 'Embrapa CT-219',
+        ),
+      ],
+    ),
+    ReferenceStageEntry(
+      stageCode: 'R3',
+      stageName: 'Vagens em formação',
+      diseases: [
+        'Ferrugem asiática',
+        'Mancha-alvo',
+        'Antracnose',
+      ],
+      primaryDisease: 'Ferrugem asiática',
+      management:
+          'Manter cobertura preventiva e rotação de mecanismos de ação.',
+      recommendations: [
+        FungicidaRecommendation(
+          rank: 1,
+          product: 'Fox Ultra + Milcozeb',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          controlPercent: 75,
+          productivityKgHa: 4028,
+          fitotoxPercent: 2.7,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 2,
+          product: 'Blindado TOV',
+          activeIngredient: 'Picoxistrobina + Tebuconazol + Mancozebe',
+          controlPercent: 76,
+          productivityKgHa: 3808,
+          fitotoxPercent: 4.8,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 3,
+          product: 'Almada',
+          activeIngredient: 'Fluxapiroxade + Protioconazol + Mancozebe',
+          controlPercent: 73,
+          productivityKgHa: 3949,
+          fitotoxPercent: 4.7,
+          source: 'Embrapa CT-219',
+        ),
+      ],
+    ),
+    ReferenceStageEntry(
+      stageCode: 'R5',
+      stageName: 'Grão enchendo',
+      diseases: [
+        'Ferrugem asiática',
+        'Mancha-alvo',
+      ],
+      primaryDisease: 'Ferrugem asiática',
+      management:
+          'Última janela de proteção antes do enchimento completo de grãos.',
+      recommendations: [
+        FungicidaRecommendation(
+          rank: 1,
+          product: 'Fox Ultra + Milcozeb',
+          activeIngredient:
+              'Impirfluxam + Protioconazol + Trifloxistrobina + Mancozebe',
+          controlPercent: 75,
+          productivityKgHa: 4028,
+          fitotoxPercent: 2.7,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 2,
+          product: 'Excalia Max + Tróia',
+          activeIngredient: 'Impirfluxam + Tebuconazol + Mancozebe',
+          controlPercent: 73,
+          productivityKgHa: 3926,
+          fitotoxPercent: 3.4,
+          source: 'Embrapa CT-219',
+        ),
+        FungicidaRecommendation(
+          rank: 3,
+          product: 'Proteus',
+          activeIngredient: 'Clorotalonil + Tebuconazol',
+          controlPercent: 69,
+          productivityKgHa: 3904,
+          fitotoxPercent: 2.9,
+          source: 'Embrapa CT-219',
+        ),
+      ],
+    ),
+  ];
+}

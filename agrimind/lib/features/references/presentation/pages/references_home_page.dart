@@ -8,6 +8,7 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
+import '../widgets/circular_fungicidas_card.dart';
 
 /// Hub de Referências Técnicas — grade 2×2 + CESB full width.
 class ReferencesHomePage extends ConsumerWidget {
@@ -60,7 +61,9 @@ class ReferencesHomePage extends ConsumerWidget {
         slivers: [
           CupertinoSliverNavigationBar(
             largeTitle: const Text('Referências'),
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+            backgroundColor: Theme.of(context)
+                .scaffoldBackgroundColor
+                .withValues(alpha: 0.85),
             border: Border.all(color: Colors.transparent),
           ),
           SliverPadding(
@@ -84,6 +87,14 @@ class ReferencesHomePage extends ConsumerWidget {
               ),
             ),
           ),
+          const SliverToBoxAdapter(child: SizedBox(height: 12)),
+          const SliverPadding(
+            padding: EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            sliver: SliverToBoxAdapter(
+              child: CircularFungicidasCard(),
+            ),
+          ),
+          const SliverToBoxAdapter(child: SizedBox(height: 12)),
           SliverPadding(
             padding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.md,
