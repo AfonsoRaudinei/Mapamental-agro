@@ -154,7 +154,7 @@ abstract final class CircularFungicidasData {
     ReferenceStageEntry(
       stageCode: 'V6',
       stageName: '6º nó',
-      aliases: ['V6'],
+      aliases: ['V6', 'V7'],
       diseases: [
         'Ferrugem asiática',
         'Oídio',
@@ -487,7 +487,7 @@ abstract final class CircularFungicidasData {
     ReferenceStageEntry(
       stageCode: 'R5',
       stageName: 'Início do enchimento de grãos',
-      aliases: ['R5', 'R5.1', 'R5.5'],
+      aliases: ['R5', 'R5.1', 'R5.3', 'R5.5'],
       diseases: [
         'Ferrugem asiática',
         'DFCs / Cercospora',

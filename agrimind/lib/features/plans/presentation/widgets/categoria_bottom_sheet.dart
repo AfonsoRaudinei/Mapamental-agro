@@ -20,6 +20,7 @@ class ReferenciaDisplayItem {
     this.praticas,
     this.padrao,
     this.destaque,
+    this.podeUsarNoPlano = true,
   });
 
   final String titulo;
@@ -28,6 +29,9 @@ class ReferenciaDisplayItem {
   final String? praticas; // CESB
   final String? padrao; // CESB: "Nutrologia" | "Hormonal" | "Biológico"
   final String? destaque; // CESB: "Agro Mallon — 135,49 sc/ha"
+
+  /// False quando a circular indica só monitoramento / sem foliar (ex.: VE–V3, R8).
+  final bool podeUsarNoPlano;
 }
 
 // ── Bottom Sheet ────────────────────────────────────────────────────────────
@@ -241,11 +245,13 @@ class _ReferenciaTile extends StatelessWidget {
             ),
           ),
         ],
-        const SizedBox(height: AppSpacing.sm),
-        Align(
-          alignment: Alignment.centerRight,
-          child: _UsarNoPlanoBtn(cor: cor, onTap: onUsar),
-        ),
+        if (item.podeUsarNoPlano) ...[
+          const SizedBox(height: AppSpacing.sm),
+          Align(
+            alignment: Alignment.centerRight,
+            child: _UsarNoPlanoBtn(cor: cor, onTap: onUsar),
+          ),
+        ],
       ],
     );
   }

@@ -28,6 +28,7 @@ class ReferenciaDisplayMapper {
           focoManejo: entry.diseases.isEmpty
               ? null
               : 'Doenças: ${entry.diseases.join(' · ')}',
+          podeUsarNoPlano: false,
         ),
       ];
     }

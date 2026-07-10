@@ -6,8 +6,12 @@ void main() {
     test('covers VE–R8 stage aliases from the circular docs', () {
       expect(CircularFungicidasData.entryForStage('VE')?.stageCode, 'VE–V3');
       expect(CircularFungicidasData.entryForStage('V4')?.stageCode, 'V4');
+      expect(CircularFungicidasData.entryForStage('V7')?.stageCode, 'V6');
       expect(CircularFungicidasData.entryForStage('R2')?.stageCode, 'R2');
       expect(CircularFungicidasData.entryForStage('R4')?.stageCode, 'R4');
+      expect(CircularFungicidasData.entryForStage('R5.1')?.stageCode, 'R5');
+      expect(CircularFungicidasData.entryForStage('R5.3')?.stageCode, 'R5');
+      expect(CircularFungicidasData.entryForStage('R5.5')?.stageCode, 'R5');
       expect(CircularFungicidasData.entryForStage('R6')?.stageCode, 'R6');
       expect(CircularFungicidasData.entryForStage('R8')?.stageCode, 'R8');
     });
@@ -28,6 +32,13 @@ void main() {
       expect(r8.recommendations, isEmpty);
       expect(r8.management, contains('Sem aplicação'));
       expect(CircularFungicidasData.hasContentForStage('R8'), isTrue);
+    });
+
+    test('empty-recommendation stages are not usable in plan', () {
+      final ve = CircularFungicidasData.entryForStage('VE')!;
+      expect(ve.recommendations, isEmpty);
+      final r8 = CircularFungicidasData.entryForStage('R8')!;
+      expect(r8.recommendations, isEmpty);
     });
   });
 }
