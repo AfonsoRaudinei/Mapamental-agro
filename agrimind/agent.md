@@ -97,7 +97,9 @@ Table rows must follow the header grid (`Produto | Qtd. | R$ Unit. | R$ Total`) 
 
 ### References
 
-- **Always visible** on each stage card header (compact book icon + badge next to the phenological badge, e.g. V5).
+- **Always visible** on each stage card header: two compact book icons next to the phenological badge (e.g. V5).
+  - **Standard book** (outline) → Doenças, Insetos, Nutrição, Fisiologia.
+  - **Golden book** (filled) → Circular técnica (fungicidas) + Campeões CESB — monetizable track.
 - Selecting a reference opens `ProdutoPanel` with the name pre-filled — same agronomic fields only.
 
 ### Canvas layout (`_PlanningView`)

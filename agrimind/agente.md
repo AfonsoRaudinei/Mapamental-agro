@@ -113,4 +113,8 @@ Linhas da tabela devem seguir o grid do cabecalho (`Produto | Qtd. | R$ Unit. | 
 
 ### Referencias tecnicas
 
+Dois livros no header do estádio:
+- livro padrão (outline) → Doenças, Insetos, Nutrição, Fisiologia
+- livro dourado (fill) → Circular técnica + Campeões CESB (trilha monetizável)
+
 Selecionar referencia abre o `ProdutoPanel` com nome pre-preenchido — mesmos campos agronomicos apenas.

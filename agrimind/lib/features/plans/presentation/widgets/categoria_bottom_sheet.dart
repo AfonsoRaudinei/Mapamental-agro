@@ -48,6 +48,7 @@ class CategoriaBottomSheet extends StatelessWidget {
     required this.itens,
     required this.onUsarNoPlano,
     this.titleOverride,
+    this.subtitleOverride,
     this.accentOverride,
   });
 
@@ -58,8 +59,11 @@ class CategoriaBottomSheet extends StatelessWidget {
   /// Chamado quando o técnico toca em [+ Usar no Plano].
   final void Function(ReferenciaDisplayItem) onUsarNoPlano;
 
-  /// Título custom (ex.: Circular fungicidas).
+  /// Título custom (ex.: Circular técnica / Campeões CESB).
   final String? titleOverride;
+
+  /// Subtítulo custom do sheet premium.
+  final String? subtitleOverride;
 
   /// Cor de accent custom (ex.: livro dourado).
   final Color? accentOverride;
@@ -72,6 +76,7 @@ class CategoriaBottomSheet extends StatelessWidget {
     required List<ReferenciaDisplayItem> itens,
     required void Function(ReferenciaDisplayItem) onUsarNoPlano,
     String? titleOverride,
+    String? subtitleOverride,
     Color? accentOverride,
   }) {
     return showAppBottomSheet(
@@ -82,6 +87,7 @@ class CategoriaBottomSheet extends StatelessWidget {
         itens: itens,
         onUsarNoPlano: onUsarNoPlano,
         titleOverride: titleOverride,
+        subtitleOverride: subtitleOverride,
         accentOverride: accentOverride,
       ),
     );
@@ -99,6 +105,7 @@ class CategoriaBottomSheet extends StatelessWidget {
           categoria: categoria,
           estadioCodigo: estadioCodigo,
           titleOverride: titleOverride,
+          subtitleOverride: subtitleOverride,
           accentOverride: accentOverride,
         ),
         body: itens.isEmpty
@@ -135,19 +142,22 @@ class _SheetHeader extends StatelessWidget {
     required this.categoria,
     required this.estadioCodigo,
     this.titleOverride,
+    this.subtitleOverride,
     this.accentOverride,
   });
 
   final CategoriaReferencia categoria;
   final String estadioCodigo;
   final String? titleOverride;
+  final String? subtitleOverride;
   final Color? accentOverride;
 
   @override
   Widget build(BuildContext context) {
     final accent = accentOverride ?? categoria.color;
     final title = titleOverride ?? categoria.label;
-    final isCircular = titleOverride != null;
+    final subtitle = subtitleOverride ?? categoria.subtitle;
+    final isPremiumTrack = titleOverride != null;
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -159,23 +169,20 @@ class _SheetHeader extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isCircular
-                  ? AppColors.refBookFungicidasSurface
+              color: isPremiumTrack
+                  ? accent.withValues(alpha: 0.14)
                   : accent,
               borderRadius: BorderRadius.circular(10),
-              border: isCircular
-                  ? Border.all(
-                      color: AppColors.refBookFungicidasDark
-                          .withValues(alpha: 0.5),
-                    )
+              border: isPremiumTrack
+                  ? Border.all(color: accent.withValues(alpha: 0.5))
                   : null,
             ),
             child: Center(
               child: PhosphorIcon(
-                isCircular
+                isPremiumTrack
                     ? PhosphorIconsFill.bookOpen
                     : categoria.icone,
-                color: isCircular ? accent : Colors.white,
+                color: isPremiumTrack ? accent : Colors.white,
                 size: 22,
               ),
             ),
@@ -188,11 +195,11 @@ class _SheetHeader extends StatelessWidget {
                 Text(
                   title,
                   style: AppTypography.h3.copyWith(
-                    color: isCircular ? accent : null,
+                    color: isPremiumTrack ? accent : null,
                   ),
                 ),
                 Text(
-                  'Estádio $estadioCodigo · ${categoria.subtitle}',
+                  'Estádio $estadioCodigo · $subtitle',
                   style: AppTypography.caption.copyWith(
                     color: context.appTextSecondary,
                   ),
