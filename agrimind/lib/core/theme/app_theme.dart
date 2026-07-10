@@ -214,14 +214,16 @@ class AppTheme {
   // ── TEXT THEME ────────────────────────────────────────────────────────────
   static TextTheme _textTheme({required bool isDark}) {
     final base = isDark ? AppColors.textPrimaryDark : AppColors.textPrimary;
+    final secondary =
+        isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
     return TextTheme(
       displayLarge: AppTypography.h1.copyWith(color: base),
       displayMedium: AppTypography.h2.copyWith(color: base),
       displaySmall: AppTypography.h3.copyWith(color: base),
       bodyLarge: AppTypography.body.copyWith(color: base),
       bodyMedium: AppTypography.body.copyWith(color: base),
-      bodySmall: AppTypography.caption,
-      labelSmall: AppTypography.label,
+      bodySmall: AppTypography.caption.copyWith(color: secondary),
+      labelSmall: AppTypography.label.copyWith(color: secondary),
     );
   }
 }

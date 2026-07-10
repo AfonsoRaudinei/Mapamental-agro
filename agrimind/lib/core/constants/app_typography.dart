@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'app_colors.dart';
 
 /// Hierarquia tipográfica do AgriMind baseada em SF Pro (iOS).
 /// Em iOS, o sistema usa SF Pro automaticamente como fallback.
+///
+/// Sem `color` fixa — herda de [DefaultTextStyle] / tema (light e dark).
+/// Para secundário/desabilitado, use `copyWith(color: context.appTextSecondary)`.
 class AppTypography {
   AppTypography._();
 
@@ -11,7 +13,6 @@ class AppTypography {
   static const TextStyle h1 = TextStyle(
     fontSize: 28,
     fontWeight: FontWeight.w700,
-    color: AppColors.textPrimary,
     letterSpacing: -0.5,
     height: 1.2,
   );
@@ -20,7 +21,6 @@ class AppTypography {
   static const TextStyle h2 = TextStyle(
     fontSize: 22,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
     letterSpacing: -0.3,
     height: 1.3,
   );
@@ -29,7 +29,6 @@ class AppTypography {
   static const TextStyle h3 = TextStyle(
     fontSize: 18,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
     height: 1.3,
   );
 
@@ -38,7 +37,6 @@ class AppTypography {
   static const TextStyle body = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w400,
-    color: AppColors.textPrimary,
     height: 1.5,
   );
 
@@ -46,7 +44,6 @@ class AppTypography {
   static const TextStyle bodyBold = TextStyle(
     fontSize: 16,
     fontWeight: FontWeight.w600,
-    color: AppColors.textPrimary,
     height: 1.5,
   );
 
@@ -55,7 +52,6 @@ class AppTypography {
   static const TextStyle caption = TextStyle(
     fontSize: 13,
     fontWeight: FontWeight.w400,
-    color: AppColors.textSecondary,
     height: 1.4,
   );
 

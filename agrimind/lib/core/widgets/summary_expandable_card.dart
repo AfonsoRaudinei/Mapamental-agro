@@ -156,7 +156,10 @@ class SummaryDetailLine extends StatelessWidget {
       children: [
         Text(
           primary,
-          style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+          style: AppTypography.body.copyWith(
+            color: context.appTextPrimary,
+            fontWeight: FontWeight.w600,
+          ),
           maxLines: 1,
           overflow: TextOverflow.ellipsis,
         ),

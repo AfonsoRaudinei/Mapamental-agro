@@ -403,7 +403,10 @@ class _TopBarState extends State<_TopBar> {
           Expanded(
             child: TextField(
               controller: _controller,
-              style: AppTypography.body.copyWith(fontWeight: FontWeight.w700),
+              style: AppTypography.body.copyWith(
+                color: context.appTextPrimary,
+                fontWeight: FontWeight.w700,
+              ),
               decoration: const InputDecoration(border: InputBorder.none),
               textInputAction: TextInputAction.done,
               onSubmitted: widget.onTitleChanged,
@@ -797,7 +800,10 @@ class _HeaderField extends StatelessWidget {
           TextField(
             controller: controller,
             keyboardType: keyboardType,
-            style: AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+            style: AppTypography.body.copyWith(
+              color: context.appTextPrimary,
+              fontWeight: FontWeight.w600,
+            ),
             decoration: InputDecoration(
               isDense: true,
               filled: true,
@@ -1037,7 +1043,10 @@ class _StageCircle extends StatelessWidget {
               child: Text(
                 estadio.codigo == 'Operacional' ? 'OP' : estadio.codigo,
                 style: (compact ? AppTypography.label : AppTypography.h3)
-                    .copyWith(fontWeight: FontWeight.w800),
+                    .copyWith(
+                  color: context.appTextPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
               ),
             )
           : Image.file(
@@ -1159,6 +1168,7 @@ class _InlineProductRow extends StatelessWidget {
                 child: Text(
                   produto.produtoNome,
                   style: AppTypography.caption.copyWith(
+                    color: context.appTextPrimary,
                     fontWeight: FontWeight.w700,
                   ),
                   maxLines: 1,
@@ -1175,6 +1185,7 @@ class _InlineProductRow extends StatelessWidget {
               Text(
                 '${produto.totalFinal.toStringAsFixed(1)} $unit',
                 style: AppTypography.caption.copyWith(
+                  color: context.appTextPrimary,
                   fontWeight: FontWeight.w800,
                 ),
               ),
@@ -1354,6 +1365,7 @@ class _ConsultorCardState extends State<_ConsultorCard> {
           TextField(
             controller: _consultor,
             autofocus: !hasName,
+            style: AppTypography.body.copyWith(color: context.appTextPrimary),
             decoration: const InputDecoration(
               hintText: 'Nome do consultor',
               border: InputBorder.none,
@@ -1624,6 +1636,9 @@ class _ConsolidationParamsState extends State<_ConsolidationParams> {
                   textAlign: TextAlign.right,
                   keyboardType:
                       const TextInputType.numberWithOptions(decimal: true),
+                  style: AppTypography.body.copyWith(
+                    color: context.appTextPrimary,
+                  ),
                   decoration: const InputDecoration(border: InputBorder.none),
                   onSubmitted: (_) => _saveGrain(),
                   onTapOutside: (_) => _saveGrain(),
@@ -1730,6 +1745,7 @@ class _ConsolidationRowState extends State<_ConsolidationRow> {
             child: Text(
               widget.itemName,
               style: AppTypography.caption.copyWith(
+                color: context.appTextPrimary,
                 fontWeight: FontWeight.w700,
               ),
               maxLines: 2,
@@ -1769,7 +1785,9 @@ class _ConsolidationRowState extends State<_ConsolidationRow> {
                   vertical: 8,
                 ),
               ),
-              style: AppTypography.label,
+              style: AppTypography.label.copyWith(
+                color: context.appTextPrimary,
+              ),
               onSubmitted: (_) => _save(),
               onTapOutside: (_) => _save(),
             ),

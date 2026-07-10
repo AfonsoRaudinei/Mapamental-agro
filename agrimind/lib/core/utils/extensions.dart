@@ -64,7 +64,8 @@ extension ContextX on BuildContext {
   Color get appTextPrimary => colors.onSurface;
   Color get appTextSecondary =>
       isDark ? AppColors.textSecondaryDark : AppColors.textSecondary;
-  Color get appTextDisabled => AppColors.textDisabled;
+  Color get appTextDisabled =>
+      isDark ? AppColors.textSecondaryDark : AppColors.textDisabled;
   Color get appTabBarBackground =>
       isDark ? const Color(0xCC1C1C1E) : const Color(0xCCFFFFFF);
 }
