@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../../../core/constants/app_colors.dart' as ds;
 import '../../../../core/theme/app_colors.dart';
 import '../../../../core/widgets/dark_surface_card.dart';
 import '../../data/circular_fungicidas_data.dart';
@@ -10,13 +11,15 @@ import '../../domain/reference_models.dart';
 class CircularFungicidasPage extends StatelessWidget {
   const CircularFungicidasPage({super.key});
 
+  static const _gold = ds.AppColors.refBookFungicidas;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: AppColors.surface,
-        foregroundColor: AppColors.gold,
+        foregroundColor: _gold,
         elevation: 0,
         titleSpacing: 0,
         title: Row(
@@ -26,16 +29,17 @@ class CircularFungicidasPage extends StatelessWidget {
               height: 34,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: AppColors.goldSurface,
+                color: ds.AppColors.refBookFungicidasSurface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.goldDark.withValues(alpha: 0.5),
+                  color: ds.AppColors.refBookFungicidasDark
+                      .withValues(alpha: 0.5),
                 ),
               ),
               child: const PhosphorIcon(
-                PhosphorIconsRegular.bookOpen,
+                PhosphorIconsFill.bookOpen,
                 size: 18,
-                color: AppColors.gold,
+                color: _gold,
               ),
             ),
             const SizedBox(width: 10),
@@ -44,7 +48,7 @@ class CircularFungicidasPage extends StatelessWidget {
                 'Circular fungicidas',
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
-                  color: AppColors.gold,
+                  color: _gold,
                   fontWeight: FontWeight.w700,
                 ),
               ),
@@ -82,7 +86,7 @@ class _SourcesBanner extends StatelessWidget {
           const Text(
             'Fontes',
             style: TextStyle(
-              color: AppColors.gold,
+              color: CircularFungicidasPage._gold,
               fontSize: 13,
               fontWeight: FontWeight.w700,
             ),
@@ -141,16 +145,17 @@ class _StageSectionState extends State<_StageSection> {
                       vertical: 6,
                     ),
                     decoration: BoxDecoration(
-                      color: AppColors.goldSurface,
+                      color: ds.AppColors.refBookFungicidasSurface,
                       borderRadius: BorderRadius.circular(8),
                       border: Border.all(
-                        color: AppColors.goldDark.withValues(alpha: 0.5),
+                        color: ds.AppColors.refBookFungicidasDark
+                            .withValues(alpha: 0.5),
                       ),
                     ),
                     child: Text(
                       entry.stageCode,
                       style: const TextStyle(
-                        color: AppColors.gold,
+                        color: CircularFungicidasPage._gold,
                         fontSize: 13,
                         fontWeight: FontWeight.w800,
                       ),
@@ -314,16 +319,17 @@ class _RecommendationTile extends StatelessWidget {
                   height: 24,
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
-                    color: AppColors.goldSurface,
+                    color: ds.AppColors.refBookFungicidasSurface,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: AppColors.goldDark.withValues(alpha: 0.45),
+                      color: ds.AppColors.refBookFungicidasDark
+                          .withValues(alpha: 0.45),
                     ),
                   ),
                   child: Text(
                     '${recommendation.rank}',
                     style: const TextStyle(
-                      color: AppColors.gold,
+                      color: CircularFungicidasPage._gold,
                       fontSize: 11,
                       fontWeight: FontWeight.w800,
                     ),
@@ -365,7 +371,7 @@ class _RecommendationTile extends StatelessWidget {
               Text(
                 recommendation.notes!,
                 style: const TextStyle(
-                  color: AppColors.gold,
+                  color: CircularFungicidasPage._gold,
                   fontSize: 11.5,
                   fontWeight: FontWeight.w600,
                 ),

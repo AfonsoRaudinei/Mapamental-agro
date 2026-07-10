@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
 
+import '../../../../core/constants/app_colors.dart';
+import '../../../../core/constants/app_spacing.dart';
+import '../../../../core/constants/app_typography.dart';
 import '../../../../core/router/app_routes.dart';
-import '../../../../core/theme/app_colors.dart';
-import '../../../../core/widgets/dark_surface_card.dart';
+import '../../../../core/utils/extensions.dart';
 
-/// Card de destaque para a Circular fungicidas.
+/// Card full-width do hub — Circular fungicidas (livro dourado).
 class CircularFungicidasCard extends StatelessWidget {
   const CircularFungicidasCard({super.key});
 
@@ -16,60 +18,74 @@ class CircularFungicidasCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return DarkSurfaceCard(
+    const gold = AppColors.refBookFungicidas;
+
+    return GestureDetector(
       onTap: () => open(context),
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-      child: Row(
-        children: [
-          Container(
-            width: 40,
-            height: 40,
-            alignment: Alignment.center,
-            decoration: BoxDecoration(
-              color: AppColors.goldSurface,
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: AppColors.goldDark.withValues(alpha: 0.5),
+      child: Container(
+        height: 96,
+        padding: const EdgeInsets.all(AppSpacing.md),
+        decoration: BoxDecoration(
+          color: context.appSurface,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: gold.withValues(alpha: 0.35)),
+          boxShadow: [
+            BoxShadow(
+              color: gold.withValues(alpha: 0.12),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 52,
+              height: 52,
+              decoration: BoxDecoration(
+                color: AppColors.refBookFungicidasSurface,
+                shape: BoxShape.circle,
+                border: Border.all(
+                  color: AppColors.refBookFungicidasDark.withValues(alpha: 0.55),
+                ),
+              ),
+              child: const Center(
+                child: PhosphorIcon(
+                  PhosphorIconsFill.bookOpen,
+                  size: 26,
+                  color: gold,
+                ),
               ),
             ),
-            child: const PhosphorIcon(
-              PhosphorIconsRegular.bookOpen,
-              size: 20,
-              color: AppColors.gold,
-            ),
-          ),
-          const SizedBox(width: 14),
-          const Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Circular fungicidas',
-                  style: TextStyle(
-                    color: AppColors.gold,
-                    fontSize: 16,
-                    fontWeight: FontWeight.w700,
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Circular fungicidas',
+                    style: AppTypography.h3.copyWith(color: gold),
                   ),
-                ),
-                SizedBox(height: 2),
-                Text(
-                  'Estádio → doença → fungicida (Embrapa CT-219)',
-                  style: TextStyle(
-                    color: AppColors.onSurfaceMuted,
-                    fontSize: 12.5,
-                    height: 1.3,
+                  const SizedBox(height: 2),
+                  Text(
+                    'Estádio → doença → fungicida (Embrapa CT-219)',
+                    style: AppTypography.caption.copyWith(
+                      color: context.appTextSecondary,
+                    ),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
                   ),
-                  maxLines: 2,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
-          const Icon(
-            Icons.chevron_right_rounded,
-            color: AppColors.onSurfaceMuted,
-          ),
-        ],
+            PhosphorIcon(
+              PhosphorIconsRegular.caretRight,
+              size: 16,
+              color: context.appTextDisabled,
+            ),
+          ],
+        ),
       ),
     );
   }

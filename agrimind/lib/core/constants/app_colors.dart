@@ -17,6 +17,18 @@ class AppColors {
   static const Color catFisiologia = Color(0xFF34C759); // Fisiologia — verde
   static const Color catCESB = Color(0xFFFF9500); // Campeões CESB — âmbar
 
+  // ── REFERÊNCIAS — livro do canvas (ondas por categoria) ───────────────────
+  /// Circular fungicidas / doenças — livro dourado (onda atual).
+  static const Color refBookFungicidas = Color(0xFFD4AF37);
+  static const Color refBookFungicidasMuted = Color(0xFFCA8A04);
+  static const Color refBookFungicidasDark = Color(0xFF92670A);
+  static const Color refBookFungicidasSurface = Color(0xFF2A2210);
+  /// Próximas ondas (terreno preparado — ainda não usadas no canvas).
+  static const Color refBookInsetos = catInsetos;
+  static const Color refBookNutricao = catNutricao;
+  static const Color refBookFisiologia = catFisiologia;
+  static const Color refBookCesb = catCESB;
+
   // ── NEUTROS — Base iOS Light ──────────────────────────────────────────────
   static const Color background = Color(0xFFF5F5F7);
   static const Color surface = Color(0xFFFFFFFF);

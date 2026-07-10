@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 
-import 'package:agrimind/core/theme/app_colors.dart';
+import 'package:agrimind/core/constants/app_colors.dart';
 import 'package:agrimind/features/references/presentation/pages/circular_fungicidas_page.dart';
 import 'package:agrimind/features/references/presentation/pages/references_home_page.dart';
 
@@ -28,7 +28,7 @@ void main() {
       MaterialApp.router(
         routerConfig: router,
         theme: ThemeData.dark().copyWith(
-          scaffoldBackgroundColor: AppColors.background,
+          scaffoldBackgroundColor: AppColors.backgroundDark,
         ),
       ),
     );

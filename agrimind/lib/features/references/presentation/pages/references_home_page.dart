@@ -10,7 +10,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
 import '../widgets/circular_fungicidas_card.dart';
 
-/// Hub de Referências Técnicas — grade 2×2 + CESB full width.
+/// Hub de Referências Técnicas — grade 2×2 + Circular fungicidas + CESB.
 class ReferencesHomePage extends ConsumerWidget {
   const ReferencesHomePage({super.key});
 

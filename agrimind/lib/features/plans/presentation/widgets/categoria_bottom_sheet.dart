@@ -43,6 +43,8 @@ class CategoriaBottomSheet extends StatelessWidget {
     required this.estadioCodigo,
     required this.itens,
     required this.onUsarNoPlano,
+    this.titleOverride,
+    this.accentOverride,
   });
 
   final CategoriaReferencia categoria;
@@ -52,6 +54,12 @@ class CategoriaBottomSheet extends StatelessWidget {
   /// Chamado quando o técnico toca em [+ Usar no Plano].
   final void Function(ReferenciaDisplayItem) onUsarNoPlano;
 
+  /// Título custom (ex.: Circular fungicidas).
+  final String? titleOverride;
+
+  /// Cor de accent custom (ex.: livro dourado).
+  final Color? accentOverride;
+
   /// Abre o bottom sheet de forma estática.
   static Future<void> show({
     required BuildContext context,
@@ -59,6 +67,8 @@ class CategoriaBottomSheet extends StatelessWidget {
     required String estadioCodigo,
     required List<ReferenciaDisplayItem> itens,
     required void Function(ReferenciaDisplayItem) onUsarNoPlano,
+    String? titleOverride,
+    Color? accentOverride,
   }) {
     return showAppBottomSheet(
       context: context,
@@ -67,19 +77,26 @@ class CategoriaBottomSheet extends StatelessWidget {
         estadioCodigo: estadioCodigo,
         itens: itens,
         onUsarNoPlano: onUsarNoPlano,
+        titleOverride: titleOverride,
+        accentOverride: accentOverride,
       ),
     );
   }
 
   @override
   Widget build(BuildContext context) {
+    final accent = accentOverride ?? categoria.color;
     return DraggableScrollableSheet(
       initialChildSize: 0.5,
       minChildSize: 0.3,
       maxChildSize: 0.85,
       builder: (ctx, scrollCtrl) => AppBottomSheetScaffold(
-        header:
-            _SheetHeader(categoria: categoria, estadioCodigo: estadioCodigo),
+        header: _SheetHeader(
+          categoria: categoria,
+          estadioCodigo: estadioCodigo,
+          titleOverride: titleOverride,
+          accentOverride: accentOverride,
+        ),
         body: itens.isEmpty
             ? _EmptyState(categoria: categoria)
             : ListView.separated(
@@ -93,12 +110,12 @@ class CategoriaBottomSheet extends StatelessWidget {
                 itemBuilder: (_, i) => categoria == CategoriaReferencia.cesb
                     ? _CesbTile(
                         item: itens[i],
-                        cor: categoria.color,
+                        cor: accent,
                         onUsar: () => onUsarNoPlano(itens[i]),
                       )
                     : _ReferenciaTile(
                         item: itens[i],
-                        cor: categoria.color,
+                        cor: accent,
                         onUsar: () => onUsarNoPlano(itens[i]),
                       ),
               ),
@@ -113,13 +130,20 @@ class _SheetHeader extends StatelessWidget {
   const _SheetHeader({
     required this.categoria,
     required this.estadioCodigo,
+    this.titleOverride,
+    this.accentOverride,
   });
 
   final CategoriaReferencia categoria;
   final String estadioCodigo;
+  final String? titleOverride;
+  final Color? accentOverride;
 
   @override
   Widget build(BuildContext context) {
+    final accent = accentOverride ?? categoria.color;
+    final title = titleOverride ?? categoria.label;
+    final isCircular = titleOverride != null;
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
@@ -131,13 +155,23 @@ class _SheetHeader extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: categoria.color,
+              color: isCircular
+                  ? AppColors.refBookFungicidasSurface
+                  : accent,
               borderRadius: BorderRadius.circular(10),
+              border: isCircular
+                  ? Border.all(
+                      color: AppColors.refBookFungicidasDark
+                          .withValues(alpha: 0.5),
+                    )
+                  : null,
             ),
             child: Center(
               child: PhosphorIcon(
-                categoria.icone,
-                color: Colors.white,
+                isCircular
+                    ? PhosphorIconsFill.bookOpen
+                    : categoria.icone,
+                color: isCircular ? accent : Colors.white,
                 size: 22,
               ),
             ),
@@ -147,7 +181,12 @@ class _SheetHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(categoria.label, style: AppTypography.h3),
+                Text(
+                  title,
+                  style: AppTypography.h3.copyWith(
+                    color: isCircular ? accent : null,
+                  ),
+                ),
                 Text(
                   'Estádio $estadioCodigo · ${categoria.subtitle}',
                   style: AppTypography.caption.copyWith(
@@ -364,7 +403,7 @@ class _EmptyState extends StatelessWidget {
             ),
             const SizedBox(height: AppSpacing.xs),
             Text(
-              'Base técnica disponível no Sprint 5',
+              'Sem referências técnicas para este estádio',
               style: AppTypography.caption.copyWith(
                 color: context.appTextDisabled,
               ),

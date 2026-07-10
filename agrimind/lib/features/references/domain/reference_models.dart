@@ -29,6 +29,7 @@ class ReferenceStageEntry {
     required this.recommendations,
     this.primaryDisease,
     this.incidences,
+    this.aliases = const [],
   });
 
   final String stageCode;
@@ -38,4 +39,13 @@ class ReferenceStageEntry {
   final List<FungicidaRecommendation> recommendations;
   final String? primaryDisease;
   final Map<String, String>? incidences;
+
+  /// Códigos de estádio do canvas que mapeiam para esta entrada (ex.: VE, V1).
+  final List<String> aliases;
+
+  bool matchesStage(String codigo) {
+    final normalized = codigo.trim().toUpperCase();
+    if (stageCode.toUpperCase() == normalized) return true;
+    return aliases.any((alias) => alias.toUpperCase() == normalized);
+  }
 }
