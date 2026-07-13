@@ -7,13 +7,15 @@ part 'estadio_entity.freezed.dart';
 /// Entidade Estádio fenológico dentro de um Plano.
 ///
 /// Códigos disponíveis:
-/// Operacional, VE, VC, V1–V7, R1, R2, R3, R4, R5.1, R5.3, R5.5, R6, R7, R8
+/// VE, VC, V1–V7, R1, R2, R3, R4, R5.1, R5.3, R5.5, R6, R7, R8
+///
+/// Observação: `Operacional` é um bloco especial fora da sequência fenológica.
 @freezed
 class EstadioEntity with _$EstadioEntity {
   const factory EstadioEntity({
     required String id,
     required String planoId,
-    required String codigo, // 'VE','VC','V1'...'R8','Operacional'
+    required String codigo, // 'VE','VC','V1'...'R8' ou 'Operacional'
     required String label, // editável pelo técnico (padrão = codigo)
     required int ordem,
     DateTime? dataAplicacao,

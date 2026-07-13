@@ -28,7 +28,6 @@ class AppConstants {
 
   // ── ESTÁDIOS FENOLÓGICOS ──────────────────────────────────────────────────
   static const List<String> estadiosCodigos = [
-    'Operacional',
     'VE',
     'VC',
     'V1',

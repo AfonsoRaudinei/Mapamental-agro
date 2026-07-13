@@ -66,6 +66,8 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
   bool _showConsolidation = false;
   bool _exporting = false;
 
+  static const _operacionalCodigo = 'Operacional';
+
   PlanoEntity get _plano => widget.plano;
 
   Future<void> _updatePlano(PlanoEntity plano) async {
@@ -87,22 +89,28 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
     final available = AppConstants.estadiosCodigos
         .where((codigo) => !used.contains(codigo))
         .toList();
-    if (available.isEmpty) {
-      _showSnack('Todos os estádios já foram adicionados.');
-      return;
-    }
     final selected = await showCupertinoModalPopup<String>(
       context: context,
       builder: (context) => CupertinoActionSheet(
         title: const Text('Novo Estádio'),
-        actions: available
-            .map(
-              (codigo) => CupertinoActionSheetAction(
-                onPressed: () => Navigator.of(context).pop(codigo),
-                child: Text(AppConstants.estadioLabels[codigo] ?? codigo),
-              ),
-            )
-            .toList(),
+        message: const Text(
+          'Escolha um estádio fenológico ou crie uma aplicação operacional.',
+        ),
+        actions: [
+          ...available.map(
+            (codigo) => CupertinoActionSheetAction(
+              onPressed: () => Navigator.of(context).pop(codigo),
+              child: Text(AppConstants.estadioLabels[codigo] ?? codigo),
+            ),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(context).pop(_operacionalCodigo),
+            child: Text(
+              AppConstants.estadioLabels[_operacionalCodigo] ??
+                  _operacionalCodigo,
+            ),
+          ),
+        ],
         cancelButton: CupertinoActionSheetAction(
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('Cancelar'),
@@ -110,6 +118,11 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
       ),
     );
     if (selected == null) return;
+
+    if (selected == _operacionalCodigo) {
+      await _addOperacional();
+      return;
+    }
 
     await ref.read(plansRepoProvider).addEstadio(
           widget.planoId,
@@ -119,6 +132,25 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
             codigo: selected,
             label: AppConstants.estadioLabels[selected] ?? selected,
             ordem: AppConstants.estadiosCodigos.indexOf(selected),
+            createdAt: DateTime.now(),
+        ),
+      );
+    _invalidatePlan();
+  }
+
+  Future<void> _addOperacional() async {
+    final operationalCount = _plano.estadios
+        .where((item) => item.codigo == _operacionalCodigo)
+        .length;
+    await ref.read(plansRepoProvider).addEstadio(
+          widget.planoId,
+          EstadioEntity(
+            id: _uuid.v4(),
+            planoId: widget.planoId,
+            codigo: _operacionalCodigo,
+            label: AppConstants.estadioLabels[_operacionalCodigo] ??
+                _operacionalCodigo,
+            ordem: operationalCount,
             createdAt: DateTime.now(),
           ),
         );
@@ -503,6 +535,12 @@ class _PlanningView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final bottomInset = MediaQuery.of(context).padding.bottom;
+    final operacionalStages = plano.estadios
+        .where((item) => item.codigo == _CanvasViewState._operacionalCodigo)
+        .toList();
+    final fenologicoStages = plano.estadios
+        .where((item) => item.codigo != _CanvasViewState._operacionalCodigo)
+        .toList();
     return Column(
       children: [
         Expanded(
@@ -518,7 +556,25 @@ class _PlanningView extends StatelessWidget {
               if (plano.estadios.isEmpty)
                 _CanvasHint(onTap: onAddEstadio)
               else ...[
-                ...plano.estadios.map(
+                if (operacionalStages.isNotEmpty) ...[
+                  const _SectionLabel('Aplicações operacionais'),
+                  ...operacionalStages.map(
+                    (estadio) => _StageBlock(
+                      plano: plano,
+                      estadio: estadio,
+                      onPickStageImage: onPickStageImage,
+                      onAddProduto: onAddProduto,
+                      onAddProdutoFromReferencia: onAddProdutoFromReferencia,
+                      onDeleteProduto: onDeleteProduto,
+                      onEditProduto: onEditProduto,
+                      onUpdateEstadio: onUpdateEstadio,
+                      onRemoveEstadio: onRemoveEstadio,
+                    ),
+                  ),
+                ],
+                if (operacionalStages.isNotEmpty && fenologicoStages.isNotEmpty)
+                  const SizedBox(height: 2),
+                ...fenologicoStages.map(
                   (estadio) => _StageBlock(
                     plano: plano,
                     estadio: estadio,
@@ -871,9 +927,7 @@ class _StageBlock extends StatefulWidget {
 class _StageBlockState extends State<_StageBlock> {
   late final TextEditingController _phase;
 
-  bool get _initiallyExpanded =>
-      widget.estadio.produtos.isEmpty ||
-      widget.estadio.codigo == 'Operacional';
+  bool get _initiallyExpanded => widget.estadio.produtos.isEmpty;
 
   @override
   void initState() {
@@ -958,6 +1012,27 @@ class _StageBlockState extends State<_StageBlock> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _SectionLabel extends StatelessWidget {
+  const _SectionLabel(this.label);
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 4, right: 4, top: 4, bottom: 8),
+      child: Text(
+        label.toUpperCase(),
+        style: AppTypography.label.copyWith(
+          color: context.appTextDisabled,
+          fontWeight: FontWeight.w700,
+          letterSpacing: 0.8,
+        ),
       ),
     );
   }
@@ -1197,63 +1272,71 @@ class _InlineProductRow extends StatelessWidget {
     final total = _formatDisplayTotal(produto.totalFinal, produto.doseUnidade);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
-      child: InkWell(
-        onTap: onEdit,
-        borderRadius: BorderRadius.circular(6),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 2),
-          child: Row(
-            children: [
-              Container(
-                width: 5,
-                height: 5,
-                decoration: const BoxDecoration(
-                  color: AppColors.success,
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 7),
-              Expanded(
-                child: Text(
-                  produto.produtoNome,
-                  style: AppTypography.caption.copyWith(
-                    color: context.appTextPrimary,
-                    fontWeight: FontWeight.w700,
+      child: Stack(
+        children: [
+          InkWell(
+            onTap: onEdit,
+            borderRadius: BorderRadius.circular(6),
+            child: Padding(
+              padding: const EdgeInsets.only(right: 30, top: 2, bottom: 2),
+              child: Row(
+                children: [
+                  Container(
+                    width: 5,
+                    height: 5,
+                    decoration: const BoxDecoration(
+                      color: AppColors.success,
+                      shape: BoxShape.circle,
+                    ),
                   ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
+                  const SizedBox(width: 7),
+                  Expanded(
+                    child: Text(
+                      produto.produtoNome,
+                      style: AppTypography.caption.copyWith(
+                        color: context.appTextPrimary,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  Text(
+                    _formatDisplayDose(produto.dose, produto.doseUnidade),
+                    style: AppTypography.label.copyWith(
+                      color: context.appTextSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    '$total $unit',
+                    style: AppTypography.caption.copyWith(
+                      color: context.appTextPrimary,
+                      fontWeight: FontWeight.w800,
+                    ),
+                  ),
+                ],
               ),
-              Text(
-                _formatDisplayDose(produto.dose, produto.doseUnidade),
-                style: AppTypography.label.copyWith(
-                  color: context.appTextSecondary,
-                ),
-              ),
-              const SizedBox(width: 4),
-              Text(
-                '$total $unit',
-                style: AppTypography.caption.copyWith(
-                  color: context.appTextPrimary,
-                  fontWeight: FontWeight.w800,
-                ),
-              ),
-              IconButton(
-                onPressed: onDelete,
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(
-                  minWidth: 28,
-                  minHeight: 28,
-                ),
-                icon: PhosphorIcon(
-                  PhosphorIconsRegular.x,
-                  size: 14,
-                  color: context.appTextDisabled,
-                ),
-              ),
-            ],
+            ),
           ),
-        ),
+          Positioned(
+            top: 0,
+            right: 0,
+            child: IconButton(
+              onPressed: onDelete,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(
+                minWidth: 28,
+                minHeight: 28,
+              ),
+              icon: PhosphorIcon(
+                PhosphorIconsRegular.x,
+                size: 14,
+                color: context.appTextDisabled,
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }

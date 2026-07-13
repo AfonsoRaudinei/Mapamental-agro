@@ -178,4 +178,51 @@ void main() {
     expect(plano?.dataVencimento, DateTime(2026, 9, 1));
     expect(plano?.estadios.single.imageLocalPath, '/tmp/r1.jpg');
   });
+
+  test('permite múltiplos blocos operacionais no mesmo plano', () async {
+    final now = DateTime.utc(2026, 6, 20);
+    await datasource.create(
+      PlanoEntity(
+        id: 'plano-operacional',
+        nome: 'Plano Operacional',
+        cultura: 'Soja',
+        safra: '2026/27',
+        areaHaTotal: 100,
+        status: 'rascunho',
+        createdAt: now,
+        updatedAt: now,
+      ),
+    );
+
+    await datasource.createEstadio(
+      'plano-operacional',
+      EstadioEntity(
+        id: 'operacional-1',
+        planoId: 'plano-operacional',
+        codigo: 'Operacional',
+        label: 'Dessecação',
+        ordem: 0,
+        createdAt: now,
+      ),
+    );
+    await datasource.createEstadio(
+      'plano-operacional',
+      EstadioEntity(
+        id: 'operacional-2',
+        planoId: 'plano-operacional',
+        codigo: 'Operacional',
+        label: 'Plantio',
+        ordem: 1,
+        createdAt: now.add(const Duration(minutes: 1)),
+      ),
+    );
+
+    final plano = await datasource.getById('plano-operacional');
+    expect(plano?.estadios, hasLength(2));
+    expect(plano?.estadios.every((item) => item.codigo == 'Operacional'), isTrue);
+    expect(
+      plano?.estadios.map((item) => item.label).toList(),
+      ['Dessecação', 'Plantio'],
+    );
+  });
 }
