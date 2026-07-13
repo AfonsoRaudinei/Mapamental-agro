@@ -18,6 +18,7 @@ import '../../../../core/di/providers.dart';
 import '../../../../core/widgets/error_state_widget.dart';
 import '../../../../core/widgets/loading_skeleton.dart';
 import '../../../../core/widgets/summary_expandable_card.dart';
+import '../../../../core/utils/unit_converter.dart';
 import '../../../consolidation/presentation/providers/consolidacao_provider.dart';
 import '../../domain/entities/estadio_entity.dart';
 import '../../domain/entities/plano_entity.dart';
@@ -874,17 +875,6 @@ class _StageBlockState extends State<_StageBlock> {
       widget.estadio.produtos.isEmpty ||
       widget.estadio.codigo == 'Operacional';
 
-  String get _productSummary {
-    final produtos = widget.estadio.produtos;
-    if (produtos.isEmpty) return 'Nenhum produto — toque para adicionar';
-    if (produtos.length == 1) {
-      return _formatProdutoResumo(produtos.first);
-    }
-    final lines = produtos.take(2).map(_formatProdutoResumo);
-    final extra = produtos.length > 2 ? ' · +${produtos.length - 2}' : '';
-    return '${lines.join(' · ')}$extra';
-  }
-
   @override
   void initState() {
     super.initState();
@@ -913,9 +903,9 @@ class _StageBlockState extends State<_StageBlock> {
         onPickStageImage: () => widget.onPickStageImage(widget.estadio),
         onAddProdutoFromReferencia: widget.onAddProdutoFromReferencia,
       ),
-      summary: SummaryDetailLine(
-        primary: widget.estadio.label,
-        secondary: _productSummary,
+      summary: _StageSummary(
+        estadioLabel: widget.estadio.label,
+        produtos: widget.estadio.produtos,
       ),
       trailing: IconButton(
         onPressed: () => widget.onRemoveEstadio(widget.estadio.id),
@@ -974,9 +964,67 @@ class _StageBlockState extends State<_StageBlock> {
 }
 
 String _formatProdutoResumo(ProdutoAplicacaoEntity produto) {
-  final unit = produto.doseUnidade.split('/').first;
-  return '${produto.produtoNome} · ${produto.dose} ${produto.doseUnidade} · '
-      '${produto.totalFinal.toStringAsFixed(1)} $unit';
+  return '${produto.produtoNome} · ${_formatDose(produto.dose, produto.doseUnidade)} · '
+      '${_formatTotal(produto.totalFinal, produto.doseUnidade)}';
+}
+
+String _formatDose(double value, String unidade) {
+  final displayValue = UnitConverter.valorDisplay(value, unidade);
+  return '${displayValue.toStringAsFixed(displayValue < 10 ? 2 : 1)} ${UnitConverter.unidadeBase(unidade)}';
+}
+
+String _formatTotal(double value, String unidade) {
+  final displayValue = UnitConverter.valorDisplay(value, unidade);
+  return '${displayValue.toStringAsFixed(displayValue < 10 ? 2 : 1)} ${UnitConverter.unidadeTotal(unidade)}';
+}
+
+class _StageSummary extends StatelessWidget {
+  const _StageSummary({
+    required this.estadioLabel,
+    required this.produtos,
+  });
+
+  final String estadioLabel;
+  final List<ProdutoAplicacaoEntity> produtos;
+
+  @override
+  Widget build(BuildContext context) {
+    if (produtos.isEmpty) {
+      return SummaryDetailLine(
+        primary: estadioLabel,
+        secondary: 'Nenhum produto — toque para adicionar',
+      );
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          estadioLabel,
+          style: AppTypography.body.copyWith(
+            color: context.appTextPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+          maxLines: 1,
+          overflow: TextOverflow.ellipsis,
+        ),
+        const SizedBox(height: 4),
+        ...produtos.map(
+          (produto) => Padding(
+            padding: const EdgeInsets.only(bottom: 2),
+            child: Text(
+              _formatProdutoResumo(produto),
+              style: AppTypography.caption.copyWith(
+                color: context.appTextSecondary,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 class _StageLeadingCluster extends ConsumerWidget {
@@ -1145,7 +1193,8 @@ class _InlineProductRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final unit = produto.doseUnidade.split('/').first;
+    final unit = UnitConverter.unidadeBase(produto.doseUnidade);
+    final total = _formatDisplayTotal(produto.totalFinal, produto.doseUnidade);
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: InkWell(
@@ -1176,14 +1225,14 @@ class _InlineProductRow extends StatelessWidget {
                 ),
               ),
               Text(
-                '${produto.dose} ${produto.doseUnidade}',
+                _formatDisplayDose(produto.dose, produto.doseUnidade),
                 style: AppTypography.label.copyWith(
                   color: context.appTextSecondary,
                 ),
               ),
               const SizedBox(width: 4),
               Text(
-                '${produto.totalFinal.toStringAsFixed(1)} $unit',
+                '$total $unit',
                 style: AppTypography.caption.copyWith(
                   color: context.appTextPrimary,
                   fontWeight: FontWeight.w800,
@@ -1208,6 +1257,16 @@ class _InlineProductRow extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatDisplayDose(double value, String unidade) {
+  final displayValue = UnitConverter.valorDisplay(value, unidade);
+  return '${displayValue.toStringAsFixed(displayValue < 10 ? 2 : 1)} ${UnitConverter.unidadeBase(unidade)}';
+}
+
+String _formatDisplayTotal(double value, String unidade) {
+  final displayValue = UnitConverter.valorDisplay(value, unidade);
+  return displayValue.toStringAsFixed(displayValue < 10 ? 2 : 1);
 }
 
 class _PlanSummaryCard extends ConsumerWidget {

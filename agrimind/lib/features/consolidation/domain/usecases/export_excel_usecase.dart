@@ -4,6 +4,7 @@ import 'package:excel/excel.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../../core/utils/unit_converter.dart';
 import '../entities/consolidacao_entity.dart';
 
 /// Gera um arquivo Excel com 3 abas a partir da consolidação.
@@ -130,16 +131,20 @@ class ExportExcelUseCase {
 
     for (final item in c.itens) {
       for (final d in item.detalhe) {
+        final dose = UnitConverter.valorDisplay(d.dose, d.doseUnidade);
+        final total = UnitConverter.valorDisplay(d.total, d.doseUnidade);
+        final doseUnit = UnitConverter.unidadeBase(d.doseUnidade);
+        final totalUnit = UnitConverter.unidadeTotal(d.doseUnidade);
         _setCell(sheet, row, 0, item.produtoNome);
         _setCell(sheet, row, 1, d.estadioCodigo);
-        _setCell(sheet, row, 2, _nfQtd.format(d.dose));
-        _setCell(sheet, row, 3, d.doseUnidade);
+        _setCell(sheet, row, 2, _nfQtd.format(dose));
+        _setCell(sheet, row, 3, doseUnit);
         _setCell(sheet, row, 4, _nfQtd.format(d.areaHa));
         _setCell(
           sheet,
           row,
           5,
-          '${_nfQtd.format(d.total)} ${item.unidade}',
+          '${_nfQtd.format(total)} $totalUnit',
         );
         _setCell(sheet, row, 6, d.isOverride ? 'Sim' : '');
         _setCell(sheet, row, 7, d.overrideMotivo ?? '');

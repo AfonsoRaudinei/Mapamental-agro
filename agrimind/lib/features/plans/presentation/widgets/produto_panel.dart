@@ -11,6 +11,7 @@ import '../../../catalog/presentation/widgets/produto_search_dropdown.dart';
 import '../../domain/entities/produto_aplicacao_entity.dart';
 import 'area_selector_widget.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../../core/utils/unit_converter.dart';
 
 // ── Constantes ───────────────────────────────────────────────────────────────
 
@@ -301,7 +302,7 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
                           ),
                           const SizedBox(width: AppSpacing.sm),
                           Text(
-                            _unidade.split('/').first,
+                            UnitConverter.unidadeTotal(_unidade),
                             style: AppTypography.body.copyWith(
                               color: context.appTextSecondary,
                             ),
@@ -536,11 +537,12 @@ class _TotalCalculado extends StatelessWidget {
   final double? totalOverride;
   final void Function(bool) onToggleOverride;
 
-  String get _unit => unidade.split('/').first;
-
   @override
   Widget build(BuildContext context) {
     final totalFinal = totalOverride ?? totalCalculado;
+    final displayDose = UnitConverter.valorDisplay(dose, unidade);
+    final displayTotal = UnitConverter.valorDisplay(totalFinal, unidade);
+    final unitLabel = UnitConverter.unidadeBase(unidade);
 
     return Container(
       padding: const EdgeInsets.all(AppSpacing.sm),
@@ -562,7 +564,7 @@ class _TotalCalculado extends StatelessWidget {
               ),
               const Spacer(),
               Text(
-                '$dose $unidade × ${areaHa.toStringAsFixed(1)} ha',
+                '${displayDose.toStringAsFixed(displayDose < 10 ? 2 : 1)} $unitLabel × ${areaHa.toStringAsFixed(1)} ha',
                 style: AppTypography.caption.copyWith(
                   color: context.appTextSecondary,
                 ),
@@ -571,7 +573,7 @@ class _TotalCalculado extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            '${totalFinal.toStringAsFixed(2)} $_unit',
+            '${displayTotal.toStringAsFixed(displayTotal < 10 ? 2 : 1)} ${UnitConverter.unidadeTotal(unidade)}',
             style: AppTypography.h3.copyWith(
               color: overrideAtivo ? AppColors.warning : AppColors.primary,
             ),

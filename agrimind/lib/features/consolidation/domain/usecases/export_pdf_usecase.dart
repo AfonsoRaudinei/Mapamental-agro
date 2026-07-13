@@ -5,6 +5,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
+import '../../../../core/utils/unit_converter.dart';
 import '../entities/consolidacao_entity.dart';
 import '../entities/consolidacao_item_entity.dart';
 
@@ -161,8 +162,13 @@ class ExportPdfUseCase {
 
   pw.Widget _buildItemRow(ConsolidacaoItemEntity item) {
     final detalheTexto = item.detalhe
-        .map((d) =>
-            '${d.estadioCodigo}: ${_nfQtd.format(d.dose)} ${d.doseUnidade}×${_nfQtd.format(d.areaHa)}ha=${_nfQtd.format(d.total)} ${item.unidade}${d.isOverride ? '⚠' : ''}')
+        .map((d) {
+          final dose = UnitConverter.valorDisplay(d.dose, d.doseUnidade);
+          final total = UnitConverter.valorDisplay(d.total, d.doseUnidade);
+          final doseUnit = UnitConverter.unidadeBase(d.doseUnidade);
+          final totalUnit = UnitConverter.unidadeTotal(d.doseUnidade);
+          return '${d.estadioCodigo}: ${_nfQtd.format(dose)} $doseUnit×${_nfQtd.format(d.areaHa)}ha=${_nfQtd.format(total)} $totalUnit${d.isOverride ? '⚠' : ''}';
+        })
         .join(' | ');
 
     return pw.Column(

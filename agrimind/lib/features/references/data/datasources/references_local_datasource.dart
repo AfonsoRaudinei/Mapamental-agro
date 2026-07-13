@@ -59,7 +59,7 @@ class ReferencesLocalDatasource {
 
   // ── Seed Técnico (referências agronômicas) ─────────────────────────────────
 
-  static const _diseaseReferencesMigrationKey = 'references_doencas_v2';
+  static const _diseaseReferencesMigrationKey = 'references_doencas_v3';
   static const _insectReferencesMigrationKey = 'references_insetos_v2';
   static const _nutritionReferencesMigrationKey = 'references_nutricao_v2';
   static const _physiologyReferencesMigrationKey = 'references_fisiologia_v2';
@@ -1048,11 +1048,11 @@ class ReferencesLocalDatasource {
       disease(
         uid: 'doencas-v2-v5',
         estadio: 'V5',
-        titulo: 'Antracnose, Míldio e Crestamento',
+        titulo: 'Antracnose, Mancha-alvo e início de Ferrugem',
         descricao:
-            'Antracnose pode atingir cerca de 40%; Míldio mantém 15% e Crestamento Bacteriano pode chegar a 18%.',
+            'Antracnose pode atingir cerca de 40%; Míldio mantém 15%, Crestamento Bacteriano pode chegar a 18% e Mancha-alvo ganha pressão. Ferrugem Asiática deve entrar no radar regional.',
         focoManejo:
-            'Mapear focos e preparar estratégia preventiva para a transição reprodutiva.',
+            'Mapear focos, monitorar alertas de Ferrugem e preparar estratégia preventiva para a transição reprodutiva.',
         destaque: 'Vegetativo avançado: pressão crescente',
       ),
       disease(
@@ -1077,11 +1077,11 @@ class ReferencesLocalDatasource {
       disease(
         uid: 'doencas-v2-r2',
         estadio: 'R2',
-        titulo: 'Míldio, Pústula Bacteriana e Mofo Branco',
+        titulo: 'Ferrugem, Pústula Bacteriana e Mofo Branco',
         descricao:
             'Plena floração com Míldio em torno de 20%, Pústula Bacteriana em 15%, Mofo Branco em 12% e Ferrugem em 15-20%.',
         focoManejo:
-            'Proteger dossel em florescimento pleno e observar microclima favorável ao Mofo Branco.',
+            'Proteger dossel em florescimento pleno, rotacionar fungicidas para Ferrugem e observar microclima favorável ao Mofo Branco.',
       ),
       disease(
         uid: 'doencas-v2-r3',
@@ -1124,11 +1124,11 @@ class ReferencesLocalDatasource {
       disease(
         uid: 'doencas-v2-r55',
         estadio: 'R5.5',
-        titulo: 'DFCs e senescência precoce',
+        titulo: 'Ferrugem, DFCs e senescência precoce',
         descricao:
-            'Enchimento avançado com risco de DFCs, Mancha-parda e Cercospora acelerarem a perda de área foliar.',
+            'Enchimento avançado ainda sob risco de Ferrugem e com DFCs, Mancha-parda e Cercospora acelerando a perda de área foliar.',
         focoManejo:
-            'Evitar perda prematura de folhas e registrar falhas para ajuste do programa fitossanitário.',
+            'Evitar perda prematura de folhas, avaliar residual da última aplicação e registrar falhas para ajuste do programa fitossanitário.',
       ),
       disease(
         uid: 'doencas-v2-r6',

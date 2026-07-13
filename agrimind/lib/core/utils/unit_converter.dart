@@ -26,9 +26,22 @@ class UnitConverter {
   static double converter(double valor, String unidade) =>
       valor * (_factorsToBase[unidade] ?? 1.0);
 
+  /// Converte somente unidades menores para exibição na unidade base.
+  static double valorDisplay(double valor, String unidade) {
+    if (unidade == 'mL/ha' || unidade == 'g/ha') {
+      return converter(valor, unidade);
+    }
+    return valor;
+  }
+
   /// Retorna a unidade base (normalizada).
   /// Ex: unidadeBase('mL/ha') → 'L/ha'
   static String unidadeBase(String unidade) => _baseUnit[unidade] ?? unidade;
+
+  /// Retorna a unidade total equivalente à unidade base por hectare.
+  /// Ex: unidadeTotal('mL/ha') → 'L'
+  static String unidadeTotal(String unidade) =>
+      unidadeBase(unidade).replaceAll('/ha', '');
 
   /// Verifica se duas unidades pertencem ao mesmo grupo (somáveis).
   static bool isMesmoGrupo(String u1, String u2) =>

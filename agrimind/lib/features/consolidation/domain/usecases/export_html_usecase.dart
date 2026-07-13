@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
+import '../../../../core/utils/unit_converter.dart';
 import '../entities/consolidacao_entity.dart';
 
 class ExportHtmlUseCase {
@@ -112,9 +113,18 @@ ${plano.dataVencimento == null ? '' : '<div class="sumrow"><span>Vencimento</spa
         buffer.write('<div class="prod2">Nenhum produto</div>');
       } else {
         for (final produto in estadio.produtos) {
-          final unit = produto.doseUnidade.split('/').first;
+          final dose = UnitConverter.valorDisplay(
+            produto.dose,
+            produto.doseUnidade,
+          );
+          final total = UnitConverter.valorDisplay(
+            produto.totalFinal,
+            produto.doseUnidade,
+          );
+          final doseUnit = UnitConverter.unidadeBase(produto.doseUnidade);
+          final totalUnit = UnitConverter.unidadeTotal(produto.doseUnidade);
           buffer.write(
-              '<div class="prod"><div class="prod1"><span class="dot"></span><span class="pname">${_esc(produto.produtoNome)}</span><span class="ptotal">${_num.format(produto.totalFinal)} $unit</span></div><div class="prod2">${_num.format(produto.dose)} ${_esc(produto.doseUnidade)} · ${_num.format(produto.areaHa)} ha</div></div>');
+              '<div class="prod"><div class="prod1"><span class="dot"></span><span class="pname">${_esc(produto.produtoNome)}</span><span class="ptotal">${_num.format(total)} $totalUnit</span></div><div class="prod2">${_num.format(dose)} ${_esc(doseUnit)} · ${_num.format(produto.areaHa)} ha</div></div>');
         }
       }
       buffer.write(
