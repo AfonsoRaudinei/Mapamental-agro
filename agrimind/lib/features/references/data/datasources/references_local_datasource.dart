@@ -21,6 +21,12 @@ class ReferencesLocalDatasource {
         praticas: m.praticas,
         padrao: m.padrao,
         destaque: m.destaque,
+        fonte: m.fonte,
+        safraReferencia: m.safraReferencia,
+        dataReferencia: m.dataReferencia,
+        resultado: m.resultado,
+        local: m.local,
+        tipoFonte: m.tipoFonte,
       );
 
   // ── Queries ────────────────────────────────────────────────────────────────
@@ -63,7 +69,7 @@ class ReferencesLocalDatasource {
   static const _insectReferencesMigrationKey = 'references_insetos_v2';
   static const _nutritionReferencesMigrationKey = 'references_nutricao_v2';
   static const _physiologyReferencesMigrationKey = 'references_fisiologia_v2';
-  static const _cesbReferencesMigrationKey = 'references_cesb_v2';
+  static const _cesbReferencesMigrationKey = 'references_cesb_v3';
 
   Future<void> seedIfEmpty() async {
     final count = await _database.referenciasTecnicas.count().getSingle();
@@ -181,6 +187,12 @@ class ReferencesLocalDatasource {
       required String padrao,
       String? descricao,
       String? destaque,
+      String? fonte,
+      String? safraReferencia,
+      DateTime? dataReferencia,
+      String? resultado,
+      String? local,
+      String? tipoFonte,
     }) =>
         ReferenciasTecnicasCompanion.insert(
           uid: uid,
@@ -192,6 +204,12 @@ class ReferencesLocalDatasource {
           praticas: Value(praticas),
           padrao: Value(padrao),
           destaque: Value(destaque),
+          fonte: Value(fonte),
+          safraReferencia: Value(safraReferencia),
+          dataReferencia: Value(dataReferencia),
+          resultado: Value(resultado),
+          local: Value(local),
+          tipoFonte: Value(tipoFonte),
         );
 
     const tetoProdutivo =
@@ -375,6 +393,175 @@ class ReferencesLocalDatasource {
             'Garantir translocação final.\n'
             'Registrar resposta por zona de manejo.',
         padrao: 'Monitoramento e Precisão',
+      ),
+      ..._buildCesbCaseReferences(cesb),
+    ];
+  }
+
+  List<ReferenciasTecnicasCompanion> _buildCesbCaseReferences(
+    ReferenciasTecnicasCompanion Function({
+      required String uid,
+      required String estadio,
+      required String titulo,
+      required String focoManejo,
+      required String praticas,
+      required String padrao,
+      String? descricao,
+      String? destaque,
+      String? fonte,
+      String? safraReferencia,
+      DateTime? dataReferencia,
+      String? resultado,
+      String? local,
+      String? tipoFonte,
+    }) cesb,
+  ) {
+    const disclaimer =
+        'Constatação técnica CESB: case campeão não deve ser tratado como recomendação de manejo.';
+
+    List<ReferenciasTecnicasCompanion> caseRefs({
+      required String slug,
+      required String tituloBase,
+      required String resultado,
+      required String local,
+      required String fonte,
+      required String focoManejo,
+      required String praticasBase,
+      required List<String> estadios,
+      required String destaque,
+      required String padrao,
+      String? dataOperacional,
+    }) {
+      return estadios
+          .map(
+            (estadio) => cesb(
+              uid:
+                  'cesb-2026-$slug-${estadio.toLowerCase().replaceAll('.', '')}',
+              estadio: estadio,
+              titulo: '$tituloBase — $estadio',
+              descricao: [
+                disclaimer,
+                if (dataOperacional != null) dataOperacional,
+              ].join('\n'),
+              focoManejo: focoManejo,
+              praticas: praticasBase,
+              padrao: padrao,
+              destaque: destaque,
+              fonte: fonte,
+              safraReferencia: '2025/2026',
+              resultado: resultado,
+              local: local,
+              tipoFonte: 'Case CESB',
+            ),
+          )
+          .toList();
+    }
+
+    return [
+      ...caseRefs(
+        slug: 'sul-nacional',
+        tituloBase: 'Case Sul/Nacional',
+        resultado: '156,13 sc/ha',
+        local: 'Major Vieira-SC',
+        fonte: 'CESB / CONAB / IBRA / Agrymet / Agrymax / Produtor',
+        focoManejo: 'Proteção de plantas e investimento contínuo em solo',
+        praticasBase:
+            'Constatações do case: decisões baseadas em dados de pesquisa, dedicação operacional e proteção de plantas.\n'
+            'Estádios citados no manejo: V4, V6, R1, R3, R5 e R5.5.',
+        estadios: const ['V4', 'V6', 'R1', 'R3', 'R5.1', 'R5.5'],
+        destaque: 'Produtividade auditada: 156,13 sc/ha',
+        padrao: 'Case Campeão',
+        dataOperacional: 'Semeadura em 11/11/2025.',
+      ),
+      ...caseRefs(
+        slug: 'nordeste',
+        tituloBase: 'Case Nordeste',
+        resultado: '143,77 sc/ha',
+        local: 'Riachão das Neves-BA',
+        fonte: 'CESB / Produtor / CONAB / IBRA / Agrymet / Agrymex / Consultor',
+        focoManejo: 'Construção de sistema com rotação, correção e bioinsumos',
+        praticasBase:
+            'Constatações do case: histórico com cinco culturas, correção/adubação de sistema e uso de bioinsumos no sulco.\n'
+            'Estádios citados no manejo: V4, V7, R1, R3, R4, R5.1, R6 e R7.',
+        estadios: const ['V4', 'V7', 'R1', 'R3', 'R4', 'R5.1', 'R6', 'R7'],
+        destaque: 'Produtividade auditada: 143,77 sc/ha',
+        padrao: 'Case Campeão',
+        dataOperacional: 'Semeadura em 03/11/2025.',
+      ),
+      ...caseRefs(
+        slug: 'irrigado-nacional',
+        tituloBase: 'Case Irrigado Nacional',
+        resultado: '138,97 sc/ha',
+        local: 'Mundo Novo-GO',
+        fonte:
+            'CESB / CONAB / IBRA / Agrymet / Agrymax / Brasmax / Produtor / Consultor',
+        focoManejo: 'Rigor no plantio, manejo biológico/fisiológico e timing',
+        praticasBase:
+            'Constatações do case: plantio rigoroso, manejo biológico e fisiológico, e timing de aplicações.\n'
+            'Estádios citados no manejo: V4, V8, R1, R3, R5.3, R5.4, R5.5 e R7.',
+        estadios: const ['V4', 'V8', 'R1', 'R3', 'R5.3', 'R5.4', 'R5.5', 'R7'],
+        destaque: 'Produtividade auditada: 138,97 sc/ha',
+        padrao: 'Case Campeão',
+        dataOperacional: 'Semeadura em 01/10/2025.',
+      ),
+      ...caseRefs(
+        slug: 'norte',
+        tituloBase: 'Case Norte',
+        resultado: '136,64 sc/ha',
+        local: 'Goiatins-TO',
+        fonte:
+            'CESB / CONAB / Agrymet / Agrymax / IBRA Megalab / Falker / Produtor / Consultor',
+        focoManejo:
+            'Sistema de rotação, correção de solo e resposta por estádio',
+        praticasBase:
+            'Constatações do case: quatro culturas no histórico, correção de solo recorrente e adubação de sistema.\n'
+            'Estádios citados no manejo: V2, V3, V6, V7, R1, R2, R5.1, R5.3 e R5.5.',
+        estadios: const [
+          'V2',
+          'V3',
+          'V6',
+          'V7',
+          'R1',
+          'R2',
+          'R5.1',
+          'R5.3',
+          'R5.5'
+        ],
+        destaque: 'Produtividade auditada: 136,64 sc/ha',
+        padrao: 'Case Campeão',
+        dataOperacional: 'Semeadura em 02/11/2025.',
+      ),
+      ...caseRefs(
+        slug: 'sudeste',
+        tituloBase: 'Case Sudeste',
+        resultado: '122,66 sc/ha',
+        local: 'Cambuquira-MG',
+        fonte: 'CESB / CONAB / IBRA Megalab / Falker / Produtor / Consultor',
+        focoManejo:
+            'Plantio uniforme, construção de solo e integração biológica',
+        praticasBase:
+            'Constatações do case: plantabilidade, profundidade efetiva e integração de biológicos ao manejo.\n'
+            'Estádios citados no manejo: V2, V4, R1, R2, R3 e R5.',
+        estadios: const ['V2', 'V4', 'R1', 'R2', 'R3', 'R5.1'],
+        destaque: 'Produtividade auditada: 122,66 sc/ha',
+        padrao: 'Case Campeão',
+        dataOperacional: 'Semeadura em 10/11/2025.',
+      ),
+      ...caseRefs(
+        slug: 'centro-oeste',
+        tituloBase: 'Case Centro-Oeste',
+        resultado: '118,36 sc/ha',
+        local: 'Confresa-MT',
+        fonte:
+            'CESB / CONAB / IBRA / Agrymet / Agrymax / Brasmax / Produtor / Consultor',
+        focoManejo: 'Perfil de solo, adubação antecipada e manejo por estádio',
+        praticasBase:
+            'Constatações do case: rotação com quatro culturas, correção de solo e manejo por aplicações em estádios definidos.\n'
+            'Estádios citados no manejo: V2, V4, V5, R1, R4, R5.3 e R6/R7.',
+        estadios: const ['V2', 'V4', 'V5', 'R1', 'R4', 'R5.3', 'R6', 'R7'],
+        destaque: 'Produtividade auditada: 118,36 sc/ha',
+        padrao: 'Case Campeão',
+        dataOperacional: 'Semeadura em 30/10/2025.',
       ),
     ];
   }

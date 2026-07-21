@@ -16,5 +16,11 @@ class ReferenciaTecnicaEntity with _$ReferenciaTecnicaEntity {
     String? praticas, // CESB: lista de práticas
     String? padrao, // CESB: "Nutrologia" | "Hormonal" | "Biológico"
     String? destaque, // CESB: "Agro Mallon — 135,49 sc/ha"
+    String? fonte,
+    String? safraReferencia,
+    DateTime? dataReferencia,
+    String? resultado,
+    String? local,
+    String? tipoFonte,
   }) = _ReferenciaTecnicaEntity;
 }

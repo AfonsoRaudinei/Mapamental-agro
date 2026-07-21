@@ -20,6 +20,12 @@ class ReferenciaDisplayItem {
     this.praticas,
     this.padrao,
     this.destaque,
+    this.fonte,
+    this.safraReferencia,
+    this.dataReferencia,
+    this.resultado,
+    this.local,
+    this.tipoFonte,
     this.podeUsarNoPlano = true,
   });
 
@@ -29,6 +35,12 @@ class ReferenciaDisplayItem {
   final String? praticas; // CESB
   final String? padrao; // CESB: "Nutrologia" | "Hormonal" | "Biológico"
   final String? destaque; // CESB: "Agro Mallon — 135,49 sc/ha"
+  final String? fonte;
+  final String? safraReferencia;
+  final DateTime? dataReferencia;
+  final String? resultado;
+  final String? local;
+  final String? tipoFonte;
 
   /// False quando a circular indica só monitoramento / sem foliar (ex.: VE–V3, R8).
   final bool podeUsarNoPlano;
@@ -169,9 +181,7 @@ class _SheetHeader extends StatelessWidget {
             width: 40,
             height: 40,
             decoration: BoxDecoration(
-              color: isPremiumTrack
-                  ? accent.withValues(alpha: 0.14)
-                  : accent,
+              color: isPremiumTrack ? accent.withValues(alpha: 0.14) : accent,
               borderRadius: BorderRadius.circular(10),
               border: isPremiumTrack
                   ? Border.all(color: accent.withValues(alpha: 0.5))
@@ -179,9 +189,7 @@ class _SheetHeader extends StatelessWidget {
             ),
             child: Center(
               child: PhosphorIcon(
-                isPremiumTrack
-                    ? PhosphorIconsFill.bookOpen
-                    : categoria.icone,
+                isPremiumTrack ? PhosphorIconsFill.bookOpen : categoria.icone,
                 color: isPremiumTrack ? accent : Colors.white,
                 size: 22,
               ),
@@ -315,6 +323,16 @@ class _CesbTile extends StatelessWidget {
               ),
             ),
           ],
+          if (_metadataLine(item).isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              _metadataLine(item),
+              style: AppTypography.label.copyWith(
+                color: context.appTextSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
           if (item.praticas != null) ...[
             const SizedBox(height: 4),
             Text(
@@ -341,6 +359,15 @@ class _CesbTile extends StatelessWidget {
               ),
             ),
           ],
+          if (item.fonte != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Fonte: ${item.fonte}',
+              style: AppTypography.label.copyWith(
+                color: context.appTextSecondary,
+              ),
+            ),
+          ],
           const SizedBox(height: AppSpacing.sm),
           Align(
             alignment: Alignment.centerRight,
@@ -349,6 +376,14 @@ class _CesbTile extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String _metadataLine(ReferenciaDisplayItem item) {
+    return [
+      if (item.safraReferencia != null) 'Safra ${item.safraReferencia}',
+      if (item.resultado != null) item.resultado,
+      if (item.local != null) item.local,
+    ].join(' · ');
   }
 }
 

@@ -29,7 +29,14 @@ mixin _$ReferenciaTecnicaEntity {
       throw _privateConstructorUsedError; // CESB: lista de práticas
   String? get padrao =>
       throw _privateConstructorUsedError; // CESB: "Nutrologia" | "Hormonal" | "Biológico"
-  String? get destaque => throw _privateConstructorUsedError;
+  String? get destaque =>
+      throw _privateConstructorUsedError; // CESB: "Agro Mallon — 135,49 sc/ha"
+  String? get fonte => throw _privateConstructorUsedError;
+  String? get safraReferencia => throw _privateConstructorUsedError;
+  DateTime? get dataReferencia => throw _privateConstructorUsedError;
+  String? get resultado => throw _privateConstructorUsedError;
+  String? get local => throw _privateConstructorUsedError;
+  String? get tipoFonte => throw _privateConstructorUsedError;
 
   /// Create a copy of ReferenciaTecnicaEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -53,7 +60,13 @@ abstract class $ReferenciaTecnicaEntityCopyWith<$Res> {
       String? focoManejo,
       String? praticas,
       String? padrao,
-      String? destaque});
+      String? destaque,
+      String? fonte,
+      String? safraReferencia,
+      DateTime? dataReferencia,
+      String? resultado,
+      String? local,
+      String? tipoFonte});
 }
 
 /// @nodoc
@@ -81,6 +94,12 @@ class _$ReferenciaTecnicaEntityCopyWithImpl<$Res,
     Object? praticas = freezed,
     Object? padrao = freezed,
     Object? destaque = freezed,
+    Object? fonte = freezed,
+    Object? safraReferencia = freezed,
+    Object? dataReferencia = freezed,
+    Object? resultado = freezed,
+    Object? local = freezed,
+    Object? tipoFonte = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -119,6 +138,30 @@ class _$ReferenciaTecnicaEntityCopyWithImpl<$Res,
           ? _value.destaque
           : destaque // ignore: cast_nullable_to_non_nullable
               as String?,
+      fonte: freezed == fonte
+          ? _value.fonte
+          : fonte // ignore: cast_nullable_to_non_nullable
+              as String?,
+      safraReferencia: freezed == safraReferencia
+          ? _value.safraReferencia
+          : safraReferencia // ignore: cast_nullable_to_non_nullable
+              as String?,
+      dataReferencia: freezed == dataReferencia
+          ? _value.dataReferencia
+          : dataReferencia // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      resultado: freezed == resultado
+          ? _value.resultado
+          : resultado // ignore: cast_nullable_to_non_nullable
+              as String?,
+      local: freezed == local
+          ? _value.local
+          : local // ignore: cast_nullable_to_non_nullable
+              as String?,
+      tipoFonte: freezed == tipoFonte
+          ? _value.tipoFonte
+          : tipoFonte // ignore: cast_nullable_to_non_nullable
+              as String?,
     ) as $Val);
   }
 }
@@ -141,7 +184,13 @@ abstract class _$$ReferenciaTecnicaEntityImplCopyWith<$Res>
       String? focoManejo,
       String? praticas,
       String? padrao,
-      String? destaque});
+      String? destaque,
+      String? fonte,
+      String? safraReferencia,
+      DateTime? dataReferencia,
+      String? resultado,
+      String? local,
+      String? tipoFonte});
 }
 
 /// @nodoc
@@ -168,6 +217,12 @@ class __$$ReferenciaTecnicaEntityImplCopyWithImpl<$Res>
     Object? praticas = freezed,
     Object? padrao = freezed,
     Object? destaque = freezed,
+    Object? fonte = freezed,
+    Object? safraReferencia = freezed,
+    Object? dataReferencia = freezed,
+    Object? resultado = freezed,
+    Object? local = freezed,
+    Object? tipoFonte = freezed,
   }) {
     return _then(_$ReferenciaTecnicaEntityImpl(
       id: null == id
@@ -206,6 +261,30 @@ class __$$ReferenciaTecnicaEntityImplCopyWithImpl<$Res>
           ? _value.destaque
           : destaque // ignore: cast_nullable_to_non_nullable
               as String?,
+      fonte: freezed == fonte
+          ? _value.fonte
+          : fonte // ignore: cast_nullable_to_non_nullable
+              as String?,
+      safraReferencia: freezed == safraReferencia
+          ? _value.safraReferencia
+          : safraReferencia // ignore: cast_nullable_to_non_nullable
+              as String?,
+      dataReferencia: freezed == dataReferencia
+          ? _value.dataReferencia
+          : dataReferencia // ignore: cast_nullable_to_non_nullable
+              as DateTime?,
+      resultado: freezed == resultado
+          ? _value.resultado
+          : resultado // ignore: cast_nullable_to_non_nullable
+              as String?,
+      local: freezed == local
+          ? _value.local
+          : local // ignore: cast_nullable_to_non_nullable
+              as String?,
+      tipoFonte: freezed == tipoFonte
+          ? _value.tipoFonte
+          : tipoFonte // ignore: cast_nullable_to_non_nullable
+              as String?,
     ));
   }
 }
@@ -222,7 +301,13 @@ class _$ReferenciaTecnicaEntityImpl implements _ReferenciaTecnicaEntity {
       this.focoManejo,
       this.praticas,
       this.padrao,
-      this.destaque});
+      this.destaque,
+      this.fonte,
+      this.safraReferencia,
+      this.dataReferencia,
+      this.resultado,
+      this.local,
+      this.tipoFonte});
 
   @override
   final String id;
@@ -247,10 +332,23 @@ class _$ReferenciaTecnicaEntityImpl implements _ReferenciaTecnicaEntity {
 // CESB: "Nutrologia" | "Hormonal" | "Biológico"
   @override
   final String? destaque;
+// CESB: "Agro Mallon — 135,49 sc/ha"
+  @override
+  final String? fonte;
+  @override
+  final String? safraReferencia;
+  @override
+  final DateTime? dataReferencia;
+  @override
+  final String? resultado;
+  @override
+  final String? local;
+  @override
+  final String? tipoFonte;
 
   @override
   String toString() {
-    return 'ReferenciaTecnicaEntity(id: $id, categoria: $categoria, estadio: $estadio, titulo: $titulo, descricao: $descricao, focoManejo: $focoManejo, praticas: $praticas, padrao: $padrao, destaque: $destaque)';
+    return 'ReferenciaTecnicaEntity(id: $id, categoria: $categoria, estadio: $estadio, titulo: $titulo, descricao: $descricao, focoManejo: $focoManejo, praticas: $praticas, padrao: $padrao, destaque: $destaque, fonte: $fonte, safraReferencia: $safraReferencia, dataReferencia: $dataReferencia, resultado: $resultado, local: $local, tipoFonte: $tipoFonte)';
   }
 
   @override
@@ -271,12 +369,37 @@ class _$ReferenciaTecnicaEntityImpl implements _ReferenciaTecnicaEntity {
                 other.praticas == praticas) &&
             (identical(other.padrao, padrao) || other.padrao == padrao) &&
             (identical(other.destaque, destaque) ||
-                other.destaque == destaque));
+                other.destaque == destaque) &&
+            (identical(other.fonte, fonte) || other.fonte == fonte) &&
+            (identical(other.safraReferencia, safraReferencia) ||
+                other.safraReferencia == safraReferencia) &&
+            (identical(other.dataReferencia, dataReferencia) ||
+                other.dataReferencia == dataReferencia) &&
+            (identical(other.resultado, resultado) ||
+                other.resultado == resultado) &&
+            (identical(other.local, local) || other.local == local) &&
+            (identical(other.tipoFonte, tipoFonte) ||
+                other.tipoFonte == tipoFonte));
   }
 
   @override
-  int get hashCode => Object.hash(runtimeType, id, categoria, estadio, titulo,
-      descricao, focoManejo, praticas, padrao, destaque);
+  int get hashCode => Object.hash(
+      runtimeType,
+      id,
+      categoria,
+      estadio,
+      titulo,
+      descricao,
+      focoManejo,
+      praticas,
+      padrao,
+      destaque,
+      fonte,
+      safraReferencia,
+      dataReferencia,
+      resultado,
+      local,
+      tipoFonte);
 
   /// Create a copy of ReferenciaTecnicaEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -298,7 +421,13 @@ abstract class _ReferenciaTecnicaEntity implements ReferenciaTecnicaEntity {
       final String? focoManejo,
       final String? praticas,
       final String? padrao,
-      final String? destaque}) = _$ReferenciaTecnicaEntityImpl;
+      final String? destaque,
+      final String? fonte,
+      final String? safraReferencia,
+      final DateTime? dataReferencia,
+      final String? resultado,
+      final String? local,
+      final String? tipoFonte}) = _$ReferenciaTecnicaEntityImpl;
 
   @override
   String get id;
@@ -317,7 +446,19 @@ abstract class _ReferenciaTecnicaEntity implements ReferenciaTecnicaEntity {
   @override
   String? get padrao; // CESB: "Nutrologia" | "Hormonal" | "Biológico"
   @override
-  String? get destaque;
+  String? get destaque; // CESB: "Agro Mallon — 135,49 sc/ha"
+  @override
+  String? get fonte;
+  @override
+  String? get safraReferencia;
+  @override
+  DateTime? get dataReferencia;
+  @override
+  String? get resultado;
+  @override
+  String? get local;
+  @override
+  String? get tipoFonte;
 
   /// Create a copy of ReferenciaTecnicaEntity
   /// with the given fields replaced by the non-null parameter values.

@@ -113,6 +113,12 @@ class ReferenciasTecnicas extends Table {
   TextColumn get praticas => text().nullable()();
   TextColumn get padrao => text().nullable()();
   TextColumn get destaque => text().nullable()();
+  TextColumn get fonte => text().nullable()();
+  TextColumn get safraReferencia => text().nullable()();
+  DateTimeColumn get dataReferencia => dateTime().nullable()();
+  TextColumn get resultado => text().nullable()();
+  TextColumn get local => text().nullable()();
+  TextColumn get tipoFonte => text().nullable()();
 
   @override
   Set<Column<Object>> get primaryKey => {uid};
@@ -222,7 +228,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'agrimind'));
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -245,6 +251,28 @@ class AppDatabase extends _$AppDatabase {
           }
           if (from < 4) {
             await migrator.addColumn(planos, planos.consultorExibirNome);
+          }
+          if (from < 5) {
+            await migrator.addColumn(
+                referenciasTecnicas, referenciasTecnicas.fonte);
+            await migrator.addColumn(
+              referenciasTecnicas,
+              referenciasTecnicas.safraReferencia,
+            );
+            await migrator.addColumn(
+              referenciasTecnicas,
+              referenciasTecnicas.dataReferencia,
+            );
+            await migrator.addColumn(
+              referenciasTecnicas,
+              referenciasTecnicas.resultado,
+            );
+            await migrator.addColumn(
+                referenciasTecnicas, referenciasTecnicas.local);
+            await migrator.addColumn(
+              referenciasTecnicas,
+              referenciasTecnicas.tipoFonte,
+            );
           }
         },
         beforeOpen: (details) async {

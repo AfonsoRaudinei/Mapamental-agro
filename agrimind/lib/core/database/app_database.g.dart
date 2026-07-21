@@ -3245,6 +3245,40 @@ class $ReferenciasTecnicasTable extends ReferenciasTecnicas
   late final GeneratedColumn<String> destaque = GeneratedColumn<String>(
       'destaque', aliasedName, true,
       type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _fonteMeta = const VerificationMeta('fonte');
+  @override
+  late final GeneratedColumn<String> fonte = GeneratedColumn<String>(
+      'fonte', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _safraReferenciaMeta =
+      const VerificationMeta('safraReferencia');
+  @override
+  late final GeneratedColumn<String> safraReferencia = GeneratedColumn<String>(
+      'safra_referencia', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _dataReferenciaMeta =
+      const VerificationMeta('dataReferencia');
+  @override
+  late final GeneratedColumn<DateTime> dataReferencia =
+      GeneratedColumn<DateTime>('data_referencia', aliasedName, true,
+          type: DriftSqlType.dateTime, requiredDuringInsert: false);
+  static const VerificationMeta _resultadoMeta =
+      const VerificationMeta('resultado');
+  @override
+  late final GeneratedColumn<String> resultado = GeneratedColumn<String>(
+      'resultado', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _localMeta = const VerificationMeta('local');
+  @override
+  late final GeneratedColumn<String> local = GeneratedColumn<String>(
+      'local', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
+  static const VerificationMeta _tipoFonteMeta =
+      const VerificationMeta('tipoFonte');
+  @override
+  late final GeneratedColumn<String> tipoFonte = GeneratedColumn<String>(
+      'tipo_fonte', aliasedName, true,
+      type: DriftSqlType.string, requiredDuringInsert: false);
   @override
   List<GeneratedColumn> get $columns => [
         uid,
@@ -3255,7 +3289,13 @@ class $ReferenciasTecnicasTable extends ReferenciasTecnicas
         focoManejo,
         praticas,
         padrao,
-        destaque
+        destaque,
+        fonte,
+        safraReferencia,
+        dataReferencia,
+        resultado,
+        local,
+        tipoFonte
       ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -3313,6 +3353,34 @@ class $ReferenciasTecnicasTable extends ReferenciasTecnicas
       context.handle(_destaqueMeta,
           destaque.isAcceptableOrUnknown(data['destaque']!, _destaqueMeta));
     }
+    if (data.containsKey('fonte')) {
+      context.handle(
+          _fonteMeta, fonte.isAcceptableOrUnknown(data['fonte']!, _fonteMeta));
+    }
+    if (data.containsKey('safra_referencia')) {
+      context.handle(
+          _safraReferenciaMeta,
+          safraReferencia.isAcceptableOrUnknown(
+              data['safra_referencia']!, _safraReferenciaMeta));
+    }
+    if (data.containsKey('data_referencia')) {
+      context.handle(
+          _dataReferenciaMeta,
+          dataReferencia.isAcceptableOrUnknown(
+              data['data_referencia']!, _dataReferenciaMeta));
+    }
+    if (data.containsKey('resultado')) {
+      context.handle(_resultadoMeta,
+          resultado.isAcceptableOrUnknown(data['resultado']!, _resultadoMeta));
+    }
+    if (data.containsKey('local')) {
+      context.handle(
+          _localMeta, local.isAcceptableOrUnknown(data['local']!, _localMeta));
+    }
+    if (data.containsKey('tipo_fonte')) {
+      context.handle(_tipoFonteMeta,
+          tipoFonte.isAcceptableOrUnknown(data['tipo_fonte']!, _tipoFonteMeta));
+    }
     return context;
   }
 
@@ -3340,6 +3408,18 @@ class $ReferenciasTecnicasTable extends ReferenciasTecnicas
           .read(DriftSqlType.string, data['${effectivePrefix}padrao']),
       destaque: attachedDatabase.typeMapping
           .read(DriftSqlType.string, data['${effectivePrefix}destaque']),
+      fonte: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}fonte']),
+      safraReferencia: attachedDatabase.typeMapping.read(
+          DriftSqlType.string, data['${effectivePrefix}safra_referencia']),
+      dataReferencia: attachedDatabase.typeMapping.read(
+          DriftSqlType.dateTime, data['${effectivePrefix}data_referencia']),
+      resultado: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}resultado']),
+      local: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}local']),
+      tipoFonte: attachedDatabase.typeMapping
+          .read(DriftSqlType.string, data['${effectivePrefix}tipo_fonte']),
     );
   }
 
@@ -3360,6 +3440,12 @@ class ReferenciasTecnica extends DataClass
   final String? praticas;
   final String? padrao;
   final String? destaque;
+  final String? fonte;
+  final String? safraReferencia;
+  final DateTime? dataReferencia;
+  final String? resultado;
+  final String? local;
+  final String? tipoFonte;
   const ReferenciasTecnica(
       {required this.uid,
       required this.categoria,
@@ -3369,7 +3455,13 @@ class ReferenciasTecnica extends DataClass
       this.focoManejo,
       this.praticas,
       this.padrao,
-      this.destaque});
+      this.destaque,
+      this.fonte,
+      this.safraReferencia,
+      this.dataReferencia,
+      this.resultado,
+      this.local,
+      this.tipoFonte});
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
@@ -3391,6 +3483,24 @@ class ReferenciasTecnica extends DataClass
     }
     if (!nullToAbsent || destaque != null) {
       map['destaque'] = Variable<String>(destaque);
+    }
+    if (!nullToAbsent || fonte != null) {
+      map['fonte'] = Variable<String>(fonte);
+    }
+    if (!nullToAbsent || safraReferencia != null) {
+      map['safra_referencia'] = Variable<String>(safraReferencia);
+    }
+    if (!nullToAbsent || dataReferencia != null) {
+      map['data_referencia'] = Variable<DateTime>(dataReferencia);
+    }
+    if (!nullToAbsent || resultado != null) {
+      map['resultado'] = Variable<String>(resultado);
+    }
+    if (!nullToAbsent || local != null) {
+      map['local'] = Variable<String>(local);
+    }
+    if (!nullToAbsent || tipoFonte != null) {
+      map['tipo_fonte'] = Variable<String>(tipoFonte);
     }
     return map;
   }
@@ -3415,6 +3525,22 @@ class ReferenciasTecnica extends DataClass
       destaque: destaque == null && nullToAbsent
           ? const Value.absent()
           : Value(destaque),
+      fonte:
+          fonte == null && nullToAbsent ? const Value.absent() : Value(fonte),
+      safraReferencia: safraReferencia == null && nullToAbsent
+          ? const Value.absent()
+          : Value(safraReferencia),
+      dataReferencia: dataReferencia == null && nullToAbsent
+          ? const Value.absent()
+          : Value(dataReferencia),
+      resultado: resultado == null && nullToAbsent
+          ? const Value.absent()
+          : Value(resultado),
+      local:
+          local == null && nullToAbsent ? const Value.absent() : Value(local),
+      tipoFonte: tipoFonte == null && nullToAbsent
+          ? const Value.absent()
+          : Value(tipoFonte),
     );
   }
 
@@ -3431,6 +3557,12 @@ class ReferenciasTecnica extends DataClass
       praticas: serializer.fromJson<String?>(json['praticas']),
       padrao: serializer.fromJson<String?>(json['padrao']),
       destaque: serializer.fromJson<String?>(json['destaque']),
+      fonte: serializer.fromJson<String?>(json['fonte']),
+      safraReferencia: serializer.fromJson<String?>(json['safraReferencia']),
+      dataReferencia: serializer.fromJson<DateTime?>(json['dataReferencia']),
+      resultado: serializer.fromJson<String?>(json['resultado']),
+      local: serializer.fromJson<String?>(json['local']),
+      tipoFonte: serializer.fromJson<String?>(json['tipoFonte']),
     );
   }
   @override
@@ -3446,6 +3578,12 @@ class ReferenciasTecnica extends DataClass
       'praticas': serializer.toJson<String?>(praticas),
       'padrao': serializer.toJson<String?>(padrao),
       'destaque': serializer.toJson<String?>(destaque),
+      'fonte': serializer.toJson<String?>(fonte),
+      'safraReferencia': serializer.toJson<String?>(safraReferencia),
+      'dataReferencia': serializer.toJson<DateTime?>(dataReferencia),
+      'resultado': serializer.toJson<String?>(resultado),
+      'local': serializer.toJson<String?>(local),
+      'tipoFonte': serializer.toJson<String?>(tipoFonte),
     };
   }
 
@@ -3458,7 +3596,13 @@ class ReferenciasTecnica extends DataClass
           Value<String?> focoManejo = const Value.absent(),
           Value<String?> praticas = const Value.absent(),
           Value<String?> padrao = const Value.absent(),
-          Value<String?> destaque = const Value.absent()}) =>
+          Value<String?> destaque = const Value.absent(),
+          Value<String?> fonte = const Value.absent(),
+          Value<String?> safraReferencia = const Value.absent(),
+          Value<DateTime?> dataReferencia = const Value.absent(),
+          Value<String?> resultado = const Value.absent(),
+          Value<String?> local = const Value.absent(),
+          Value<String?> tipoFonte = const Value.absent()}) =>
       ReferenciasTecnica(
         uid: uid ?? this.uid,
         categoria: categoria ?? this.categoria,
@@ -3469,6 +3613,15 @@ class ReferenciasTecnica extends DataClass
         praticas: praticas.present ? praticas.value : this.praticas,
         padrao: padrao.present ? padrao.value : this.padrao,
         destaque: destaque.present ? destaque.value : this.destaque,
+        fonte: fonte.present ? fonte.value : this.fonte,
+        safraReferencia: safraReferencia.present
+            ? safraReferencia.value
+            : this.safraReferencia,
+        dataReferencia:
+            dataReferencia.present ? dataReferencia.value : this.dataReferencia,
+        resultado: resultado.present ? resultado.value : this.resultado,
+        local: local.present ? local.value : this.local,
+        tipoFonte: tipoFonte.present ? tipoFonte.value : this.tipoFonte,
       );
   ReferenciasTecnica copyWithCompanion(ReferenciasTecnicasCompanion data) {
     return ReferenciasTecnica(
@@ -3482,6 +3635,16 @@ class ReferenciasTecnica extends DataClass
       praticas: data.praticas.present ? data.praticas.value : this.praticas,
       padrao: data.padrao.present ? data.padrao.value : this.padrao,
       destaque: data.destaque.present ? data.destaque.value : this.destaque,
+      fonte: data.fonte.present ? data.fonte.value : this.fonte,
+      safraReferencia: data.safraReferencia.present
+          ? data.safraReferencia.value
+          : this.safraReferencia,
+      dataReferencia: data.dataReferencia.present
+          ? data.dataReferencia.value
+          : this.dataReferencia,
+      resultado: data.resultado.present ? data.resultado.value : this.resultado,
+      local: data.local.present ? data.local.value : this.local,
+      tipoFonte: data.tipoFonte.present ? data.tipoFonte.value : this.tipoFonte,
     );
   }
 
@@ -3496,14 +3659,34 @@ class ReferenciasTecnica extends DataClass
           ..write('focoManejo: $focoManejo, ')
           ..write('praticas: $praticas, ')
           ..write('padrao: $padrao, ')
-          ..write('destaque: $destaque')
+          ..write('destaque: $destaque, ')
+          ..write('fonte: $fonte, ')
+          ..write('safraReferencia: $safraReferencia, ')
+          ..write('dataReferencia: $dataReferencia, ')
+          ..write('resultado: $resultado, ')
+          ..write('local: $local, ')
+          ..write('tipoFonte: $tipoFonte')
           ..write(')'))
         .toString();
   }
 
   @override
-  int get hashCode => Object.hash(uid, categoria, estadio, titulo, descricao,
-      focoManejo, praticas, padrao, destaque);
+  int get hashCode => Object.hash(
+      uid,
+      categoria,
+      estadio,
+      titulo,
+      descricao,
+      focoManejo,
+      praticas,
+      padrao,
+      destaque,
+      fonte,
+      safraReferencia,
+      dataReferencia,
+      resultado,
+      local,
+      tipoFonte);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -3516,7 +3699,13 @@ class ReferenciasTecnica extends DataClass
           other.focoManejo == this.focoManejo &&
           other.praticas == this.praticas &&
           other.padrao == this.padrao &&
-          other.destaque == this.destaque);
+          other.destaque == this.destaque &&
+          other.fonte == this.fonte &&
+          other.safraReferencia == this.safraReferencia &&
+          other.dataReferencia == this.dataReferencia &&
+          other.resultado == this.resultado &&
+          other.local == this.local &&
+          other.tipoFonte == this.tipoFonte);
 }
 
 class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
@@ -3529,6 +3718,12 @@ class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
   final Value<String?> praticas;
   final Value<String?> padrao;
   final Value<String?> destaque;
+  final Value<String?> fonte;
+  final Value<String?> safraReferencia;
+  final Value<DateTime?> dataReferencia;
+  final Value<String?> resultado;
+  final Value<String?> local;
+  final Value<String?> tipoFonte;
   final Value<int> rowid;
   const ReferenciasTecnicasCompanion({
     this.uid = const Value.absent(),
@@ -3540,6 +3735,12 @@ class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
     this.praticas = const Value.absent(),
     this.padrao = const Value.absent(),
     this.destaque = const Value.absent(),
+    this.fonte = const Value.absent(),
+    this.safraReferencia = const Value.absent(),
+    this.dataReferencia = const Value.absent(),
+    this.resultado = const Value.absent(),
+    this.local = const Value.absent(),
+    this.tipoFonte = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   ReferenciasTecnicasCompanion.insert({
@@ -3552,6 +3753,12 @@ class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
     this.praticas = const Value.absent(),
     this.padrao = const Value.absent(),
     this.destaque = const Value.absent(),
+    this.fonte = const Value.absent(),
+    this.safraReferencia = const Value.absent(),
+    this.dataReferencia = const Value.absent(),
+    this.resultado = const Value.absent(),
+    this.local = const Value.absent(),
+    this.tipoFonte = const Value.absent(),
     this.rowid = const Value.absent(),
   })  : uid = Value(uid),
         categoria = Value(categoria),
@@ -3567,6 +3774,12 @@ class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
     Expression<String>? praticas,
     Expression<String>? padrao,
     Expression<String>? destaque,
+    Expression<String>? fonte,
+    Expression<String>? safraReferencia,
+    Expression<DateTime>? dataReferencia,
+    Expression<String>? resultado,
+    Expression<String>? local,
+    Expression<String>? tipoFonte,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -3579,6 +3792,12 @@ class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
       if (praticas != null) 'praticas': praticas,
       if (padrao != null) 'padrao': padrao,
       if (destaque != null) 'destaque': destaque,
+      if (fonte != null) 'fonte': fonte,
+      if (safraReferencia != null) 'safra_referencia': safraReferencia,
+      if (dataReferencia != null) 'data_referencia': dataReferencia,
+      if (resultado != null) 'resultado': resultado,
+      if (local != null) 'local': local,
+      if (tipoFonte != null) 'tipo_fonte': tipoFonte,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -3593,6 +3812,12 @@ class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
       Value<String?>? praticas,
       Value<String?>? padrao,
       Value<String?>? destaque,
+      Value<String?>? fonte,
+      Value<String?>? safraReferencia,
+      Value<DateTime?>? dataReferencia,
+      Value<String?>? resultado,
+      Value<String?>? local,
+      Value<String?>? tipoFonte,
       Value<int>? rowid}) {
     return ReferenciasTecnicasCompanion(
       uid: uid ?? this.uid,
@@ -3604,6 +3829,12 @@ class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
       praticas: praticas ?? this.praticas,
       padrao: padrao ?? this.padrao,
       destaque: destaque ?? this.destaque,
+      fonte: fonte ?? this.fonte,
+      safraReferencia: safraReferencia ?? this.safraReferencia,
+      dataReferencia: dataReferencia ?? this.dataReferencia,
+      resultado: resultado ?? this.resultado,
+      local: local ?? this.local,
+      tipoFonte: tipoFonte ?? this.tipoFonte,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -3638,6 +3869,24 @@ class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
     if (destaque.present) {
       map['destaque'] = Variable<String>(destaque.value);
     }
+    if (fonte.present) {
+      map['fonte'] = Variable<String>(fonte.value);
+    }
+    if (safraReferencia.present) {
+      map['safra_referencia'] = Variable<String>(safraReferencia.value);
+    }
+    if (dataReferencia.present) {
+      map['data_referencia'] = Variable<DateTime>(dataReferencia.value);
+    }
+    if (resultado.present) {
+      map['resultado'] = Variable<String>(resultado.value);
+    }
+    if (local.present) {
+      map['local'] = Variable<String>(local.value);
+    }
+    if (tipoFonte.present) {
+      map['tipo_fonte'] = Variable<String>(tipoFonte.value);
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -3656,6 +3905,12 @@ class ReferenciasTecnicasCompanion extends UpdateCompanion<ReferenciasTecnica> {
           ..write('praticas: $praticas, ')
           ..write('padrao: $padrao, ')
           ..write('destaque: $destaque, ')
+          ..write('fonte: $fonte, ')
+          ..write('safraReferencia: $safraReferencia, ')
+          ..write('dataReferencia: $dataReferencia, ')
+          ..write('resultado: $resultado, ')
+          ..write('local: $local, ')
+          ..write('tipoFonte: $tipoFonte, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -8625,6 +8880,12 @@ typedef $$ReferenciasTecnicasTableCreateCompanionBuilder
   Value<String?> praticas,
   Value<String?> padrao,
   Value<String?> destaque,
+  Value<String?> fonte,
+  Value<String?> safraReferencia,
+  Value<DateTime?> dataReferencia,
+  Value<String?> resultado,
+  Value<String?> local,
+  Value<String?> tipoFonte,
   Value<int> rowid,
 });
 typedef $$ReferenciasTecnicasTableUpdateCompanionBuilder
@@ -8638,6 +8899,12 @@ typedef $$ReferenciasTecnicasTableUpdateCompanionBuilder
   Value<String?> praticas,
   Value<String?> padrao,
   Value<String?> destaque,
+  Value<String?> fonte,
+  Value<String?> safraReferencia,
+  Value<DateTime?> dataReferencia,
+  Value<String?> resultado,
+  Value<String?> local,
+  Value<String?> tipoFonte,
   Value<int> rowid,
 });
 
@@ -8676,6 +8943,26 @@ class $$ReferenciasTecnicasTableFilterComposer
 
   ColumnFilters<String> get destaque => $composableBuilder(
       column: $table.destaque, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get fonte => $composableBuilder(
+      column: $table.fonte, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get safraReferencia => $composableBuilder(
+      column: $table.safraReferencia,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<DateTime> get dataReferencia => $composableBuilder(
+      column: $table.dataReferencia,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get resultado => $composableBuilder(
+      column: $table.resultado, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get local => $composableBuilder(
+      column: $table.local, builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<String> get tipoFonte => $composableBuilder(
+      column: $table.tipoFonte, builder: (column) => ColumnFilters(column));
 }
 
 class $$ReferenciasTecnicasTableOrderingComposer
@@ -8713,6 +9000,26 @@ class $$ReferenciasTecnicasTableOrderingComposer
 
   ColumnOrderings<String> get destaque => $composableBuilder(
       column: $table.destaque, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get fonte => $composableBuilder(
+      column: $table.fonte, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get safraReferencia => $composableBuilder(
+      column: $table.safraReferencia,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<DateTime> get dataReferencia => $composableBuilder(
+      column: $table.dataReferencia,
+      builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get resultado => $composableBuilder(
+      column: $table.resultado, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get local => $composableBuilder(
+      column: $table.local, builder: (column) => ColumnOrderings(column));
+
+  ColumnOrderings<String> get tipoFonte => $composableBuilder(
+      column: $table.tipoFonte, builder: (column) => ColumnOrderings(column));
 }
 
 class $$ReferenciasTecnicasTableAnnotationComposer
@@ -8750,6 +9057,24 @@ class $$ReferenciasTecnicasTableAnnotationComposer
 
   GeneratedColumn<String> get destaque =>
       $composableBuilder(column: $table.destaque, builder: (column) => column);
+
+  GeneratedColumn<String> get fonte =>
+      $composableBuilder(column: $table.fonte, builder: (column) => column);
+
+  GeneratedColumn<String> get safraReferencia => $composableBuilder(
+      column: $table.safraReferencia, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get dataReferencia => $composableBuilder(
+      column: $table.dataReferencia, builder: (column) => column);
+
+  GeneratedColumn<String> get resultado =>
+      $composableBuilder(column: $table.resultado, builder: (column) => column);
+
+  GeneratedColumn<String> get local =>
+      $composableBuilder(column: $table.local, builder: (column) => column);
+
+  GeneratedColumn<String> get tipoFonte =>
+      $composableBuilder(column: $table.tipoFonte, builder: (column) => column);
 }
 
 class $$ReferenciasTecnicasTableTableManager extends RootTableManager<
@@ -8791,6 +9116,12 @@ class $$ReferenciasTecnicasTableTableManager extends RootTableManager<
             Value<String?> praticas = const Value.absent(),
             Value<String?> padrao = const Value.absent(),
             Value<String?> destaque = const Value.absent(),
+            Value<String?> fonte = const Value.absent(),
+            Value<String?> safraReferencia = const Value.absent(),
+            Value<DateTime?> dataReferencia = const Value.absent(),
+            Value<String?> resultado = const Value.absent(),
+            Value<String?> local = const Value.absent(),
+            Value<String?> tipoFonte = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ReferenciasTecnicasCompanion(
@@ -8803,6 +9134,12 @@ class $$ReferenciasTecnicasTableTableManager extends RootTableManager<
             praticas: praticas,
             padrao: padrao,
             destaque: destaque,
+            fonte: fonte,
+            safraReferencia: safraReferencia,
+            dataReferencia: dataReferencia,
+            resultado: resultado,
+            local: local,
+            tipoFonte: tipoFonte,
             rowid: rowid,
           ),
           createCompanionCallback: ({
@@ -8815,6 +9152,12 @@ class $$ReferenciasTecnicasTableTableManager extends RootTableManager<
             Value<String?> praticas = const Value.absent(),
             Value<String?> padrao = const Value.absent(),
             Value<String?> destaque = const Value.absent(),
+            Value<String?> fonte = const Value.absent(),
+            Value<String?> safraReferencia = const Value.absent(),
+            Value<DateTime?> dataReferencia = const Value.absent(),
+            Value<String?> resultado = const Value.absent(),
+            Value<String?> local = const Value.absent(),
+            Value<String?> tipoFonte = const Value.absent(),
             Value<int> rowid = const Value.absent(),
           }) =>
               ReferenciasTecnicasCompanion.insert(
@@ -8827,6 +9170,12 @@ class $$ReferenciasTecnicasTableTableManager extends RootTableManager<
             praticas: praticas,
             padrao: padrao,
             destaque: destaque,
+            fonte: fonte,
+            safraReferencia: safraReferencia,
+            dataReferencia: dataReferencia,
+            resultado: resultado,
+            local: local,
+            tipoFonte: tipoFonte,
             rowid: rowid,
           ),
           withReferenceMapper: (p0) => p0

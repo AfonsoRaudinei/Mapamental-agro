@@ -76,11 +76,32 @@ class CesbTipCard extends StatelessWidget {
             ),
           ],
 
+          if (_metadataLine.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              _metadataLine,
+              style: AppTypography.label.copyWith(
+                color: context.appTextSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+
           if (cesb.praticas != null) ...[
             const SizedBox(height: 6),
             Text(
               cesb.praticas!,
               style: AppTypography.caption.copyWith(
+                color: context.appTextSecondary,
+              ),
+            ),
+          ],
+
+          if (cesb.fonte != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              'Fonte: ${cesb.fonte}',
+              style: AppTypography.label.copyWith(
                 color: context.appTextSecondary,
               ),
             ),
@@ -115,5 +136,13 @@ class CesbTipCard extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  String get _metadataLine {
+    return [
+      if (cesb.safraReferencia != null) 'Safra ${cesb.safraReferencia}',
+      if (cesb.resultado != null) cesb.resultado,
+      if (cesb.local != null) cesb.local,
+    ].join(' · ');
   }
 }

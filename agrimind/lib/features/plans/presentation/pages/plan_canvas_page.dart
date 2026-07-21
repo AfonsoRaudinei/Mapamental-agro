@@ -133,8 +133,8 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
             label: AppConstants.estadioLabels[selected] ?? selected,
             ordem: AppConstants.estadiosCodigos.indexOf(selected),
             createdAt: DateTime.now(),
-        ),
-      );
+          ),
+        );
     _invalidatePlan();
   }
 
@@ -545,7 +545,8 @@ class _PlanningView extends StatelessWidget {
       children: [
         Expanded(
           child: ListView(
-            padding: const EdgeInsets.only(left: 14, right: 14, top: 16, bottom: 8),
+            padding:
+                const EdgeInsets.only(left: 14, right: 14, top: 16, bottom: 8),
             children: [
               _PlanHeaderCard(
                 plano: plano,
@@ -672,7 +673,9 @@ class _PlanHeaderCardState extends State<_PlanHeaderCard> {
       if (cidade.isNotEmpty) cidade,
       if (safra.isNotEmpty) safra,
     ];
-    return parts.isEmpty ? 'Toque para preencher produtor, fazenda e área' : parts.join(' · ');
+    return parts.isEmpty
+        ? 'Toque para preencher produtor, fazenda e área'
+        : parts.join(' · ');
   }
 
   @override
@@ -1122,21 +1125,24 @@ class _StageLeadingCluster extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    return Row(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        GestureDetector(
-          onTap: onPickStageImage,
-          child: _StageCircle(estadio: estadio, compact: true),
-        ),
-        const SizedBox(width: 6),
-        StageReferencesButton(
-          estadio: estadio,
-          plano: plano,
-          compact: true,
-          onAddProdutoFromReferencia: onAddProdutoFromReferencia,
-        ),
-      ],
+    return SizedBox(
+      width: 74,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          GestureDetector(
+            onTap: onPickStageImage,
+            child: _StageCircle(estadio: estadio, compact: true),
+          ),
+          const SizedBox(height: 8),
+          StageReferencesButton(
+            estadio: estadio,
+            plano: plano,
+            compact: true,
+            onAddProdutoFromReferencia: onAddProdutoFromReferencia,
+          ),
+        ],
+      ),
     );
   }
 }
@@ -1165,8 +1171,8 @@ class _StageCircle extends StatelessWidget {
           ? Center(
               child: Text(
                 estadio.codigo == 'Operacional' ? 'OP' : estadio.codigo,
-                style: (compact ? AppTypography.label : AppTypography.h3)
-                    .copyWith(
+                style:
+                    (compact ? AppTypography.label : AppTypography.h3).copyWith(
                   color: context.appTextPrimary,
                   fontWeight: FontWeight.w800,
                 ),
@@ -1385,9 +1391,8 @@ class _PlanSummaryCard extends ConsumerWidget {
               Divider(color: context.appBorderSoft),
               _SummaryRow(
                 label: 'Custo / hectare',
-                value: areaHa > 0
-                    ? '${currency.format(custoHa)} / ha'
-                    : '— / ha',
+                value:
+                    areaHa > 0 ? '${currency.format(custoHa)} / ha' : '— / ha',
               ),
               _SummaryRow(
                 label: 'Produtos',
@@ -1470,11 +1475,9 @@ class _ConsultorCardState extends State<_ConsultorCard> {
       );
     }
 
-    final primary = hasName
-        ? (exibirNome ? _consultor.text.trim() : '')
-        : 'Consultor';
-    final secondary =
-        hasName ? null : 'Toque para preencher nome e logo';
+    final primary =
+        hasName ? (exibirNome ? _consultor.text.trim() : '') : 'Consultor';
+    final secondary = hasName ? null : 'Toque para preencher nome e logo';
 
     return SummaryExpandableCard(
       initiallyExpanded: !hasName,
@@ -1489,8 +1492,7 @@ class _ConsultorCardState extends State<_ConsultorCard> {
       ),
       trailing: hasName
           ? IconButton(
-              onPressed: () =>
-                  widget.onExibirNomeChanged(!exibirNome),
+              onPressed: () => widget.onExibirNomeChanged(!exibirNome),
               tooltip: exibirNome ? 'Ocultar nome' : 'Exibir nome',
               icon: PhosphorIcon(
                 exibirNome
@@ -1709,8 +1711,7 @@ class _ConsolidationParamsState extends State<_ConsolidationParams> {
   }
 
   bool get _hasParams =>
-      widget.plano.precoGraoSc60 != null ||
-      widget.plano.dataVencimento != null;
+      widget.plano.precoGraoSc60 != null || widget.plano.dataVencimento != null;
 
   @override
   void initState() {

@@ -14,6 +14,12 @@ class ReferenciaDisplayMapper {
       praticas: entity.praticas,
       padrao: entity.padrao,
       destaque: entity.destaque,
+      fonte: entity.fonte,
+      safraReferencia: entity.safraReferencia,
+      dataReferencia: entity.dataReferencia,
+      resultado: entity.resultado,
+      local: entity.local,
+      tipoFonte: entity.tipoFonte,
     );
   }
 
