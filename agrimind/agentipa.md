@@ -36,7 +36,7 @@ Atualize esta seção após cada IPA bem-sucedida.
 
 | Data | Build | IPA | Commit | Status |
 |------|-------|-----|--------|--------|
-| 2026-07-23 | 143 | `build/ios/ipa/Agrimind_v143.ipa` | _(pendente)_ | concluída |
+| 2026-07-23 | 143 | `build/ios/ipa/Agrimind_v143.ipa` | `7278a8e` | concluída |
 | 2026-07-20 | 142 | `build/ios/ipa/Agrimind_v142.ipa` | `55ea9c5` | concluída |
 | 2026-07-13 | 141 | `build/ios/ipa/Agrimind_v141.ipa` | `9996317` | concluída |
 
