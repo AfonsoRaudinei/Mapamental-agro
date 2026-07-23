@@ -65,11 +65,11 @@ class ReferencesLocalDatasource {
 
   // ── Seed Técnico (referências agronômicas) ─────────────────────────────────
 
-  static const _diseaseReferencesMigrationKey = 'references_doencas_v3';
-  static const _insectReferencesMigrationKey = 'references_insetos_v2';
-  static const _nutritionReferencesMigrationKey = 'references_nutricao_v2';
-  static const _physiologyReferencesMigrationKey = 'references_fisiologia_v2';
-  static const _cesbReferencesMigrationKey = 'references_cesb_v3';
+  static const _diseaseReferencesMigrationKey = 'references_doencas_v4';
+  static const _insectReferencesMigrationKey = 'references_insetos_v3';
+  static const _nutritionReferencesMigrationKey = 'references_nutricao_v3';
+  static const _physiologyReferencesMigrationKey = 'references_fisiologia_v3';
+  static const _cesbReferencesMigrationKey = 'references_cesb_v4';
 
   Future<void> seedIfEmpty() async {
     final count = await _database.referenciasTecnicas.count().getSingle();
@@ -421,16 +421,21 @@ class ReferencesLocalDatasource {
 
     List<ReferenciasTecnicasCompanion> caseRefs({
       required String slug,
-      required String tituloBase,
+      required String campeao,
+      required String produtor,
+      required String consultor,
+      required String fazenda,
       required String resultado,
       required String local,
       required String fonte,
       required String focoManejo,
       required String praticasBase,
+      required Map<String, String> legendaPorEstadio,
       required List<String> estadios,
       required String destaque,
       required String padrao,
-      String? dataOperacional,
+      required DateTime dataReferencia,
+      required String dataOperacional,
     }) {
       return estadios
           .map(
@@ -438,20 +443,27 @@ class ReferencesLocalDatasource {
               uid:
                   'cesb-2026-$slug-${estadio.toLowerCase().replaceAll('.', '')}',
               estadio: estadio,
-              titulo: '$tituloBase — $estadio',
+              titulo: '$campeao — $estadio',
               descricao: [
                 disclaimer,
-                if (dataOperacional != null) dataOperacional,
+                'Legenda da dica: ${legendaPorEstadio[estadio] ?? focoManejo}.',
+                'Produtor campeão: $produtor.',
+                'Fazenda: $fazenda. Consultor: $consultor.',
+                dataOperacional,
               ].join('\n'),
               focoManejo: focoManejo,
-              praticas: praticasBase,
+              praticas: [
+                'Dica do campeão: ${legendaPorEstadio[estadio] ?? focoManejo}.',
+                praticasBase,
+              ].join('\n'),
               padrao: padrao,
               destaque: destaque,
               fonte: fonte,
               safraReferencia: '2025/2026',
+              dataReferencia: dataReferencia,
               resultado: resultado,
               local: local,
-              tipoFonte: 'Case CESB',
+              tipoFonte: '18º Fórum Nacional CESB — Case campeão',
             ),
           )
           .toList();
@@ -460,7 +472,10 @@ class ReferencesLocalDatasource {
     return [
       ...caseRefs(
         slug: 'sul-nacional',
-        tituloBase: 'Case Sul/Nacional',
+        campeao: 'Campeão Sul/Nacional',
+        produtor: 'Lourival Ruthes',
+        consultor: 'Daicon Godeski Moreira',
+        fazenda: 'Agrícola Lourival Ruthes',
         resultado: '156,13 sc/ha',
         local: 'Major Vieira-SC',
         fonte: 'CESB / CONAB / IBRA / Agrymet / Agrymax / Produtor',
@@ -468,14 +483,32 @@ class ReferencesLocalDatasource {
         praticasBase:
             'Constatações do case: decisões baseadas em dados de pesquisa, dedicação operacional e proteção de plantas.\n'
             'Estádios citados no manejo: V4, V6, R1, R3, R5 e R5.5.',
+        legendaPorEstadio: const {
+          'V4':
+              'entrada vegetativa com fungicida e nutrição foliar para proteger o arranque.',
+          'V6':
+              'reforço sanitário antes da fase reprodutiva, com fungicidas e nutrição foliar.',
+          'R1':
+              'proteção da floração com fungicidas e nutrição para reduzir perda de estruturas.',
+          'R3':
+              'proteção de vagens e manutenção de folha ativa no início da definição produtiva.',
+          'R5.1':
+              'preservação de área foliar e nutrição no enchimento de grãos.',
+          'R5.5':
+              'última proteção do enchimento para sustentar PMG até a maturação.',
+        },
         estadios: const ['V4', 'V6', 'R1', 'R3', 'R5.1', 'R5.5'],
         destaque: 'Produtividade auditada: 156,13 sc/ha',
         padrao: 'Case Campeão',
+        dataReferencia: DateTime(2025, 11, 11),
         dataOperacional: 'Semeadura em 11/11/2025.',
       ),
       ...caseRefs(
         slug: 'nordeste',
-        tituloBase: 'Case Nordeste',
+        campeao: 'Campeão Nordeste',
+        produtor: 'Grupo Gorgen',
+        consultor: 'Edinei Antônio Fugalli',
+        fazenda: 'Fazenda Barcelona',
         resultado: '143,77 sc/ha',
         local: 'Riachão das Neves-BA',
         fonte: 'CESB / Produtor / CONAB / IBRA / Agrymet / Agrymex / Consultor',
@@ -483,14 +516,30 @@ class ReferencesLocalDatasource {
         praticasBase:
             'Constatações do case: histórico com cinco culturas, correção/adubação de sistema e uso de bioinsumos no sulco.\n'
             'Estádios citados no manejo: V4, V7, R1, R3, R4, R5.1, R6 e R7.',
+        legendaPorEstadio: const {
+          'V4':
+              'primeira combinação de fungicida, bioestimulante e nutrição foliar no vegetativo.',
+          'V7': 'manutenção do vigor vegetativo antes da floração.',
+          'R1':
+              'entrada forte na floração com fungicidas, bioestimulante e nutrição.',
+          'R3': 'proteção de vagens com fungicidas e multissítios.',
+          'R4': 'aplicação aérea para sustentar enchimento e folha funcional.',
+          'R5.1': 'proteção sanitária no começo do enchimento.',
+          'R6': 'proteção final contra doenças no fim do enchimento.',
+          'R7': 'dessecação operacional para fechamento do ciclo.',
+        },
         estadios: const ['V4', 'V7', 'R1', 'R3', 'R4', 'R5.1', 'R6', 'R7'],
         destaque: 'Produtividade auditada: 143,77 sc/ha',
         padrao: 'Case Campeão',
+        dataReferencia: DateTime(2025, 11, 3),
         dataOperacional: 'Semeadura em 03/11/2025.',
       ),
       ...caseRefs(
         slug: 'irrigado-nacional',
-        tituloBase: 'Case Irrigado Nacional',
+        campeao: 'Campeão Irrigado Nacional',
+        produtor: 'Luis Fernando Benaglia de Oliveira',
+        consultor: 'Dheividy Borges Fernandes',
+        fazenda: 'Lago Bonito',
         resultado: '138,97 sc/ha',
         local: 'Mundo Novo-GO',
         fonte:
@@ -499,14 +548,30 @@ class ReferencesLocalDatasource {
         praticasBase:
             'Constatações do case: plantio rigoroso, manejo biológico e fisiológico, e timing de aplicações.\n'
             'Estádios citados no manejo: V4, V8, R1, R3, R5.3, R5.4, R5.5 e R7.',
+        legendaPorEstadio: const {
+          'V4':
+              'primeira proteção vegetativa com pacote sanitário e nutrição foliar.',
+          'V8': 'pré-florada com reforço fisiológico e nutricional.',
+          'R1':
+              'floração protegida por fungicidas, bioestimulantes e nutrição.',
+          'R3': 'definição de vagens com proteção sanitária e fisiológica.',
+          'R5.3': 'enchimento intermediário com foco em folha sadia.',
+          'R5.4': 'continuidade da proteção no enchimento avançado.',
+          'R5.5': 'fechamento do enchimento e preparação para dessecação.',
+          'R7': 'dessecação no encerramento do ciclo.',
+        },
         estadios: const ['V4', 'V8', 'R1', 'R3', 'R5.3', 'R5.4', 'R5.5', 'R7'],
         destaque: 'Produtividade auditada: 138,97 sc/ha',
         padrao: 'Case Campeão',
+        dataReferencia: DateTime(2025, 10, 1),
         dataOperacional: 'Semeadura em 01/10/2025.',
       ),
       ...caseRefs(
         slug: 'norte',
-        tituloBase: 'Case Norte',
+        campeao: 'Campeão Norte',
+        produtor: 'Pedro Foresto Crispim',
+        consultor: 'Luiz Gabriel de Moraes Júnior',
+        fazenda: 'Fazenda Bela',
         resultado: '136,64 sc/ha',
         local: 'Goiatins-TO',
         fonte:
@@ -516,6 +581,21 @@ class ReferencesLocalDatasource {
         praticasBase:
             'Constatações do case: quatro culturas no histórico, correção de solo recorrente e adubação de sistema.\n'
             'Estádios citados no manejo: V2, V3, V6, V7, R1, R2, R5.1, R5.3 e R5.5.',
+        legendaPorEstadio: const {
+          'V2':
+              'adubação inicial para sustentar arranque e perfil de solo construído.',
+          'V3':
+              'monitoramento e suporte vegetativo antes do fechamento de entrelinhas.',
+          'V6': 'reforço vegetativo próximo da transição reprodutiva.',
+          'V7':
+              'fungicidas em pré-florada para entrar no reprodutivo com folha protegida.',
+          'R1': 'uso de bioinsumo na floração para suporte fisiológico.',
+          'R2': 'proteção sanitária em floração plena.',
+          'R5.1': 'fungicidas e multissítio no início do enchimento.',
+          'R5.3': 'nova proteção no enchimento intermediário.',
+          'R5.5':
+              'aplicação final do enchimento, registrada como R5.4/R5.5 no case.',
+        },
         estadios: const [
           'V2',
           'V3',
@@ -529,11 +609,15 @@ class ReferencesLocalDatasource {
         ],
         destaque: 'Produtividade auditada: 136,64 sc/ha',
         padrao: 'Case Campeão',
+        dataReferencia: DateTime(2025, 11, 2),
         dataOperacional: 'Semeadura em 02/11/2025.',
       ),
       ...caseRefs(
         slug: 'sudeste',
-        tituloBase: 'Case Sudeste',
+        campeao: 'Campeão Sudeste',
+        produtor: 'Agropecuária Três Irmãos',
+        consultor: 'Túlio Madureira da Costa Xavier',
+        fazenda: 'Fazenda Floresta',
         resultado: '122,66 sc/ha',
         local: 'Cambuquira-MG',
         fonte: 'CESB / CONAB / IBRA Megalab / Falker / Produtor / Consultor',
@@ -542,14 +626,27 @@ class ReferencesLocalDatasource {
         praticasBase:
             'Constatações do case: plantabilidade, profundidade efetiva e integração de biológicos ao manejo.\n'
             'Estádios citados no manejo: V2, V4, R1, R2, R3 e R5.',
+        legendaPorEstadio: const {
+          'V2': 'arranque com bioestimulante, bioinsumos e nutrição foliar.',
+          'V4':
+              'primeira proteção sanitária vegetativa com fungicidas e bioinsumo.',
+          'R1': 'floração protegida com fungicidas, bioinsumo e nutrição.',
+          'R2': 'manutenção de sanidade e nutrição na floração plena.',
+          'R3': 'proteção de vagens com fungicidas e bioestimulante.',
+          'R5.1': 'enchimento com proteção sanitária e suporte nutricional.',
+        },
         estadios: const ['V2', 'V4', 'R1', 'R2', 'R3', 'R5.1'],
         destaque: 'Produtividade auditada: 122,66 sc/ha',
         padrao: 'Case Campeão',
+        dataReferencia: DateTime(2025, 11, 10),
         dataOperacional: 'Semeadura em 10/11/2025.',
       ),
       ...caseRefs(
         slug: 'centro-oeste',
-        tituloBase: 'Case Centro-Oeste',
+        campeao: 'Campeão Centro-Oeste',
+        produtor: 'Rodolfo Paulo Schlatter',
+        consultor: 'Fabiano Müller',
+        fazenda: 'Monte Sinai',
         resultado: '118,36 sc/ha',
         local: 'Confresa-MT',
         fonte:
@@ -558,9 +655,20 @@ class ReferencesLocalDatasource {
         praticasBase:
             'Constatações do case: rotação com quatro culturas, correção de solo e manejo por aplicações em estádios definidos.\n'
             'Estádios citados no manejo: V2, V4, V5, R1, R4, R5.3 e R6/R7.',
+        legendaPorEstadio: const {
+          'V2': 'arranque com adubação foliar e suporte inicial.',
+          'V4': 'entrada vegetativa para vigor, nutrição e proteção.',
+          'V5': 'bioinsumo e fungicida antes da fase reprodutiva.',
+          'R1': 'floração com bioinsumo, fungicida e multissítio.',
+          'R4': 'enchimento inicial com bioinsumo e proteção sanitária.',
+          'R5.3': 'granação com reforço foliar e fungicida.',
+          'R6': 'dessecação operacional no fim do enchimento.',
+          'R7': 'dessecação no encerramento do ciclo.',
+        },
         estadios: const ['V2', 'V4', 'V5', 'R1', 'R4', 'R5.3', 'R6', 'R7'],
         destaque: 'Produtividade auditada: 118,36 sc/ha',
         padrao: 'Case Campeão',
+        dataReferencia: DateTime(2025, 10, 30),
         dataOperacional: 'Semeadura em 30/10/2025.',
       ),
     ];
@@ -583,6 +691,11 @@ class ReferencesLocalDatasource {
           descricao: Value(descricao),
           focoManejo: Value(focoManejo),
           destaque: Value(destaque),
+          fonte: const Value(
+            'Instrucao/Referencias/Nutrientes 1 - cópia.md',
+          ),
+          safraReferencia: const Value('Referência técnica permanente'),
+          tipoFonte: const Value('Referência técnica'),
         );
 
     return [
@@ -780,6 +893,11 @@ class ReferencesLocalDatasource {
           descricao: Value(descricao),
           focoManejo: Value(focoManejo),
           destaque: Value(destaque),
+          fonte: const Value(
+            'Instrucao/Referencias/Hormônios Vegetais  - cópia.md',
+          ),
+          safraReferencia: const Value('Referência técnica permanente'),
+          tipoFonte: const Value('Referência técnica'),
         );
 
     return [
@@ -974,6 +1092,9 @@ class ReferencesLocalDatasource {
           descricao: Value(descricao),
           focoManejo: Value(focoManejo),
           destaque: Value(destaque),
+          fonte: const Value('Instrucao/Referencias/Insetos - cópia.md'),
+          safraReferencia: const Value('Referência técnica permanente'),
+          tipoFonte: const Value('Referência técnica'),
         );
 
     return [
@@ -1173,6 +1294,9 @@ class ReferencesLocalDatasource {
           descricao: Value(descricao),
           focoManejo: Value(focoManejo),
           destaque: Value(destaque),
+          fonte: const Value('Instrucao/Referencias/doenças 1 - cópia.md'),
+          safraReferencia: const Value('Referência técnica permanente'),
+          tipoFonte: const Value('Referência técnica'),
         );
 
     return [

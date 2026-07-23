@@ -45,25 +45,27 @@ class CesbTipCard extends StatelessWidget {
                   ),
                 ),
               ),
-              if (cesb.padrao != null)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: AppColors.catCESB.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(99),
-                  ),
-                  child: Text(
-                    cesb.padrao!,
-                    style: AppTypography.label.copyWith(
-                      color: AppColors.catCESB,
-                    ),
-                  ),
-                ),
+              Wrap(
+                spacing: 6,
+                children: [
+                  _Tag(label: cesb.estadio),
+                  if (cesb.safraReferencia != null)
+                    _Tag(label: 'Safra ${cesb.safraReferencia}'),
+                ],
+              ),
             ],
           ),
+
+          if (_legendLine != null) ...[
+            const SizedBox(height: 6),
+            Text(
+              _legendLine!,
+              style: AppTypography.caption.copyWith(
+                color: context.appTextPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
 
           if (cesb.focoManejo != null) ...[
             const SizedBox(height: 6),
@@ -83,6 +85,16 @@ class CesbTipCard extends StatelessWidget {
               style: AppTypography.label.copyWith(
                 color: context.appTextSecondary,
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+
+          if (_contextLine.isNotEmpty) ...[
+            const SizedBox(height: 6),
+            Text(
+              _contextLine,
+              style: AppTypography.label.copyWith(
+                color: context.appTextSecondary,
               ),
             ),
           ],
@@ -140,9 +152,64 @@ class CesbTipCard extends StatelessWidget {
 
   String get _metadataLine {
     return [
-      if (cesb.safraReferencia != null) 'Safra ${cesb.safraReferencia}',
+      if (cesb.dataReferencia != null)
+        'Data ${_formatDate(cesb.dataReferencia!)}',
       if (cesb.resultado != null) cesb.resultado,
       if (cesb.local != null) cesb.local,
     ].join(' · ');
+  }
+
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day/$month/${date.year}';
+  }
+
+  String? get _legendLine {
+    final descricao = cesb.descricao;
+    if (descricao == null) return null;
+    for (final line in descricao.split('\n')) {
+      if (line.startsWith('Legenda da dica:')) {
+        return line.replaceFirst('Legenda da dica:', 'Dica:').trim();
+      }
+    }
+    return null;
+  }
+
+  String get _contextLine {
+    final descricao = cesb.descricao;
+    if (descricao == null) return '';
+    return descricao
+        .split('\n')
+        .where(
+          (line) =>
+              line.startsWith('Produtor campeão:') ||
+              line.startsWith('Fazenda:'),
+        )
+        .join(' · ');
+  }
+}
+
+class _Tag extends StatelessWidget {
+  const _Tag({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.catCESB.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        label,
+        style: AppTypography.label.copyWith(
+          color: AppColors.catCESB,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }

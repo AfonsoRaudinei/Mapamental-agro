@@ -30,6 +30,27 @@ void main() {
     expect(await datasource.getCesb(estadio: 'R5.5'), isNotEmpty);
   });
 
+  test('categorias técnicas têm fonte/referência preenchida', () async {
+    await datasource.seedIfEmpty();
+
+    final categorias = [
+      await datasource.getByCategoria('doencas'),
+      await datasource.getByCategoria('insetos'),
+      await datasource.getByCategoria('nutricao'),
+      await datasource.getByCategoria('fisiologia'),
+    ];
+
+    for (final refs in categorias) {
+      expect(refs, isNotEmpty);
+      expect(refs.every((ref) => ref.fonte?.isNotEmpty ?? false), true);
+      expect(
+        refs.every((ref) => ref.safraReferencia?.isNotEmpty ?? false),
+        true,
+      );
+      expect(refs.every((ref) => ref.tipoFonte == 'Referência técnica'), true);
+    }
+  });
+
   test('seed de doenças é versionado sem duplicar registros', () async {
     await datasource.seedIfEmpty();
     final primeiraCarga = await datasource.getByCategoria('doencas');
@@ -95,7 +116,7 @@ void main() {
     expect(texto, isNot(contains('mL/kg')));
   });
 
-  test('seed CESB v3 cobre síntese e cases 2025/2026 sem duplicar', () async {
+  test('seed CESB v4 cobre síntese e cases 2025/2026 sem duplicar', () async {
     await datasource.seedIfEmpty();
     await datasource.seedIfEmpty();
 
@@ -117,6 +138,8 @@ void main() {
     expect(texto, contains('R1'));
     expect(texto, contains('PMG'));
     expect(texto, contains('Constatação técnica CESB'));
+    expect(texto, contains('Legenda da dica'));
+    expect(texto, contains('Dica do campeão'));
     expect(texto, contains('2025/2026'));
     expect(texto, isNot(matches(RegExp(r'\bNA\b'))));
     expect(texto, isNot(contains('Llenado')));
@@ -129,18 +152,35 @@ void main() {
     final cases = cesb.where((ref) => ref.id.startsWith('cesb-2026-')).toList();
     final titulos = cases.map((ref) => ref.titulo).join(' ');
 
-    expect(titulos, contains('Case Sul/Nacional'));
-    expect(titulos, contains('Case Nordeste'));
-    expect(titulos, contains('Case Irrigado Nacional'));
-    expect(titulos, contains('Case Norte'));
-    expect(titulos, contains('Case Sudeste'));
-    expect(titulos, contains('Case Centro-Oeste'));
+    expect(titulos, contains('Campeão Sul/Nacional'));
+    expect(titulos, contains('Campeão Nordeste'));
+    expect(titulos, contains('Campeão Irrigado Nacional'));
+    expect(titulos, contains('Campeão Norte'));
+    expect(titulos, contains('Campeão Sudeste'));
+    expect(titulos, contains('Campeão Centro-Oeste'));
     expect(cases.every((ref) => ref.fonte?.isNotEmpty ?? false), true);
     expect(cases.every((ref) => ref.safraReferencia == '2025/2026'), true);
+    expect(cases.every((ref) => ref.dataReferencia != null), true);
+    expect(
+      cases.every((ref) => ref.descricao?.contains('Legenda da dica') ?? false),
+      true,
+    );
+    expect(
+      cases.every((ref) => ref.praticas?.contains('Dica do campeão') ?? false),
+      true,
+    );
     expect(
         cases.every((ref) => ref.resultado?.contains('sc/ha') ?? false), true);
     expect(cases.every((ref) => ref.local?.isNotEmpty ?? false), true);
-    expect(cases.every((ref) => ref.tipoFonte == 'Case CESB'), true);
+    expect(
+      cases.every(
+        (ref) => ref.tipoFonte == '18º Fórum Nacional CESB — Case campeão',
+      ),
+      true,
+    );
+    expect(cases.map((ref) => ref.descricao).join(' '),
+        contains('Produtor campeão'));
+    expect(cases.map((ref) => ref.descricao).join(' '), contains('Fazenda:'));
   });
 
   test('filtros por estádio retornam cases CESB novos', () async {

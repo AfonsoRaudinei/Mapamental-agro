@@ -16,6 +16,7 @@ Regras centrais:
 - Versão e build number: `pubspec.yaml`
 - Chaves de release: `docs/platform.md`
 - Fluxo oficial de IPA: `.agents/release-mobile.md`
+- Leitura obrigatória: `/Users/raudineisilvapereira/dev/Cultiva Mind/sup.rtf`
 
 ## Política de build
 
@@ -25,6 +26,7 @@ Antes de cada IPA:
 2. Validar `flutter test`.
 3. Confirmar `SUPABASE_PUBLISHABLE_KEY` no comando de build.
 4. Confirmar que o novo build number é maior que o último registrado neste arquivo.
+5. Ler `/Users/raudineisilvapereira/dev/Cultiva Mind/sup.rtf` e manter essa pasta como referência fixa antes do build.
 
 Se qualquer uma dessas condições falhar, a IPA não deve ser gerada.
 
@@ -34,6 +36,7 @@ Atualize esta seção após cada IPA bem-sucedida.
 
 | Data | Build | IPA | Commit | Status |
 |------|-------|-----|--------|--------|
+| 2026-07-23 | 143 | `build/ios/ipa/Agrimind_v143.ipa` | _(pendente)_ | concluída |
 | 2026-07-20 | 142 | `build/ios/ipa/Agrimind_v142.ipa` | `55ea9c5` | concluída |
 | 2026-07-13 | 141 | `build/ios/ipa/Agrimind_v141.ipa` | `9996317` | concluída |
 

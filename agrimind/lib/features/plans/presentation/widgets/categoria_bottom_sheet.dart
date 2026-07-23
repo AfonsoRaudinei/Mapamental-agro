@@ -312,8 +312,26 @@ class _CesbTile extends StatelessWidget {
                   ),
                 ),
               ),
+              Wrap(
+                spacing: 6,
+                children: [
+                  if (item.safraReferencia != null)
+                    _CesbTag(label: 'Safra ${item.safraReferencia}'),
+                  _CesbTag(label: estadioLabel),
+                ],
+              ),
             ],
           ),
+          if (_legendLine(item) != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              _legendLine(item)!,
+              style: AppTypography.caption.copyWith(
+                color: context.appTextPrimary,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
           if (item.focoManejo != null) ...[
             const SizedBox(height: 4),
             Text(
@@ -330,6 +348,15 @@ class _CesbTile extends StatelessWidget {
               style: AppTypography.label.copyWith(
                 color: context.appTextSecondary,
                 fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+          if (_contextLine(item).isNotEmpty) ...[
+            const SizedBox(height: 4),
+            Text(
+              _contextLine(item),
+              style: AppTypography.label.copyWith(
+                color: context.appTextSecondary,
               ),
             ),
           ],
@@ -380,10 +407,70 @@ class _CesbTile extends StatelessWidget {
 
   String _metadataLine(ReferenciaDisplayItem item) {
     return [
-      if (item.safraReferencia != null) 'Safra ${item.safraReferencia}',
+      if (item.dataReferencia != null)
+        'Data ${_formatDate(item.dataReferencia!)}',
       if (item.resultado != null) item.resultado,
       if (item.local != null) item.local,
     ].join(' · ');
+  }
+
+  String _formatDate(DateTime date) {
+    final day = date.day.toString().padLeft(2, '0');
+    final month = date.month.toString().padLeft(2, '0');
+    return '$day/$month/${date.year}';
+  }
+
+  String get estadioLabel {
+    final marker = item.titulo.split('—').last.trim();
+    return marker.isEmpty ? 'CESB' : marker;
+  }
+
+  String? _legendLine(ReferenciaDisplayItem item) {
+    final descricao = item.descricao;
+    if (descricao == null) return null;
+    for (final line in descricao.split('\n')) {
+      if (line.startsWith('Legenda da dica:')) {
+        return line.replaceFirst('Legenda da dica:', 'Dica:').trim();
+      }
+    }
+    return null;
+  }
+
+  String _contextLine(ReferenciaDisplayItem item) {
+    final descricao = item.descricao;
+    if (descricao == null) return '';
+    return descricao
+        .split('\n')
+        .where(
+          (line) =>
+              line.startsWith('Produtor campeão:') ||
+              line.startsWith('Fazenda:'),
+        )
+        .join(' · ');
+  }
+}
+
+class _CesbTag extends StatelessWidget {
+  const _CesbTag({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
+      decoration: BoxDecoration(
+        color: AppColors.catCESB.withValues(alpha: 0.15),
+        borderRadius: BorderRadius.circular(99),
+      ),
+      child: Text(
+        label,
+        style: AppTypography.label.copyWith(
+          color: AppColors.catCESB,
+          fontWeight: FontWeight.w700,
+        ),
+      ),
+    );
   }
 }
 
