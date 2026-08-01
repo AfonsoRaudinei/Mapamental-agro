@@ -23,6 +23,7 @@ class AppColors {
   static const Color refBookFungicidasMuted = Color(0xFFCA8A04);
   static const Color refBookFungicidasDark = Color(0xFF92670A);
   static const Color refBookFungicidasSurface = Color(0xFF2A2210);
+
   /// Próximas ondas (terreno preparado — ainda não usadas no canvas).
   static const Color refBookInsetos = catInsetos;
   static const Color refBookNutricao = catNutricao;

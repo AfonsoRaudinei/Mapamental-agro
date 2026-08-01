@@ -154,7 +154,8 @@ class ClientsLocalDatasource {
     final userId = _scope.userId;
     final exists = await (_database.select(_database.fazendas)
           ..where(
-            (table) => table.uid.equals(fazenda.id) & table.userId.equals(userId),
+            (table) =>
+                table.uid.equals(fazenda.id) & table.userId.equals(userId),
           ))
         .getSingleOrNull();
     if (exists == null) {
@@ -224,7 +225,8 @@ class ClientsLocalDatasource {
     final userId = _scope.userId;
     final exists = await (_database.select(_database.talhoes)
           ..where(
-            (table) => table.uid.equals(talhao.id) & table.userId.equals(userId),
+            (table) =>
+                table.uid.equals(talhao.id) & table.userId.equals(userId),
           ))
         .getSingleOrNull();
     if (exists == null) {

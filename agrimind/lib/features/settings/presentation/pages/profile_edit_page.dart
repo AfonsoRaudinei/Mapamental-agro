@@ -300,8 +300,8 @@ class _Field extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style:
-                AppTypography.caption.copyWith(color: context.appTextSecondary)),
+            style: AppTypography.caption
+                .copyWith(color: context.appTextSecondary)),
         const SizedBox(height: 4),
         TextFormField(
           controller: controller,

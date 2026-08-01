@@ -12,14 +12,22 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Stream<UserEntity?> get authStateChanges {
-    return _datasource.authStateChanges.map(
-      (user) => user != null ? _mapUser(user) : null,
-    );
+    return _datasource.authStateChanges.asyncMap((user) async {
+      if (user == null) {
+        await DatabaseService.clearUserSession();
+        return null;
+      }
+      await DatabaseService.bindOwner(user.id);
+      return _mapUser(user);
+    });
   }
 
   @override
   Future<UserEntity?> get currentUser async {
     final user = _datasource.currentUser;
+    if (user != null) {
+      await DatabaseService.bindOwner(user.id);
+    }
     return user != null ? _mapUser(user) : null;
   }
 
@@ -29,6 +37,7 @@ class AuthRepositoryImpl implements AuthRepository {
     required String senha,
   }) async {
     final user = await _datasource.loginWithEmail(email: email, senha: senha);
+    await DatabaseService.bindOwner(user.id);
     return _mapUser(user);
   }
 
@@ -43,17 +52,22 @@ class AuthRepositoryImpl implements AuthRepository {
       senha: senha,
       nome: nome,
     );
+    await DatabaseService.bindOwner(user.id);
     return _mapUser(user);
   }
 
   @override
   Future<UserEntity> loginWithGoogle() async {
-    return _mapUser(await _datasource.loginWithGoogle());
+    final user = await _datasource.loginWithGoogle();
+    await DatabaseService.bindOwner(user.id);
+    return _mapUser(user);
   }
 
   @override
   Future<UserEntity> loginWithApple() async {
-    return _mapUser(await _datasource.loginWithApple());
+    final user = await _datasource.loginWithApple();
+    await DatabaseService.bindOwner(user.id);
+    return _mapUser(user);
   }
 
   @override

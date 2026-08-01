@@ -41,7 +41,9 @@ class ClientDetailPage extends ConsumerWidget {
             slivers: [
               CupertinoSliverNavigationBar(
                 largeTitle: Text(cliente.nome),
-                backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+                backgroundColor: Theme.of(context)
+                    .scaffoldBackgroundColor
+                    .withValues(alpha: 0.85),
                 border: Border.all(color: Colors.transparent),
                 leading: CupertinoButton(
                   padding: EdgeInsets.zero,

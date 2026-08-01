@@ -8,9 +8,27 @@ class SoilAnalysisScreen extends StatelessWidget {
   const SoilAnalysisScreen({super.key});
 
   static const _samples = [
-    _SampleCard(id: 'T01', code: '58A25.147294', crop: 'Soja', date: '2025/01/28', depth: '0-20', farm: 'MOEMA'),
-    _SampleCard(id: 'T02', code: '58A25.147295', crop: 'Soja', date: '2025/01/28', depth: '0-20', farm: 'MOEMA'),
-    _SampleCard(id: 'T03', code: '58A25.147296', crop: 'Milho', date: '2025/02/10', depth: '0-20', farm: 'MOEMA'),
+    _SampleCard(
+        id: 'T01',
+        code: '58A25.147294',
+        crop: 'Soja',
+        date: '2025/01/28',
+        depth: '0-20',
+        farm: 'MOEMA'),
+    _SampleCard(
+        id: 'T02',
+        code: '58A25.147295',
+        crop: 'Soja',
+        date: '2025/01/28',
+        depth: '0-20',
+        farm: 'MOEMA'),
+    _SampleCard(
+        id: 'T03',
+        code: '58A25.147296',
+        crop: 'Milho',
+        date: '2025/02/10',
+        depth: '0-20',
+        farm: 'MOEMA'),
   ];
 
   @override
@@ -38,7 +56,8 @@ class SoilAnalysisScreen extends StatelessWidget {
               child: TextField(
                 decoration: InputDecoration(
                   hintText: 'Buscar área, produtor, cultura...',
-                  prefixIcon: const Icon(Icons.search, color: AppColors.onSurfaceMuted),
+                  prefixIcon:
+                      const Icon(Icons.search, color: AppColors.onSurfaceMuted),
                   filled: true,
                   fillColor: AppColors.surfaceElevated,
                   border: OutlineInputBorder(
@@ -83,7 +102,8 @@ class SoilAnalysisScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Icon(Icons.eco, color: Color(0xFF22C55E), size: 22),
+                        const Icon(Icons.eco,
+                            color: Color(0xFF22C55E), size: 22),
                         const SizedBox(height: 8),
                         Text(
                           s.id,
@@ -95,16 +115,19 @@ class SoilAnalysisScreen extends StatelessWidget {
                         ),
                         Text(
                           s.code,
-                          style: const TextStyle(color: AppColors.primary, fontSize: 12),
+                          style: const TextStyle(
+                              color: AppColors.primary, fontSize: 12),
                         ),
                         const Spacer(),
                         Text(
                           '${s.crop} · ${s.date} · ${s.depth}',
-                          style: const TextStyle(color: AppColors.onSurfaceMuted, fontSize: 11),
+                          style: const TextStyle(
+                              color: AppColors.onSurfaceMuted, fontSize: 11),
                         ),
                         Text(
                           s.farm,
-                          style: const TextStyle(color: AppColors.onSurfaceMuted, fontSize: 11),
+                          style: const TextStyle(
+                              color: AppColors.onSurfaceMuted, fontSize: 11),
                         ),
                       ],
                     ),
@@ -132,7 +155,8 @@ class _FilterChip extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
         border: Border.all(color: AppColors.border),
       ),
-      child: Text(label, style: const TextStyle(color: AppColors.onSurface, fontSize: 13)),
+      child: Text(label,
+          style: const TextStyle(color: AppColors.onSurface, fontSize: 13)),
     );
   }
 }

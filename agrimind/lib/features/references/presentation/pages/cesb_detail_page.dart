@@ -41,7 +41,9 @@ class _CesbDetailPageState extends ConsumerState<CesbDetailPage> {
         slivers: [
           CupertinoSliverNavigationBar(
             largeTitle: const Text('Campeões CESB'),
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+            backgroundColor: Theme.of(context)
+                .scaffoldBackgroundColor
+                .withValues(alpha: 0.85),
             border: Border.all(color: Colors.transparent),
             leading: CupertinoButton(
               padding: EdgeInsets.zero,

@@ -5,11 +5,11 @@ import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
 import '../../../../core/utils/unit_converter.dart';
-import '../entities/consolidacao_entity.dart';
+import '../../domain/entities/consolidacao_entity.dart';
 
 /// Gera um arquivo Excel com 3 abas a partir da consolidação.
-class ExportExcelUseCase {
-  const ExportExcelUseCase();
+class ExportExcelExporter {
+  const ExportExcelExporter();
 
   static final _nf = NumberFormat('#,##0.00', 'pt_BR');
   static final _nfQtd = NumberFormat('#,##0.0', 'pt_BR');

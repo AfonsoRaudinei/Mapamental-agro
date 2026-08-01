@@ -32,8 +32,8 @@ class CircularFungicidasPage extends StatelessWidget {
                 color: ds.AppColors.refBookFungicidasSurface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: ds.AppColors.refBookFungicidasDark
-                      .withValues(alpha: 0.5),
+                  color:
+                      ds.AppColors.refBookFungicidasDark.withValues(alpha: 0.5),
                 ),
               ),
               child: const PhosphorIcon(

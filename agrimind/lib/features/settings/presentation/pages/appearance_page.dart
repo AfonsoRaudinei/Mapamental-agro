@@ -127,7 +127,8 @@ class _SectionTitle extends StatelessWidget {
       child: Text(
         text.toUpperCase(),
         style: AppTypography.label.copyWith(
-          color: isDark ? AppColors.textSecondaryDark : context.appTextSecondary,
+          color:
+              isDark ? AppColors.textSecondaryDark : context.appTextSecondary,
           letterSpacing: 0.6,
         ),
       ),

@@ -9,7 +9,8 @@ import 'package:agrimind/features/lab/presentation/lab_template_form_screen.dart
 import 'package:agrimind/features/lab/presentation/lab_templates_screen.dart';
 
 void main() {
-  testWidgets('SoilAnalysisScreen exibe PrimaryBackLink legível', (tester) async {
+  testWidgets('SoilAnalysisScreen exibe PrimaryBackLink legível',
+      (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: darkBlackTheme,

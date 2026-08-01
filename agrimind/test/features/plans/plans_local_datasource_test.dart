@@ -219,7 +219,8 @@ void main() {
 
     final plano = await datasource.getById('plano-operacional');
     expect(plano?.estadios, hasLength(2));
-    expect(plano?.estadios.every((item) => item.codigo == 'Operacional'), isTrue);
+    expect(
+        plano?.estadios.every((item) => item.codigo == 'Operacional'), isTrue);
     expect(
       plano?.estadios.map((item) => item.label).toList(),
       ['Dessecação', 'Plantio'],

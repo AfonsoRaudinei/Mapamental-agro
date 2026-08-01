@@ -37,6 +37,7 @@ mixin _$ReferenciaTecnicaEntity {
   String? get resultado => throw _privateConstructorUsedError;
   String? get local => throw _privateConstructorUsedError;
   String? get tipoFonte => throw _privateConstructorUsedError;
+  double? get fitotoxPercent => throw _privateConstructorUsedError;
 
   /// Create a copy of ReferenciaTecnicaEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -66,7 +67,8 @@ abstract class $ReferenciaTecnicaEntityCopyWith<$Res> {
       DateTime? dataReferencia,
       String? resultado,
       String? local,
-      String? tipoFonte});
+      String? tipoFonte,
+      double? fitotoxPercent});
 }
 
 /// @nodoc
@@ -100,6 +102,7 @@ class _$ReferenciaTecnicaEntityCopyWithImpl<$Res,
     Object? resultado = freezed,
     Object? local = freezed,
     Object? tipoFonte = freezed,
+    Object? fitotoxPercent = freezed,
   }) {
     return _then(_value.copyWith(
       id: null == id
@@ -162,6 +165,10 @@ class _$ReferenciaTecnicaEntityCopyWithImpl<$Res,
           ? _value.tipoFonte
           : tipoFonte // ignore: cast_nullable_to_non_nullable
               as String?,
+      fitotoxPercent: freezed == fitotoxPercent
+          ? _value.fitotoxPercent
+          : fitotoxPercent // ignore: cast_nullable_to_non_nullable
+              as double?,
     ) as $Val);
   }
 }
@@ -190,7 +197,8 @@ abstract class _$$ReferenciaTecnicaEntityImplCopyWith<$Res>
       DateTime? dataReferencia,
       String? resultado,
       String? local,
-      String? tipoFonte});
+      String? tipoFonte,
+      double? fitotoxPercent});
 }
 
 /// @nodoc
@@ -223,6 +231,7 @@ class __$$ReferenciaTecnicaEntityImplCopyWithImpl<$Res>
     Object? resultado = freezed,
     Object? local = freezed,
     Object? tipoFonte = freezed,
+    Object? fitotoxPercent = freezed,
   }) {
     return _then(_$ReferenciaTecnicaEntityImpl(
       id: null == id
@@ -285,6 +294,10 @@ class __$$ReferenciaTecnicaEntityImplCopyWithImpl<$Res>
           ? _value.tipoFonte
           : tipoFonte // ignore: cast_nullable_to_non_nullable
               as String?,
+      fitotoxPercent: freezed == fitotoxPercent
+          ? _value.fitotoxPercent
+          : fitotoxPercent // ignore: cast_nullable_to_non_nullable
+              as double?,
     ));
   }
 }
@@ -307,7 +320,8 @@ class _$ReferenciaTecnicaEntityImpl implements _ReferenciaTecnicaEntity {
       this.dataReferencia,
       this.resultado,
       this.local,
-      this.tipoFonte});
+      this.tipoFonte,
+      this.fitotoxPercent});
 
   @override
   final String id;
@@ -345,10 +359,12 @@ class _$ReferenciaTecnicaEntityImpl implements _ReferenciaTecnicaEntity {
   final String? local;
   @override
   final String? tipoFonte;
+  @override
+  final double? fitotoxPercent;
 
   @override
   String toString() {
-    return 'ReferenciaTecnicaEntity(id: $id, categoria: $categoria, estadio: $estadio, titulo: $titulo, descricao: $descricao, focoManejo: $focoManejo, praticas: $praticas, padrao: $padrao, destaque: $destaque, fonte: $fonte, safraReferencia: $safraReferencia, dataReferencia: $dataReferencia, resultado: $resultado, local: $local, tipoFonte: $tipoFonte)';
+    return 'ReferenciaTecnicaEntity(id: $id, categoria: $categoria, estadio: $estadio, titulo: $titulo, descricao: $descricao, focoManejo: $focoManejo, praticas: $praticas, padrao: $padrao, destaque: $destaque, fonte: $fonte, safraReferencia: $safraReferencia, dataReferencia: $dataReferencia, resultado: $resultado, local: $local, tipoFonte: $tipoFonte, fitotoxPercent: $fitotoxPercent)';
   }
 
   @override
@@ -379,7 +395,9 @@ class _$ReferenciaTecnicaEntityImpl implements _ReferenciaTecnicaEntity {
                 other.resultado == resultado) &&
             (identical(other.local, local) || other.local == local) &&
             (identical(other.tipoFonte, tipoFonte) ||
-                other.tipoFonte == tipoFonte));
+                other.tipoFonte == tipoFonte) &&
+            (identical(other.fitotoxPercent, fitotoxPercent) ||
+                other.fitotoxPercent == fitotoxPercent));
   }
 
   @override
@@ -399,7 +417,8 @@ class _$ReferenciaTecnicaEntityImpl implements _ReferenciaTecnicaEntity {
       dataReferencia,
       resultado,
       local,
-      tipoFonte);
+      tipoFonte,
+      fitotoxPercent);
 
   /// Create a copy of ReferenciaTecnicaEntity
   /// with the given fields replaced by the non-null parameter values.
@@ -427,7 +446,8 @@ abstract class _ReferenciaTecnicaEntity implements ReferenciaTecnicaEntity {
       final DateTime? dataReferencia,
       final String? resultado,
       final String? local,
-      final String? tipoFonte}) = _$ReferenciaTecnicaEntityImpl;
+      final String? tipoFonte,
+      final double? fitotoxPercent}) = _$ReferenciaTecnicaEntityImpl;
 
   @override
   String get id;
@@ -459,6 +479,8 @@ abstract class _ReferenciaTecnicaEntity implements ReferenciaTecnicaEntity {
   String? get local;
   @override
   String? get tipoFonte;
+  @override
+  double? get fitotoxPercent;
 
   /// Create a copy of ReferenciaTecnicaEntity
   /// with the given fields replaced by the non-null parameter values.

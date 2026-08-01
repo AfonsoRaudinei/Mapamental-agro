@@ -28,7 +28,8 @@ class LabTemplateCard extends StatelessWidget {
       child: Row(
         children: [
           leading ??
-              const Icon(Icons.science_outlined, color: AppColors.primary, size: 22),
+              const Icon(Icons.science_outlined,
+                  color: AppColors.primary, size: 22),
           const SizedBox(width: 12),
           Expanded(
             child: Column(
@@ -36,7 +37,8 @@ class LabTemplateCard extends StatelessWidget {
               children: [
                 if (badgeLabel != null) ...[
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
                       color: AppColors.primary.withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(999),
@@ -64,14 +66,16 @@ class LabTemplateCard extends StatelessWidget {
                   const SizedBox(height: 4),
                   Text(
                     subtitle!,
-                    style: const TextStyle(color: AppColors.onSurfaceMuted, fontSize: 13),
+                    style: const TextStyle(
+                        color: AppColors.onSurfaceMuted, fontSize: 13),
                   ),
                 ],
               ],
             ),
           ),
           if (onTap != null)
-            const Icon(Icons.chevron_right, color: AppColors.onSurfaceMuted, size: 22),
+            const Icon(Icons.chevron_right,
+                color: AppColors.onSurfaceMuted, size: 22),
         ],
       ),
     );

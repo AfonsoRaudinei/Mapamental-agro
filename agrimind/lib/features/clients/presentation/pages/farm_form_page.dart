@@ -302,8 +302,8 @@ class _FarmFormPageState extends ConsumerState<FarmFormPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style:
-                AppTypography.caption.copyWith(color: context.appTextSecondary)),
+            style: AppTypography.caption
+                .copyWith(color: context.appTextSecondary)),
         const SizedBox(height: 4),
         TextFormField(
           controller: controller,
@@ -357,8 +357,8 @@ class _FarmFormPageState extends ConsumerState<FarmFormPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(label,
-            style:
-                AppTypography.caption.copyWith(color: context.appTextSecondary)),
+            style: AppTypography.caption
+                .copyWith(color: context.appTextSecondary)),
         const SizedBox(height: 4),
         DropdownButtonFormField<T>(
           initialValue: value,

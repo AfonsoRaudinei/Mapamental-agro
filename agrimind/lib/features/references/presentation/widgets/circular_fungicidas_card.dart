@@ -46,7 +46,8 @@ class CircularFungicidasCard extends StatelessWidget {
                 color: AppColors.refBookFungicidasSurface,
                 shape: BoxShape.circle,
                 border: Border.all(
-                  color: AppColors.refBookFungicidasDark.withValues(alpha: 0.55),
+                  color:
+                      AppColors.refBookFungicidasDark.withValues(alpha: 0.55),
                 ),
               ),
               child: const Center(

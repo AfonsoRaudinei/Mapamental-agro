@@ -60,7 +60,9 @@ class _CategoriaDetailPageState extends ConsumerState<CategoriaDetailPage> {
         slivers: [
           CupertinoSliverNavigationBar(
             largeTitle: Text(cat.label),
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+            backgroundColor: Theme.of(context)
+                .scaffoldBackgroundColor
+                .withValues(alpha: 0.85),
             border: Border.all(color: Colors.transparent),
             leading: CupertinoButton(
               padding: EdgeInsets.zero,

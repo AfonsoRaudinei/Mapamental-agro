@@ -35,16 +35,14 @@ class ReferencesBookIcon extends StatelessWidget {
     final Color iconColor;
 
     if (filled) {
-      borderColor = enabled
-          ? accent.withValues(alpha: 0.55)
-          : AppColors.borderDark;
+      borderColor =
+          enabled ? accent.withValues(alpha: 0.55) : AppColors.borderDark;
       fill = enabled ? accent.withValues(alpha: 0.14) : Colors.transparent;
       iconColor = enabled ? accent : AppColors.textDisabled;
     } else {
       borderColor = enabled ? context.appBorder : AppColors.borderDark;
       fill = enabled ? context.appSurface : Colors.transparent;
-      iconColor =
-          enabled ? context.appTextPrimary : context.appTextDisabled;
+      iconColor = enabled ? context.appTextPrimary : context.appTextDisabled;
     }
 
     return Opacity(

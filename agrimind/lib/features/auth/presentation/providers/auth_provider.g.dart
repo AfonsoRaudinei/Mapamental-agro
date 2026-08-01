@@ -6,7 +6,7 @@ part of 'auth_provider.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$authNotifierHash() => r'dbe9317171f552aa49e84b4a68291d7679275c50';
+String _$authNotifierHash() => r'7701361586a819d13152cbd42ab6dcf43fcff734';
 
 /// Notifier de autenticação — gerencia o estado global do usuário logado.
 /// Estado: AsyncValue<UserEntity?> (null = não autenticado).

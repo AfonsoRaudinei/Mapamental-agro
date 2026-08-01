@@ -493,8 +493,7 @@ abstract final class CircularFungicidasData {
         'Antracnose em vagem',
       ],
       primaryDisease: 'DFCs',
-      management:
-          'DFCs dominantes. Avaliar custo-benefício de nova aplicação.',
+      management: 'DFCs dominantes. Avaliar custo-benefício de nova aplicação.',
       incidences: {
         'DFCs': '60–90%',
         'Ferrugem asiática': '95%',

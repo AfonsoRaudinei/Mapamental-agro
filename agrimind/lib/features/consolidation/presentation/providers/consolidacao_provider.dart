@@ -2,11 +2,11 @@ import 'dart:io';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../plans/presentation/providers/plano_detail_provider.dart';
+import '../../data/exporters/export_excel_exporter.dart';
+import '../../data/exporters/export_pdf_exporter.dart';
 import '../../domain/entities/consolidacao_entity.dart';
-import '../../domain/usecases/gerar_consolidacao_usecase.dart';
-import '../../domain/usecases/export_pdf_usecase.dart';
-import '../../domain/usecases/export_excel_usecase.dart';
 import '../../domain/usecases/export_html_usecase.dart';
+import '../../domain/usecases/gerar_consolidacao_usecase.dart';
 
 /// Provider that generates a [ConsolidacaoEntity] for a given plan id.
 final consolidacaoProvider = FutureProvider.autoDispose
@@ -19,14 +19,14 @@ final consolidacaoProvider = FutureProvider.autoDispose
 final exportPdfProvider =
     FutureProvider.autoDispose.family<File, String>((ref, planId) async {
   final consolidacao = await ref.watch(consolidacaoProvider(planId).future);
-  return const ExportPdfUseCase().call(consolidacao);
+  return const ExportPdfExporter().call(consolidacao);
 });
 
 /// Provider that exports the consolidation to Excel.
 final exportExcelProvider =
     FutureProvider.autoDispose.family<File, String>((ref, planId) async {
   final consolidacao = await ref.watch(consolidacaoProvider(planId).future);
-  return const ExportExcelUseCase().call(consolidacao);
+  return const ExportExcelExporter().call(consolidacao);
 });
 
 /// Provider that exports the consolidation to offline HTML.

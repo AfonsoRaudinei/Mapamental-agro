@@ -124,7 +124,8 @@ class _ProdutoSearchDropdownState extends ConsumerState<ProdutoSearchDropdown> {
             color: context.appSurface,
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
-              color: _focusNode.hasFocus ? AppColors.primary : context.appBorder,
+              color:
+                  _focusNode.hasFocus ? AppColors.primary : context.appBorder,
             ),
           ),
           child: Row(
@@ -251,7 +252,8 @@ class _DropdownContent extends ConsumerWidget {
     );
   }
 
-  Widget _buildList(BuildContext context, List<ProdutoCatalogoEntity> produtos) {
+  Widget _buildList(
+      BuildContext context, List<ProdutoCatalogoEntity> produtos) {
     // Filtra apenas ativos
     final ativos = produtos.where((p) => p.ativo).toList();
 
@@ -260,7 +262,8 @@ class _DropdownContent extends ConsumerWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Text(
           'Digite pelo menos 2 caracteres para buscar',
-          style: AppTypography.caption.copyWith(color: context.appTextSecondary),
+          style:
+              AppTypography.caption.copyWith(color: context.appTextSecondary),
         ),
       );
     }

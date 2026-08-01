@@ -107,9 +107,7 @@ class _StandardReferencesBook extends ConsumerWidget {
           enabled: hasContent,
           compact: compact,
           filled: false,
-          onTap: hasContent
-              ? () => _open(context, ref, available)
-              : null,
+          onTap: hasContent ? () => _open(context, ref, available) : null,
         );
       },
       loading: () => ReferencesBookIcon(
@@ -201,7 +199,8 @@ class _CircularTecnicaBook extends ConsumerWidget {
           compact: compact,
           filled: true,
           onTap: hasContent
-              ? () => _open(context, ref, hasCircular: hasCircular, hasCesb: hasCesb)
+              ? () => _open(context, ref,
+                  hasCircular: hasCircular, hasCesb: hasCesb)
               : null,
         );
       },
@@ -409,7 +408,8 @@ class _CircularTecnicaPicker extends StatelessWidget {
     final items = <Widget>[
       if (includeCircular)
         _CircularPickerTile(
-          onTap: () => Navigator.of(context).pop(_CircularTecnicaTarget.circular),
+          onTap: () =>
+              Navigator.of(context).pop(_CircularTecnicaTarget.circular),
         ),
       if (includeCesb)
         _CesbPickerTile(

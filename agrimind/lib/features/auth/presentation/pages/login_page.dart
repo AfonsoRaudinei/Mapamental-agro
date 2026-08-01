@@ -145,7 +145,8 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                   children: [
                     Expanded(child: Divider(color: context.appBorder)),
                     Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                      padding:
+                          const EdgeInsets.symmetric(horizontal: AppSpacing.md),
                       child: Text(
                         'ou continue com',
                         style: TextStyle(

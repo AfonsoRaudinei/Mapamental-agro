@@ -371,7 +371,8 @@ class _UfDropdown extends StatelessWidget {
       children: [
         Text(
           'UF',
-          style: AppTypography.caption.copyWith(color: context.appTextSecondary),
+          style:
+              AppTypography.caption.copyWith(color: context.appTextSecondary),
         ),
         const SizedBox(height: 4),
         Container(

@@ -45,7 +45,8 @@ class DarkDropdownField<T> extends StatelessWidget {
           decoration: InputDecoration(
             filled: true,
             fillColor: AppColors.surfaceElevated,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+            contentPadding:
+                const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(12),
               borderSide: const BorderSide(color: AppColors.border),
@@ -60,7 +61,8 @@ class DarkDropdownField<T> extends StatelessWidget {
               value: value,
               isExpanded: true,
               hint: hint != null
-                  ? Text(hint!, style: const TextStyle(color: AppColors.onSurfaceDim))
+                  ? Text(hint!,
+                      style: const TextStyle(color: AppColors.onSurfaceDim))
                   : null,
               items: items,
               onChanged: onChanged,

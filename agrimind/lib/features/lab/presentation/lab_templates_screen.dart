@@ -36,7 +36,8 @@ class LabTemplatesScreen extends StatelessWidget {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).push(
-              MaterialPageRoute<void>(builder: (_) => const LabTemplateFormScreen()),
+              MaterialPageRoute<void>(
+                  builder: (_) => const LabTemplateFormScreen()),
             ),
             child: const Text('+ Novo'),
           ),
@@ -50,7 +51,8 @@ class LabTemplatesScreen extends StatelessWidget {
             decoration: BoxDecoration(
               color: AppColors.primary.withValues(alpha: 0.12),
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
+              border:
+                  Border.all(color: AppColors.primary.withValues(alpha: 0.3)),
             ),
             child: const Row(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -61,7 +63,8 @@ class LabTemplatesScreen extends StatelessWidget {
                   child: Text(
                     'Templates definem unidades e campos esperados de cada laboratório, '
                     'garantindo importação correta dos PDFs.',
-                    style: TextStyle(color: AppColors.onSurface, fontSize: 13, height: 1.4),
+                    style: TextStyle(
+                        color: AppColors.onSurface, fontSize: 13, height: 1.4),
                   ),
                 ),
               ],

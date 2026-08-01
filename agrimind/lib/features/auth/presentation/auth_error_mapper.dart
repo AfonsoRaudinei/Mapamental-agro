@@ -2,19 +2,15 @@ import 'package:flutter/services.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../data/datasources/auth_remote_datasource.dart';
+import '../domain/errors/auth_flow_exception.dart';
 
 abstract final class AuthErrorMapper {
   static bool isCancellation(Object? error) =>
       error is AuthFlowCancelledException ||
-      (error != null && isAuthFlowCancellation(error));
+      AuthCancellationCodes.contains(_codeFor(error));
 
   static String message(Object? error) {
-    final code = switch (error) {
-      AuthException(:final code) => code,
-      PlatformException(:final code) => code,
-      _ => null,
-    };
+    final code = _codeFor(error);
 
     if (code != null) {
       return switch (code.toLowerCase()) {
@@ -56,6 +52,15 @@ abstract final class AuthErrorMapper {
       PlatformException(:final code, :final message, :final details) =>
         'PlatformException($code): ${message ?? details ?? 'sem detalhes'}',
       _ => '${error.runtimeType}: $error',
+    };
+  }
+
+  static String? _codeFor(Object? error) {
+    return switch (error) {
+      AuthException(:final code) => code,
+      PlatformException(:final code) => code,
+      SignInWithAppleAuthorizationException(:final code) => code.name,
+      _ => null,
     };
   }
 }

@@ -6,12 +6,12 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../../core/utils/unit_converter.dart';
-import '../entities/consolidacao_entity.dart';
-import '../entities/consolidacao_item_entity.dart';
+import '../../domain/entities/consolidacao_entity.dart';
+import '../../domain/entities/consolidacao_item_entity.dart';
 
 /// Gera um PDF de pedido de produtos a partir da consolidação.
-class ExportPdfUseCase {
-  const ExportPdfUseCase();
+class ExportPdfExporter {
+  const ExportPdfExporter();
 
   static final _nf = NumberFormat('#,##0.00', 'pt_BR');
   static final _nfQtd = NumberFormat('#,##0.0', 'pt_BR');
@@ -161,15 +161,13 @@ class ExportPdfUseCase {
   }
 
   pw.Widget _buildItemRow(ConsolidacaoItemEntity item) {
-    final detalheTexto = item.detalhe
-        .map((d) {
-          final dose = UnitConverter.valorDisplay(d.dose, d.doseUnidade);
-          final total = UnitConverter.valorDisplay(d.total, d.doseUnidade);
-          final doseUnit = UnitConverter.unidadeBase(d.doseUnidade);
-          final totalUnit = UnitConverter.unidadeTotal(d.doseUnidade);
-          return '${d.estadioCodigo}: ${_nfQtd.format(dose)} $doseUnit×${_nfQtd.format(d.areaHa)}ha=${_nfQtd.format(total)} $totalUnit${d.isOverride ? '⚠' : ''}';
-        })
-        .join(' | ');
+    final detalheTexto = item.detalhe.map((d) {
+      final dose = UnitConverter.valorDisplay(d.dose, d.doseUnidade);
+      final total = UnitConverter.valorDisplay(d.total, d.doseUnidade);
+      final doseUnit = UnitConverter.unidadeBase(d.doseUnidade);
+      final totalUnit = UnitConverter.unidadeTotal(d.doseUnidade);
+      return '${d.estadioCodigo}: ${_nfQtd.format(dose)} $doseUnit×${_nfQtd.format(d.areaHa)}ha=${_nfQtd.format(total)} $totalUnit${d.isOverride ? '⚠' : ''}';
+    }).join(' | ');
 
     return pw.Column(
       crossAxisAlignment: pw.CrossAxisAlignment.start,

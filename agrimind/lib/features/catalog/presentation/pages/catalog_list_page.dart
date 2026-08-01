@@ -49,7 +49,9 @@ class _CatalogListPageState extends ConsumerState<CatalogListPage> {
         slivers: [
           CupertinoSliverNavigationBar(
             largeTitle: const Text('Catálogo'),
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor.withValues(alpha: 0.85),
+            backgroundColor: Theme.of(context)
+                .scaffoldBackgroundColor
+                .withValues(alpha: 0.85),
             border: Border.all(color: Colors.transparent),
             trailing: CupertinoButton(
               padding: EdgeInsets.zero,
@@ -107,8 +109,9 @@ class _CatalogListPageState extends ConsumerState<CatalogListPage> {
                             isSelected ? AppColors.primary : context.appSurface,
                         borderRadius: BorderRadius.circular(99),
                         border: Border.all(
-                          color:
-                              isSelected ? AppColors.primary : context.appBorder,
+                          color: isSelected
+                              ? AppColors.primary
+                              : context.appBorder,
                         ),
                       ),
                       child: Text(

@@ -35,7 +35,8 @@ class DarkAppBar extends StatelessWidget implements PreferredSizeWidget {
       leading: leading ??
           (automaticallyImplyLeading && canPop
               ? IconButton(
-                  icon: const Icon(Icons.chevron_left, color: AppColors.primary),
+                  icon:
+                      const Icon(Icons.chevron_left, color: AppColors.primary),
                   iconSize: 28,
                   onPressed: onBack ?? () => Navigator.maybePop(context),
                   tooltip: MaterialLocalizations.of(context).backButtonTooltip,

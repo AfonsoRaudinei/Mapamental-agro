@@ -374,7 +374,8 @@ class _TextField extends StatelessWidget {
   }
 }
 
-InputDecoration _inputDecoration(BuildContext context, String label) => InputDecoration(
+InputDecoration _inputDecoration(BuildContext context, String label) =>
+    InputDecoration(
       labelText: label,
       labelStyle: AppTypography.caption.copyWith(
         color: context.appTextSecondary,

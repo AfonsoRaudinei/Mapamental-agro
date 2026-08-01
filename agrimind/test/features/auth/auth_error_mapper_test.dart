@@ -1,4 +1,4 @@
-import 'package:agrimind/features/auth/data/datasources/auth_remote_datasource.dart';
+import 'package:agrimind/features/auth/domain/errors/auth_flow_exception.dart';
 import 'package:agrimind/features/auth/presentation/auth_error_mapper.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

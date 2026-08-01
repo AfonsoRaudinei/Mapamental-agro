@@ -51,7 +51,8 @@ void main() {
     expect(stages.single.label, 'V7 — 7º Nó');
   });
 
-  test('move produtos de V8 para V7 e remove V8 quando ambos existem', () async {
+  test('move produtos de V8 para V7 e remove V8 quando ambos existem',
+      () async {
     const planoId = 'plano-2';
     final now = DateTime.utc(2026, 6, 27);
     await seedPlano(planoId: planoId);

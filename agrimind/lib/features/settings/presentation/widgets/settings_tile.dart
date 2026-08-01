@@ -36,9 +36,8 @@ class SettingsTile extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final secondaryText =
         isDark ? AppColors.textSecondaryDark : context.appTextSecondary;
-    final effectiveTitleColor = isDestructive
-        ? AppColors.error
-        : (titleColor ?? colorScheme.onSurface);
+    final effectiveTitleColor =
+        isDestructive ? AppColors.error : (titleColor ?? colorScheme.onSurface);
 
     return CupertinoButton(
       padding: EdgeInsets.zero,

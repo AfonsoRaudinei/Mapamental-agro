@@ -39,7 +39,8 @@ class SettingsPage extends ConsumerWidget {
         slivers: [
           CupertinoSliverNavigationBar(
             largeTitle: const Text('Configurações'),
-            backgroundColor: theme.scaffoldBackgroundColor.withValues(alpha: 0.85),
+            backgroundColor:
+                theme.scaffoldBackgroundColor.withValues(alpha: 0.85),
             border: Border.all(color: Colors.transparent),
           ),
           settingsAsync.when(
@@ -62,8 +63,9 @@ class SettingsPage extends ConsumerWidget {
                     onTap: () => context.push(AppRoutes.profileEdit),
                     surfaceColor: colorScheme.surface,
                     borderColor: colorScheme.outline,
-                    subtitleColor:
-                        isDark ? AppColors.textSecondaryDark : context.appTextSecondary,
+                    subtitleColor: isDark
+                        ? AppColors.textSecondaryDark
+                        : context.appTextSecondary,
                   ),
                   const SizedBox(height: AppSpacing.md),
 

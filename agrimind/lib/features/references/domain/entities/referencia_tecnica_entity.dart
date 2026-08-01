@@ -22,5 +22,6 @@ class ReferenciaTecnicaEntity with _$ReferenciaTecnicaEntity {
     String? resultado,
     String? local,
     String? tipoFonte,
+    double? fitotoxPercent,
   }) = _ReferenciaTecnicaEntity;
 }

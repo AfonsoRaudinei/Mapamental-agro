@@ -59,7 +59,8 @@ void main() {
     expect(icon.color, AppColors.primary);
   });
 
-  testWidgets('LabTemplateCard usa surfaceContainer, não preto puro', (tester) async {
+  testWidgets('LabTemplateCard usa surfaceContainer, não preto puro',
+      (tester) async {
     await tester.pumpWidget(
       MaterialApp(
         theme: darkBlackTheme,
@@ -74,10 +75,12 @@ void main() {
     );
 
     final box = tester.widget<DecoratedBox>(
-      find.descendant(
-        of: find.byType(DarkSurfaceCard),
-        matching: find.byType(DecoratedBox),
-      ).first,
+      find
+          .descendant(
+            of: find.byType(DarkSurfaceCard),
+            matching: find.byType(DecoratedBox),
+          )
+          .first,
     );
     final decoration = box.decoration as BoxDecoration;
     expect(decoration.color, AppColors.surfaceContainer);
@@ -106,7 +109,8 @@ void main() {
     expect(dropdown.style?.color, AppColors.primary);
     expect(dropdown.dropdownColor, AppColors.surfaceElevated);
 
-    final decorator = tester.widget<InputDecorator>(find.byType(InputDecorator));
+    final decorator =
+        tester.widget<InputDecorator>(find.byType(InputDecorator));
     expect(decorator.decoration.fillColor, AppColors.surfaceElevated);
   });
 }

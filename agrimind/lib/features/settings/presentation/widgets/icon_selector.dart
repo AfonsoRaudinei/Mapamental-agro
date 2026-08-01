@@ -103,7 +103,8 @@ class _IconOptionCard extends StatelessWidget {
             Text(
               option.label,
               style: AppTypography.label.copyWith(
-                color: isSelected ? AppColors.primary : context.appTextSecondary,
+                color:
+                    isSelected ? AppColors.primary : context.appTextSecondary,
                 fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
               ),
             ),

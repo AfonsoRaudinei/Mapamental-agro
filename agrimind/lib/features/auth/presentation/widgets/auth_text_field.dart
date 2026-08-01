@@ -97,7 +97,8 @@ class _AuthTextFieldState extends State<AuthTextField> {
           horizontal: AppSpacing.md,
           vertical: AppSpacing.sm + 4,
         ),
-        labelStyle: AppTypography.body.copyWith(color: context.appTextSecondary),
+        labelStyle:
+            AppTypography.body.copyWith(color: context.appTextSecondary),
         floatingLabelStyle:
             AppTypography.label.copyWith(color: AppColors.primary),
       ),

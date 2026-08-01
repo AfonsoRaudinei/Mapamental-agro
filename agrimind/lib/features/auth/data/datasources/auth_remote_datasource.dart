@@ -7,9 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:sign_in_with_apple/sign_in_with_apple.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-class AuthFlowCancelledException implements Exception {
-  const AuthFlowCancelledException();
-}
+import '../../domain/errors/auth_flow_exception.dart';
 
 bool isAuthFlowCancellation(Object error) {
   final code = switch (error) {
@@ -19,16 +17,7 @@ bool isAuthFlowCancellation(Object error) {
     _ => null,
   };
 
-  return const {
-    'canceled',
-    'cancelled',
-    'user-cancelled',
-    'web-context-canceled',
-    'web-context-cancelled',
-    'canceled-popup-request',
-    'cancelled-popup-request',
-    'popup-closed-by-user',
-  }.contains(code?.toLowerCase());
+  return AuthCancellationCodes.contains(code);
 }
 
 /// Datasource remoto para autenticação via Supabase Auth.

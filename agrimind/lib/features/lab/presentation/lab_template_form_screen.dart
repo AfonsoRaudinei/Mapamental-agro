@@ -30,7 +30,9 @@ class _LabTemplateFormScreenState extends State<LabTemplateFormScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: AppColors.background,
-      appBar: DarkAppBar(title: widget.initialName == null ? 'Novo Template' : 'Editar Template'),
+      appBar: DarkAppBar(
+          title:
+              widget.initialName == null ? 'Novo Template' : 'Editar Template'),
       body: ListView(
         padding: const EdgeInsets.fromLTRB(16, 8, 16, 100),
         children: [
@@ -81,7 +83,8 @@ class _LabTemplateFormScreenState extends State<LabTemplateFormScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _toggleRow('Lab calcula e entrega no laudo', _labCalculates, (v) => setState(() => _labCalculates = v)),
+                _toggleRow('Lab calcula e entrega no laudo', _labCalculates,
+                    (v) => setState(() => _labCalculates = v)),
               ],
             ),
           ),
@@ -91,7 +94,8 @@ class _LabTemplateFormScreenState extends State<LabTemplateFormScreen> {
             padding: const EdgeInsets.all(16),
             child: Column(
               children: [
-                _toggleRow('pH Água', _phWater, (v) => setState(() => _phWater = v)),
+                _toggleRow(
+                    'pH Água', _phWater, (v) => setState(() => _phWater = v)),
                 const Divider(height: 24, color: AppColors.border),
                 _toggleRow('pH SMP', _phSmp, (v) => setState(() => _phSmp = v)),
               ],
@@ -101,7 +105,8 @@ class _LabTemplateFormScreenState extends State<LabTemplateFormScreen> {
           _sectionLabel('MICRONUTRIENTES'),
           DarkSurfaceCard(
             padding: const EdgeInsets.all(16),
-            child: _toggleRow('Incluir micronutrientes', _micronutrients, (v) => setState(() => _micronutrients = v)),
+            child: _toggleRow('Incluir micronutrientes', _micronutrients,
+                (v) => setState(() => _micronutrients = v)),
           ),
         ],
       ),
@@ -113,9 +118,12 @@ class _LabTemplateFormScreenState extends State<LabTemplateFormScreen> {
             backgroundColor: AppColors.primary,
             foregroundColor: AppColors.onPrimary,
             minimumSize: const Size.fromHeight(52),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
           ),
-          child: Text(widget.initialName == null ? 'Criar Template' : 'Salvar Template'),
+          child: Text(widget.initialName == null
+              ? 'Criar Template'
+              : 'Salvar Template'),
         ),
       ),
     );
@@ -140,7 +148,8 @@ class _LabTemplateFormScreenState extends State<LabTemplateFormScreen> {
     return Row(
       children: [
         Expanded(
-          child: Text(label, style: const TextStyle(color: AppColors.onSurface, fontSize: 14)),
+          child: Text(label,
+              style: const TextStyle(color: AppColors.onSurface, fontSize: 14)),
         ),
         Switch(value: value, onChanged: onChanged),
       ],

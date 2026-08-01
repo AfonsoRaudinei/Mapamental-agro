@@ -10,8 +10,13 @@ if [[ -f "${KEYSTORE}" ]]; then
   exit 0
 fi
 
-STORE_PASS="${ANDROID_KEYSTORE_PASSWORD:-agrimind-dev-keystore-change-me}"
-KEY_PASS="${ANDROID_KEY_PASSWORD:-${STORE_PASS}}"
+if [[ -z "${ANDROID_KEYSTORE_PASSWORD:-}" ]]; then
+  echo "ANDROID_KEYSTORE_PASSWORD é obrigatório para gerar a keystore de release." >&2
+  exit 1
+fi
+
+STORE_PASS="${ANDROID_KEYSTORE_PASSWORD}"
+KEY_PASS="${STORE_PASS}"
 
 keytool -genkeypair \
   -v \
@@ -33,4 +38,4 @@ EOF
 
 echo "Keystore criado: ${KEYSTORE}"
 echo "Propriedades gravadas em: ${PROPS}"
-echo "Altere as senhas antes de publicar na Play Store."
+echo "Guarde a keystore e as senhas em local seguro antes de publicar na Play Store."
