@@ -263,13 +263,6 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
     await _updateEstadio(estadio.copyWith(imageLocalPath: path));
   }
 
-  Future<void> _pickLogo() async {
-    final picked = await _picker.pickImage(source: ImageSource.gallery);
-    if (picked == null) return;
-    final path = await _copyImageToAppDir(picked.path, 'plan_logo');
-    await _updatePlano(_plano.copyWith(logoLocalPath: path));
-  }
-
   Future<String> _copyImageToAppDir(String sourcePath, String prefix) async {
     final dir = await getApplicationDocumentsDirectory();
     final ext = sourcePath.split('.').last;
@@ -278,19 +271,60 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
     return (await File(sourcePath).copy(target.path)).path;
   }
 
-  Future<void> _exportHtml() async {
+  Future<void> _chooseExport() async {
+    final choice = await showCupertinoModalPopup<String>(
+      context: context,
+      builder: (ctx) => CupertinoActionSheet(
+        title: const Text('Exportar plano'),
+        actions: [
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(ctx).pop('html'),
+            child: const Text('Mapa HTML'),
+          ),
+          CupertinoActionSheetAction(
+            onPressed: () => Navigator.of(ctx).pop('excel'),
+            child: const Text('Planilha Excel'),
+          ),
+        ],
+        cancelButton: CupertinoActionSheetAction(
+          onPressed: () => Navigator.of(ctx).pop(),
+          child: const Text('Cancelar'),
+        ),
+      ),
+    );
+    if (!mounted || choice == null) return;
+    if (choice == 'html') {
+      await _shareExport(
+        ref.read(exportHtmlProvider(widget.planoId).future),
+        subject: 'Mapa Fenológico - ${_plano.nome}',
+        errorLabel: 'HTML',
+      );
+    } else if (choice == 'excel') {
+      await _shareExport(
+        ref.read(exportExcelProvider(widget.planoId).future),
+        subject: 'Planilha - ${_plano.nome}',
+        errorLabel: 'Excel',
+      );
+    }
+  }
+
+  Future<void> _shareExport(
+    Future<File> fileFuture, {
+    required String subject,
+    required String errorLabel,
+  }) async {
     if (_exporting) return;
     setState(() => _exporting = true);
     try {
-      final file = await ref.read(exportHtmlProvider(widget.planoId).future);
+      final file = await fileFuture;
       await SharePlus.instance.share(
         ShareParams(
           files: [XFile(file.path)],
-          subject: 'Mapa Fenológico - ${_plano.nome}',
+          subject: subject,
         ),
       );
     } catch (error) {
-      _showSnack('Erro ao exportar HTML: $error');
+      _showSnack('Erro ao exportar $errorLabel: $error');
     } finally {
       if (mounted) setState(() => _exporting = false);
     }
@@ -328,7 +362,7 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
               onPlanTap: () => setState(() => _showConsolidation = false),
               onConsolidationTap: () =>
                   setState(() => _showConsolidation = true),
-              onExportTap: _exportHtml,
+              onExportTap: _chooseExport,
             ),
             Expanded(
               child: _showConsolidation
@@ -352,7 +386,6 @@ class _CanvasViewState extends ConsumerState<_CanvasView> {
                       fazenda: _displayFazenda,
                       onPlanoChanged: _updatePlano,
                       onAddEstadio: _addEstadio,
-                      onPickLogo: _pickLogo,
                       onAddProduto: (estadio) => _openProdutoPanel(estadio),
                       onAddProdutoFromReferencia: _addProdutoFromReferencia,
                       onDeleteProduto: _deleteProduto,

@@ -11,6 +11,7 @@ import '../../../../core/constants/app_typography.dart';
 import '../../domain/entities/fazenda_entity.dart';
 import '../providers/clients_provider.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../../core/widgets/cupertino_destructive_confirm.dart';
 
 /// Formulário de criação e edição de fazenda.
 class FarmFormPage extends ConsumerStatefulWidget {
@@ -475,9 +476,18 @@ class _TalhoesSection extends ConsumerWidget {
                         ),
                         backgroundColor: AppColors.primaryLight,
                         deleteIconColor: context.appTextSecondary,
-                        onDeleted: () => ref
-                            .read(talhoesNotifierProvider(fazendaId).notifier)
-                            .deleteTalhao(t.id),
+                        onDeleted: () async {
+                          final confirmed =
+                              await showCupertinoDestructiveConfirm(
+                            context,
+                            itemName: t.nome,
+                          );
+                          if (!confirmed) return;
+                          await ref
+                              .read(
+                                  talhoesNotifierProvider(fazendaId).notifier)
+                              .deleteTalhao(t.id);
+                        },
                       ))
                   .toList(),
             );

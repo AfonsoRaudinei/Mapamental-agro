@@ -9,11 +9,15 @@ import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/unit_converter.dart';
+import '../../../../core/widgets/accordion_section.dart';
+import '../../../../core/widgets/cupertino_destructive_confirm.dart';
 import '../../../../core/widgets/summary_expandable_card.dart';
 import '../../../consolidation/presentation/providers/consolidacao_provider.dart';
 import '../../domain/entities/estadio_entity.dart';
 import '../../domain/entities/plano_entity.dart';
 import '../../domain/entities/produto_aplicacao_entity.dart';
+import '../providers/expanded_panels_provider.dart';
+import 'accordion_stage_card.dart';
 import 'stage_references_button.dart';
 
 abstract final class PlanCanvasWidgets {
@@ -147,7 +151,6 @@ class PlanningView extends StatelessWidget {
     required this.fazenda,
     required this.onPlanoChanged,
     required this.onAddEstadio,
-    required this.onPickLogo,
     required this.onAddProduto,
     required this.onAddProdutoFromReferencia,
     required this.onDeleteProduto,
@@ -162,7 +165,6 @@ class PlanningView extends StatelessWidget {
   final String fazenda;
   final ValueChanged<PlanoEntity> onPlanoChanged;
   final VoidCallback onAddEstadio;
-  final VoidCallback onPickLogo;
   final void Function(EstadioEntity estadio) onAddProduto;
   final Future<void> Function(
     EstadioEntity estadio, {
@@ -187,56 +189,90 @@ class PlanningView extends StatelessWidget {
     final fenologicoStages = plano.estadios
         .where((item) => item.codigo != PlanCanvasWidgets.operacionalCodigo)
         .toList();
+    final stageBlocks = <Widget>[
+      if (operacionalStages.isNotEmpty) ...[
+        const _SectionLabel('Aplicações operacionais'),
+        ...operacionalStages.map(
+          (estadio) => StageBlock(
+            key: ValueKey(estadio.id),
+            plano: plano,
+            estadio: estadio,
+            onPickStageImage: onPickStageImage,
+            onAddProduto: onAddProduto,
+            onAddProdutoFromReferencia: onAddProdutoFromReferencia,
+            onDeleteProduto: onDeleteProduto,
+            onEditProduto: onEditProduto,
+            onUpdateEstadio: onUpdateEstadio,
+            onRemoveEstadio: onRemoveEstadio,
+          ),
+        ),
+      ],
+      if (operacionalStages.isNotEmpty && fenologicoStages.isNotEmpty)
+        const SizedBox(height: 2),
+      ...fenologicoStages.map(
+        (estadio) => StageBlock(
+          key: ValueKey(estadio.id),
+          plano: plano,
+          estadio: estadio,
+          onPickStageImage: onPickStageImage,
+          onAddProduto: onAddProduto,
+          onAddProdutoFromReferencia: onAddProdutoFromReferencia,
+          onDeleteProduto: onDeleteProduto,
+          onEditProduto: onEditProduto,
+          onUpdateEstadio: onUpdateEstadio,
+          onRemoveEstadio: onRemoveEstadio,
+        ),
+      ),
+    ];
+
+    final header = PlanHeaderCard(
+      plano: plano,
+      produtor: produtor,
+      fazenda: fazenda,
+      onChanged: onPlanoChanged,
+    );
+
     return Column(
       children: [
         Expanded(
-          child: ListView(
-            padding:
-                const EdgeInsets.only(left: 14, right: 14, top: 16, bottom: 8),
-            children: [
-              PlanHeaderCard(
-                plano: plano,
-                produtor: produtor,
-                fazenda: fazenda,
-                onChanged: onPlanoChanged,
-              ),
-              if (plano.estadios.isEmpty)
-                _CanvasHint(onTap: onAddEstadio)
-              else ...[
-                if (operacionalStages.isNotEmpty) ...[
-                  const _SectionLabel('Aplicações operacionais'),
-                  ...operacionalStages.map(
-                    (estadio) => StageBlock(
-                      plano: plano,
-                      estadio: estadio,
-                      onPickStageImage: onPickStageImage,
-                      onAddProduto: onAddProduto,
-                      onAddProdutoFromReferencia: onAddProdutoFromReferencia,
-                      onDeleteProduto: onDeleteProduto,
-                      onEditProduto: onEditProduto,
-                      onUpdateEstadio: onUpdateEstadio,
-                      onRemoveEstadio: onRemoveEstadio,
+          child: plano.estadios.isEmpty
+              ? Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.only(
+                        left: 14,
+                        right: 14,
+                        top: 16,
+                      ),
+                      child: header,
                     ),
+                    Expanded(
+                      child: Center(
+                        child: _CanvasHint(
+                          onTap: onAddEstadio,
+                          label: 'Adicione o primeiro estádio',
+                        ),
+                      ),
+                    ),
+                  ],
+                )
+              : ListView(
+                  padding: const EdgeInsets.only(
+                    left: 14,
+                    right: 14,
+                    top: 16,
+                    bottom: 8,
                   ),
-                ],
-                if (operacionalStages.isNotEmpty && fenologicoStages.isNotEmpty)
-                  const SizedBox(height: 2),
-                ...fenologicoStages.map(
-                  (estadio) => StageBlock(
-                    plano: plano,
-                    estadio: estadio,
-                    onPickStageImage: onPickStageImage,
-                    onAddProduto: onAddProduto,
-                    onAddProdutoFromReferencia: onAddProdutoFromReferencia,
-                    onDeleteProduto: onDeleteProduto,
-                    onEditProduto: onEditProduto,
-                    onUpdateEstadio: onUpdateEstadio,
-                    onRemoveEstadio: onRemoveEstadio,
-                  ),
+                  children: [
+                    header,
+                    ...stageBlocks,
+                    _CanvasHint(
+                      onTap: onAddEstadio,
+                      label: 'Adicionar estádio',
+                    ),
+                  ],
                 ),
-              ],
-            ],
-          ),
         ),
         Container(
           decoration: BoxDecoration(
@@ -249,22 +285,9 @@ class PlanningView extends StatelessWidget {
             top: 8,
             bottom: 8 + bottomInset,
           ),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _AddStageHint(onTap: onAddEstadio),
-              PlanSummaryCard(planoId: plano.id, areaHa: plano.areaHaTotal),
-              ConsultorCard(
-                plano: plano,
-                onPickLogo: onPickLogo,
-                onConsultorChanged: (value) => onPlanoChanged(
-                  plano.copyWith(consultorNome: value.trim()),
-                ),
-                onExibirNomeChanged: (value) => onPlanoChanged(
-                  plano.copyWith(consultorExibirNome: value),
-                ),
-              ),
-            ],
+          child: PlanSummaryCard(
+            planoId: plano.id,
+            areaHa: plano.areaHaTotal,
           ),
         ),
       ],
@@ -272,7 +295,7 @@ class PlanningView extends StatelessWidget {
   }
 }
 
-class PlanHeaderCard extends StatefulWidget {
+class PlanHeaderCard extends ConsumerStatefulWidget {
   const PlanHeaderCard({
     super.key,
     required this.plano,
@@ -287,35 +310,25 @@ class PlanHeaderCard extends StatefulWidget {
   final ValueChanged<PlanoEntity> onChanged;
 
   @override
-  State<PlanHeaderCard> createState() => _PlanHeaderCardState();
+  ConsumerState<PlanHeaderCard> createState() => _PlanHeaderCardState();
 }
 
-class _PlanHeaderCardState extends State<PlanHeaderCard> {
+class _PlanHeaderCardState extends ConsumerState<PlanHeaderCard> {
   late final TextEditingController _produtor;
   late final TextEditingController _fazenda;
   late final TextEditingController _area;
   late final TextEditingController _cidade;
   late final TextEditingController _safra;
 
-  bool get _hasIdentifyingData =>
-      widget.produtor.isNotEmpty ||
-      widget.fazenda.isNotEmpty ||
-      (widget.plano.cidadeUf?.isNotEmpty ?? false);
-
-  String get _summaryPrimary {
+  String get _accordionSubtitle {
     final prod = _produtor.text.trim();
     final faz = _fazenda.text.trim();
-    if (prod.isEmpty && faz.isEmpty) return 'Identificação do plano';
-    if (prod.isEmpty) return faz;
-    if (faz.isEmpty) return prod;
-    return '$prod · $faz';
-  }
-
-  String get _summarySecondary {
     final area = _area.text.trim();
     final cidade = _cidade.text.trim();
     final safra = _safra.text.trim();
     final parts = <String>[
+      if (prod.isNotEmpty) prod,
+      if (faz.isNotEmpty) faz,
       if (area.isNotEmpty) '$area ha',
       if (cidade.isNotEmpty) cidade,
       if (safra.isNotEmpty) safra,
@@ -425,51 +438,53 @@ class _PlanHeaderCardState extends State<PlanHeaderCard> {
       onDone: _save,
     );
 
-    return SummaryExpandableCard(
-      initiallyExpanded: !_hasIdentifyingData,
-      summary: SummaryDetailLine(
-        primary: _summaryPrimary,
-        secondary: _summarySecondary,
-      ),
-      detail: LayoutBuilder(
-        builder: (context, constraints) {
-          final narrow = constraints.maxWidth < 520;
-          if (narrow) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: AccordionSection(
+        title: 'Identificação do plano',
+        subtitle: _accordionSubtitle,
+        isExpanded: ref.isPanelExpanded(identificacaoPanelId),
+        onToggle: (_) => ref.togglePanel(identificacaoPanelId),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final narrow = constraints.maxWidth < 520;
+            if (narrow) {
+              return Column(
+                children: [
+                  produtorField,
+                  Divider(height: 1, color: context.appBorderSoft),
+                  fazendaField,
+                  Divider(height: 1, color: context.appBorderSoft),
+                  areaField,
+                  Divider(height: 1, color: context.appBorderSoft),
+                  cidadeField,
+                  Divider(height: 1, color: context.appBorderSoft),
+                  safraField,
+                ],
+              );
+            }
             return Column(
               children: [
-                produtorField,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: produtorField),
+                    Expanded(child: fazendaField),
+                    SizedBox(width: 120, child: areaField),
+                  ],
+                ),
                 Divider(height: 1, color: context.appBorderSoft),
-                fazendaField,
-                Divider(height: 1, color: context.appBorderSoft),
-                areaField,
-                Divider(height: 1, color: context.appBorderSoft),
-                cidadeField,
-                Divider(height: 1, color: context.appBorderSoft),
-                safraField,
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: cidadeField),
+                    Expanded(child: safraField),
+                  ],
+                ),
               ],
             );
-          }
-          return Column(
-            children: [
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: produtorField),
-                  Expanded(child: fazendaField),
-                  SizedBox(width: 120, child: areaField),
-                ],
-              ),
-              Divider(height: 1, color: context.appBorderSoft),
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: cidadeField),
-                  Expanded(child: safraField),
-                ],
-              ),
-            ],
-          );
-        },
+          },
+        ),
       ),
     );
   }
@@ -540,7 +555,7 @@ class _HeaderField extends StatelessWidget {
   }
 }
 
-class StageBlock extends StatefulWidget {
+class StageBlock extends ConsumerStatefulWidget {
   const StageBlock({
     super.key,
     required this.plano,
@@ -572,13 +587,25 @@ class StageBlock extends StatefulWidget {
   final Future<void> Function(String estadioId) onRemoveEstadio;
 
   @override
-  State<StageBlock> createState() => _StageBlockState();
+  ConsumerState<StageBlock> createState() => _StageBlockState();
 }
 
-class _StageBlockState extends State<StageBlock> {
+class _StageBlockState extends ConsumerState<StageBlock> {
   late final TextEditingController _phase;
 
-  bool get _initiallyExpanded => widget.estadio.produtos.isEmpty;
+  String get _stageCode =>
+      widget.estadio.codigo == PlanCanvasWidgets.operacionalCodigo
+          ? 'OP'
+          : widget.estadio.codigo;
+
+  String get _stageName {
+    final code = widget.estadio.codigo;
+    final label = widget.estadio.label.trim();
+    final prefix = '$code — ';
+    if (label.startsWith(prefix)) return label.substring(prefix.length);
+    if (label == code) return label;
+    return label;
+  }
 
   @override
   void initState() {
@@ -598,71 +625,74 @@ class _StageBlockState extends State<StageBlock> {
     await widget.onUpdateEstadio(widget.estadio.copyWith(label: label));
   }
 
+  void _removeStage() {
+    ref.collapsePanel(widget.estadio.id);
+    widget.onRemoveEstadio(widget.estadio.id);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return SummaryExpandableCard(
-      initiallyExpanded: _initiallyExpanded,
-      leading: _StageLeadingCluster(
-        estadio: widget.estadio,
-        plano: widget.plano,
-        onPickStageImage: () => widget.onPickStageImage(widget.estadio),
-        onAddProdutoFromReferencia: widget.onAddProdutoFromReferencia,
-      ),
-      summary: _StageSummary(
-        estadioLabel: widget.estadio.label,
-        produtos: widget.estadio.produtos,
-      ),
-      trailing: IconButton(
-        onPressed: () => widget.onRemoveEstadio(widget.estadio.id),
-        icon: PhosphorIcon(
-          PhosphorIconsRegular.x,
-          size: 16,
-          color: context.appTextDisabled,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 14),
+      child: AccordionStageCard(
+        stageCode: _stageCode,
+        stageName: _stageName,
+        productCount: widget.estadio.produtos.length,
+        isExpanded: ref.isPanelExpanded(widget.estadio.id),
+        onToggle: () => ref.togglePanel(widget.estadio.id),
+        onRemove: _removeStage,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+              child: TextField(
+                controller: _phase,
+                style: AppTypography.label.copyWith(
+                  color: context.appTextSecondary,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 0.7,
+                ),
+                decoration: const InputDecoration(
+                  labelText: 'Nome do estádio',
+                  border: InputBorder.none,
+                  isDense: true,
+                ),
+                onSubmitted: (_) => _savePhase(),
+                onTapOutside: (_) => _savePhase(),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
+              child: StageReferencesButton(
+                estadio: widget.estadio,
+                plano: widget.plano,
+                compact: true,
+                onAddProdutoFromReferencia: widget.onAddProdutoFromReferencia,
+              ),
+            ),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  GestureDetector(
+                    onTap: () => widget.onPickStageImage(widget.estadio),
+                    child: _StageCircle(estadio: widget.estadio),
+                  ),
+                  const SizedBox(width: 9),
+                  _OperationCard(
+                    estadio: widget.estadio,
+                    onAddProduto: () => widget.onAddProduto(widget.estadio),
+                    onDeleteProduto: widget.onDeleteProduto,
+                    onEditProduto: widget.onEditProduto,
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
-      ),
-      detailPadding: EdgeInsets.zero,
-      detail: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-            child: TextField(
-              controller: _phase,
-              style: AppTypography.label.copyWith(
-                color: context.appTextSecondary,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 0.7,
-              ),
-              decoration: const InputDecoration(
-                labelText: 'Nome do estádio',
-                border: InputBorder.none,
-                isDense: true,
-              ),
-              onSubmitted: (_) => _savePhase(),
-              onTapOutside: (_) => _savePhase(),
-            ),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 10),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                GestureDetector(
-                  onTap: () => widget.onPickStageImage(widget.estadio),
-                  child: _StageCircle(estadio: widget.estadio),
-                ),
-                const SizedBox(width: 9),
-                _OperationCard(
-                  estadio: widget.estadio,
-                  onAddProduto: () => widget.onAddProduto(widget.estadio),
-                  onDeleteProduto: widget.onDeleteProduto,
-                  onEditProduto: widget.onEditProduto,
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -689,126 +719,18 @@ class _SectionLabel extends StatelessWidget {
   }
 }
 
-String _formatProdutoResumo(ProdutoAplicacaoEntity produto) {
-  return '${produto.produtoNome} · ${_formatDose(produto.dose, produto.doseUnidade)} · '
-      '${_formatTotal(produto.totalFinal, produto.doseUnidade)}';
-}
-
-String _formatDose(double value, String unidade) {
-  final displayValue = UnitConverter.valorDisplay(value, unidade);
-  return '${displayValue.toStringAsFixed(displayValue < 10 ? 2 : 1)} ${UnitConverter.unidadeBase(unidade)}';
-}
-
-String _formatTotal(double value, String unidade) {
-  final displayValue = UnitConverter.valorDisplay(value, unidade);
-  return '${displayValue.toStringAsFixed(displayValue < 10 ? 2 : 1)} ${UnitConverter.unidadeTotal(unidade)}';
-}
-
-class _StageSummary extends StatelessWidget {
-  const _StageSummary({
-    required this.estadioLabel,
-    required this.produtos,
-  });
-
-  final String estadioLabel;
-  final List<ProdutoAplicacaoEntity> produtos;
-
-  @override
-  Widget build(BuildContext context) {
-    if (produtos.isEmpty) {
-      return SummaryDetailLine(
-        primary: estadioLabel,
-        secondary: 'Nenhum produto — toque para adicionar',
-      );
-    }
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          estadioLabel,
-          style: AppTypography.body.copyWith(
-            color: context.appTextPrimary,
-            fontWeight: FontWeight.w600,
-          ),
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        const SizedBox(height: 4),
-        ...produtos.map(
-          (produto) => Padding(
-            padding: const EdgeInsets.only(bottom: 2),
-            child: Text(
-              _formatProdutoResumo(produto),
-              style: AppTypography.caption.copyWith(
-                color: context.appTextSecondary,
-              ),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-}
-
-class _StageLeadingCluster extends ConsumerWidget {
-  const _StageLeadingCluster({
-    required this.estadio,
-    required this.plano,
-    required this.onPickStageImage,
-    required this.onAddProdutoFromReferencia,
-  });
-
-  final EstadioEntity estadio;
-  final PlanoEntity plano;
-  final VoidCallback onPickStageImage;
-  final Future<void> Function(
-    EstadioEntity estadio, {
-    required String nome,
-    required String produtoCategoria,
-    required double areaHa,
-  }) onAddProdutoFromReferencia;
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    return SizedBox(
-      width: 74,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          GestureDetector(
-            onTap: onPickStageImage,
-            child: _StageCircle(estadio: estadio, compact: true),
-          ),
-          const SizedBox(height: 8),
-          StageReferencesButton(
-            estadio: estadio,
-            plano: plano,
-            compact: true,
-            onAddProdutoFromReferencia: onAddProdutoFromReferencia,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
 class _StageCircle extends StatelessWidget {
-  const _StageCircle({required this.estadio, this.compact = false});
+  const _StageCircle({required this.estadio});
 
   final EstadioEntity estadio;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     final imagePath = estadio.imageLocalPath;
-    final size = compact ? 40.0 : 58.0;
     return Container(
-      width: size,
-      height: size,
-      margin: EdgeInsets.only(top: compact ? 0 : 2),
+      width: 58,
+      height: 58,
+      margin: const EdgeInsets.only(top: 2),
       decoration: BoxDecoration(
         color: context.appBorderSoft,
         shape: BoxShape.circle,
@@ -819,8 +741,7 @@ class _StageCircle extends StatelessWidget {
           ? Center(
               child: Text(
                 estadio.codigo == 'Operacional' ? 'OP' : estadio.codigo,
-                style:
-                    (compact ? AppTypography.label : AppTypography.h3).copyWith(
+                style: AppTypography.h3.copyWith(
                   color: context.appTextPrimary,
                   fontWeight: FontWeight.w800,
                 ),
@@ -977,7 +898,13 @@ class _InlineProductRow extends StatelessWidget {
             top: 0,
             right: 0,
             child: IconButton(
-              onPressed: onDelete,
+              onPressed: () async {
+                final confirmed = await showCupertinoDestructiveConfirm(
+                  context,
+                  itemName: produto.produtoNome,
+                );
+                if (confirmed) onDelete();
+              },
               padding: EdgeInsets.zero,
               constraints: const BoxConstraints(
                 minWidth: 28,
@@ -1060,173 +987,6 @@ class PlanSummaryCard extends ConsumerWidget {
   }
 }
 
-class ConsultorCard extends StatefulWidget {
-  const ConsultorCard({
-    super.key,
-    required this.plano,
-    required this.onPickLogo,
-    required this.onConsultorChanged,
-    required this.onExibirNomeChanged,
-  });
-
-  final PlanoEntity plano;
-  final VoidCallback onPickLogo;
-  final ValueChanged<String> onConsultorChanged;
-  final ValueChanged<bool> onExibirNomeChanged;
-
-  @override
-  State<ConsultorCard> createState() => _ConsultorCardState();
-}
-
-class _ConsultorCardState extends State<ConsultorCard> {
-  late final TextEditingController _consultor;
-
-  bool get _hasConsultor => _consultor.text.trim().isNotEmpty;
-
-  @override
-  void initState() {
-    super.initState();
-    _consultor = TextEditingController(text: widget.plano.consultorNome ?? '');
-    _consultor.addListener(() {
-      if (mounted) setState(() {});
-    });
-  }
-
-  @override
-  void didUpdateWidget(covariant ConsultorCard oldWidget) {
-    super.didUpdateWidget(oldWidget);
-    final nome = widget.plano.consultorNome ?? '';
-    if (oldWidget.plano.consultorNome != widget.plano.consultorNome &&
-        _consultor.text != nome) {
-      _consultor.text = nome;
-    }
-  }
-
-  @override
-  void dispose() {
-    _consultor.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final exibirNome = widget.plano.consultorExibirNome;
-    final hasName = _hasConsultor;
-
-    // Logo-only: no text space reserved. Tap logo to show name.
-    if (hasName && !exibirNome) {
-      return Padding(
-        padding: const EdgeInsets.symmetric(vertical: 4),
-        child: Align(
-          alignment: Alignment.centerLeft,
-          child: FooterLogo(
-            logoPath: widget.plano.logoLocalPath,
-            size: 32,
-            onTap: () => widget.onExibirNomeChanged(true),
-          ),
-        ),
-      );
-    }
-
-    final primary =
-        hasName ? (exibirNome ? _consultor.text.trim() : '') : 'Consultor';
-    final secondary = hasName ? null : 'Toque para preencher nome e logo';
-
-    return SummaryExpandableCard(
-      initiallyExpanded: !hasName,
-      leading: FooterLogo(
-        logoPath: widget.plano.logoLocalPath,
-        size: 32,
-        onTap: widget.onPickLogo,
-      ),
-      summary: SummaryDetailLine(
-        primary: primary,
-        secondary: secondary,
-      ),
-      trailing: hasName
-          ? IconButton(
-              onPressed: () => widget.onExibirNomeChanged(!exibirNome),
-              tooltip: exibirNome ? 'Ocultar nome' : 'Exibir nome',
-              icon: PhosphorIcon(
-                exibirNome
-                    ? PhosphorIconsRegular.eye
-                    : PhosphorIconsRegular.eyeSlash,
-                size: 18,
-                color: context.appTextDisabled,
-              ),
-            )
-          : null,
-      detail: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          TextField(
-            controller: _consultor,
-            autofocus: !hasName,
-            style: AppTypography.body.copyWith(color: context.appTextPrimary),
-            decoration: const InputDecoration(
-              hintText: 'Nome do consultor',
-              border: InputBorder.none,
-              isDense: true,
-            ),
-            onSubmitted: widget.onConsultorChanged,
-            onTapOutside: (_) => widget.onConsultorChanged(_consultor.text),
-          ),
-          if (hasName) ...[
-            const SizedBox(height: 4),
-            SwitchListTile(
-              contentPadding: EdgeInsets.zero,
-              dense: true,
-              title: Text(
-                'Exibir nome no plano',
-                style: AppTypography.caption.copyWith(
-                  color: context.appTextSecondary,
-                ),
-              ),
-              value: exibirNome,
-              onChanged: widget.onExibirNomeChanged,
-            ),
-          ],
-        ],
-      ),
-    );
-  }
-}
-
-class FooterLogo extends StatelessWidget {
-  const FooterLogo({
-    super.key,
-    required this.logoPath,
-    required this.size,
-    required this.onTap,
-  });
-
-  final String? logoPath;
-  final double size;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(
-          color: context.appBorderSoft,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        clipBehavior: Clip.antiAlias,
-        child: logoPath == null
-            ? PhosphorIcon(
-                PhosphorIconsRegular.camera,
-                color: context.appTextSecondary,
-              )
-            : Image.file(File(logoPath!), fit: BoxFit.cover),
-      ),
-    );
-  }
-}
-
 class _SummaryRow extends StatelessWidget {
   const _SummaryRow({
     required this.label,
@@ -1266,9 +1026,13 @@ class _SummaryRow extends StatelessWidget {
 }
 
 class _CanvasHint extends StatelessWidget {
-  const _CanvasHint({required this.onTap});
+  const _CanvasHint({
+    required this.onTap,
+    required this.label,
+  });
 
   final VoidCallback onTap;
+  final String label;
 
   @override
   Widget build(BuildContext context) {
@@ -1278,10 +1042,11 @@ class _CanvasHint extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.symmetric(vertical: 48, horizontal: 30),
         child: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
             Container(
-              width: 46,
-              height: 46,
+              width: 52,
+              height: 52,
               decoration: BoxDecoration(
                 color: context.appBorderSoft,
                 shape: BoxShape.circle,
@@ -1289,63 +1054,21 @@ class _CanvasHint extends StatelessWidget {
               child: Center(
                 child: PhosphorIcon(
                   PhosphorIconsRegular.plus,
+                  size: 22,
                   color: context.appTextDisabled,
                 ),
               ),
             ),
             const SizedBox(height: 10),
             Text(
-              'Adicione o primeiro estádio',
+              label,
+              textAlign: TextAlign.center,
               style: AppTypography.caption.copyWith(
                 color: context.appTextSecondary,
                 fontWeight: FontWeight.w700,
               ),
             ),
           ],
-        ),
-      ),
-    );
-  }
-}
-
-class _AddStageHint extends StatelessWidget {
-  const _AddStageHint({required this.onTap});
-
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 8),
-      child: Center(
-        child: GestureDetector(
-          onTap: onTap,
-          behavior: HitTestBehavior.opaque,
-          child: Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(20),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const PhosphorIcon(
-                  PhosphorIconsRegular.plus,
-                  size: 16,
-                  color: Colors.white,
-                ),
-                const SizedBox(width: 6),
-                Text(
-                  'Adicionar estádio',
-                  style: AppTypography.caption.copyWith(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
         ),
       ),
     );
