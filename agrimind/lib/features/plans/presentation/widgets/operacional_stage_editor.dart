@@ -103,55 +103,18 @@ class _OperacionalStageEditorState extends State<OperacionalStageEditor> {
       return const SizedBox.shrink();
     }
 
+    // Dias de recuperação, nº de aplicações e intervalo do fungicida são
+    // regulagem de cronograma — ficam só no módulo Clientes → Cronograma
+    // Agrícola, não no canvas do plano.
+    if (_tipo == TipoOperacional.fungicidaRecorrente) {
+      return const SizedBox.shrink();
+    }
+
     return Padding(
       padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (_tipo == TipoOperacional.fungicidaRecorrente) ...[
-            const SizedBox(height: 8),
-            _intField(
-              context,
-              label: 'Dias de recuperação do pós-emergente',
-              value: _config.diasRecuperacaoPosEmergente ?? 5,
-              onChanged: (v) async {
-                setState(
-                  () => _config =
-                      _config.copyWith(diasRecuperacaoPosEmergente: v),
-                );
-                await _persist(config: _config);
-              },
-            ),
-            _intField(
-              context,
-              label: 'Nº de aplicações',
-              value: _config.totalAplicacoesFungicida ?? 1,
-              min: 1,
-              onChanged: (v) async {
-                setState(
-                  () => _config = _config.copyWith(
-                    totalAplicacoesFungicida: v,
-                    intervaloFungicidaDias:
-                        v <= 1 ? null : (_config.intervaloFungicidaDias ?? 14),
-                  ),
-                );
-                await _persist(config: _config);
-              },
-            ),
-            if ((_config.totalAplicacoesFungicida ?? 1) > 1)
-              _intField(
-                context,
-                label: 'Intervalo entre aplicações (dias)',
-                value: _config.intervaloFungicidaDias ?? 14,
-                onChanged: (v) async {
-                  setState(
-                    () => _config =
-                        _config.copyWith(intervaloFungicidaDias: v),
-                  );
-                  await _persist(config: _config);
-                },
-              ),
-          ],
           if (_tipo == TipoOperacional.dessecacaoPreColheita) ...[
             const SizedBox(height: 8),
             _intField(
