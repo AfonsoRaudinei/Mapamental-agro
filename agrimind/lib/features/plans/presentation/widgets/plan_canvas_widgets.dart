@@ -811,7 +811,8 @@ class _StageBlockState extends ConsumerState<StageBlock> {
       widget.talhaoNomes,
     );
     final isInstancia = talhaoLabel.isNotEmpty;
-    final Widget? titleDropdown;
+    final isCardExpanded = ref.isPanelExpanded(widget.estadio.id);
+    Widget? titleDropdown;
     if (widget.estadio.isOperacional && !widget.estadio.isSubcardFungicida) {
       titleDropdown = OperacionalTipoDropdown(
         estadio: widget.estadio,
@@ -830,13 +831,17 @@ class _StageBlockState extends ConsumerState<StageBlock> {
     } else {
       titleDropdown = null;
     }
+    if (titleDropdown != null && !isCardExpanded) {
+      // Dropdown só deve ser acionável com o card expandido.
+      titleDropdown = IgnorePointer(child: titleDropdown);
+    }
 
     final card = AccordionStageCard(
       stageCode: _stageCode,
       stageName: _stageName,
       titleWidget: titleDropdown,
       subtitleWidget: _collapsedSubtitleWidget(context),
-      isExpanded: ref.isPanelExpanded(widget.estadio.id),
+      isExpanded: isCardExpanded,
       onToggle: () => ref.togglePanel(widget.estadio.id),
       borderColor: isInstancia
           ? PlanStageCardTokens.instanceBorder(context)
