@@ -869,6 +869,11 @@ class _CronogramaRegulagemForm extends StatelessWidget {
           label: 'Material / Cultivar (referência)',
           value: params.materialCultivar,
           opcoesVinculadas: _cultivaresDoGrupo(),
+          caption: 'Os talhões deste grupo têm cultivares diferentes, cada uma '
+              'com seu próprio ciclo. A opção escolhida aqui é só a '
+              'referência: define qual ciclo (DAE maturação) este grupo usa '
+              'para calcular as datas — não altera a cultivar plantada em '
+              'cada talhão.',
           onChanged: (v) => onModeloChanged(
             aplicarDaeAoEscolherCultivar(
               params: params,
