@@ -1,16 +1,17 @@
-# AgriMind Flutter Check
+---
+name: agrimind-flutter-check
+description: >-
+  Valida o AgriMind com flutter pub get, analyze e test. Use quando o usuário
+  pedir flutter-check, validação, CI local, ou antes de commit/release.
+---
 
-Validação padrão antes de commit/PR.
+# AgriMind — Flutter Check
 
-## Quando usar
-
-- Após integrar código local
-- Após alterar tela Plano, tema ou banco
-- Antes de build IPA
+Espelha `agrimind/.claude/commands/flutter-check.md`.
 
 ## Passos
 
-```sh
+```bash
 cd agrimind
 flutter pub get
 flutter analyze
@@ -19,14 +20,11 @@ flutter test
 
 ## Critérios de aprovação
 
-| Check | Esperado |
-|-------|----------|
-| `flutter analyze` | 0 issues |
-| `flutter test` | 100% passando |
-| Tema default | `AppTheme.darkBlack` |
-| Cards Plano | `AppColors.surfaceContainer`, não branco |
-| DB persistência | testes em `test/database_persistence_test.dart` |
+- `flutter analyze` → `No issues found`
+- `flutter test` → zero falhas
 
-## Integração
+## Checklist de saída
 
-Se veio de código local, consulte `docs/INTEGRACAO.md` antes de rodar os checks.
+- [ ] `flutter pub get` sem erros
+- [ ] `flutter analyze` limpo
+- [ ] `flutter test` 100% verde

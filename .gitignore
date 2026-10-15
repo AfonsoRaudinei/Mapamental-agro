@@ -1,0 +1,19 @@
+# Workspace — Cultiva Mind / AgriMind
+
+.DS_Store
+**/.DS_Store
+**/.temp/
+*.swp
+
+# Supabase CLI cache (fonte canônica: agrimind/supabase/)
+/supabase/
+
+# Chaves locais (nunca versionar — ver agrimind/agentipa.md)
+sup.rtf
+
+# IPAs de release (artefato local; histórico em agrimind/agentipa.md)
+ipa/*.ipa
+agrimind/build/ios/ipa/*.ipa
+
+# Flutter build artifacts at repo root
+/build/

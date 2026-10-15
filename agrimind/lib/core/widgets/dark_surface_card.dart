@@ -9,18 +9,20 @@ class DarkSurfaceCard extends StatelessWidget {
     this.onTap,
     this.borderRadius = const BorderRadius.all(Radius.circular(16)),
     this.padding,
+    this.color = AppColors.surfaceContainer,
   });
 
   final Widget child;
   final VoidCallback? onTap;
   final BorderRadius borderRadius;
   final EdgeInsetsGeometry? padding;
+  final Color color;
 
   @override
   Widget build(BuildContext context) {
     final decorated = DecoratedBox(
       decoration: BoxDecoration(
-        color: AppColors.surfaceContainer,
+        color: color,
         borderRadius: borderRadius,
         border: Border.all(color: AppColors.border),
       ),
