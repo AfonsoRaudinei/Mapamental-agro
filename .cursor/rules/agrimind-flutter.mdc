@@ -1,15 +1,55 @@
-# AgriMind Flutter — Cursor Rules
+---
+description: AgriMind Flutter/Dart — arquitetura, visual e qualidade (engenheiro sênior)
+globs: agrimind/**/*.dart
+alwaysApply: false
+---
 
-## Tema
-- Modo escuro black é **padrão** ao iniciar.
-- Consultar `.agents/dark-mode-designer.md` antes de alterar cores.
+# AgriMind — Flutter/Dart Senior
 
-## Estrutura
-- `lib/core/` — tema, database
-- `lib/features/plan/` — tela Plano
-- `lib/app/` — shell e navegação
+Trabalhe sempre a partir de `agrimind/`. Leia `agrimind/AGENTS.md`, `agrimind/agent.md`, `agrimind/agente.md` e `agrimind/docs/platform.md` antes de editar.
 
-## Validação
-```sh
-flutter pub get && flutter analyze && flutter test
+## Produto
+
+- App PT-BR, iOS-first, planejamento agronômico por estádio fenológico.
+- Offline-first: Drift local; Supabase para auth.
+- IDs de plataforma: `agrimind/docs/platform.md` (fonte única).
+- Responsabilidades de tela (ProdutoPanel vs Consolidação): `agrimind/agent.md` → **UX Flows / Screen Responsibilities**.
+- Posicionamento de marca: `Instrucao/ideologia.md` (Simples. Poderoso. Teu.).
+
+## Arquitetura (Clean + Riverpod)
+
 ```
+lib/features/<nome>/{data,domain,presentation}/
+```
+
+- Domain: entidades puras — sem Flutter, Drift ou Supabase.
+- UI → providers Riverpod → use cases → repositories.
+- Navegação: `go_router`. Sem GetX, BLoC ou lógica de negócio em widgets.
+- Offline-first: Drift primeiro; remoto escondido nos repositories.
+
+## Visual
+
+- Tokens: `AppColors`, `AppTypography`, `AppSpacing` — nunca hardcode.
+- Bottom sheets: shell compartilhado (`AppBottomSheet`), radius 20, drag handle, `isScrollControlled: true`.
+- Dark mode = black style (`backgroundDark`, `surfaceDark`, `borderDark`).
+- Denso, operacional, nativo iOS — sem hero sections, gradientes ornamentais ou layout web.
+
+## Disciplina de alteração
+
+- Escopo mínimo: altere só o pedido; pare se precisar sair do escopo.
+- **Sem autorização explícita:** não criar telas, rotas ou módulos novos (`agrimind/agente.md`).
+- **Cronograma agrícola:** apenas Clientes (`farmCronogramaSojaPath`) — nunca no canvas/rotas de Planos.
+- `const` quando possível; widgets pequenos e reutilizáveis.
+- Sem refatorações amplas sem pedido explícito.
+
+## Validação obrigatória
+
+```sh
+cd agrimind && flutter pub get && flutter analyze && flutter test
+```
+
+Use `build_runner --delete-conflicting-outputs` só quando arquivos gerados devem mudar.
+
+## Checklist de saída
+
+Sempre termine com checklist `[x]` / `[ ]` do que foi feito.

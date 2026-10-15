@@ -1,31 +1,63 @@
-# AgriMind — Agent Guide
+# AgriMind Agent Guide
 
-App Flutter de planejamento agrícola (Mapa Mental Agro).
+## Product
 
-## Comandos
+AgriMind is a PT-BR, iOS-first Flutter application for agronomic planning.
+Preserve its offline-first behavior: Supabase owns authentication and Drift
+owns local application data until cloud sync is fully validated.
+
+## Architecture
+
+- Keep feature-first Clean Architecture: `data`, `domain`, `presentation`.
+- Domain code must not import Flutter, Supabase, or Drift.
+- UI calls Riverpod providers; providers call use cases and repositories.
+- Use `go_router` for navigation and typed entities for layer boundaries.
+- Do not add GetX, Provider, BLoC, or business logic in widgets.
+
+## Required Checks
+
+Run from this directory:
 
 ```sh
-cd agrimind
 flutter pub get
 flutter analyze
 flutter test
 ```
 
-## Agentes
+Use `build_runner --delete-conflicting-outputs` only after checking generated
+files are expected to change.
 
-| Agente | Arquivo |
-|--------|---------|
-| Modo escuro | `.agents/dark-mode-designer.md` |
+## Platform Rules
 
-## Integração
+Platform IDs (bundle, team, Supabase ref): see `docs/platform.md`.
 
-Guia para mesclar código local: `docs/INTEGRACAO.md`
+- Never commit credentials, private keys, provisioning profiles, or test-user
+  passwords.
+- Before an IPA, require clean analysis/tests and verify version/build number.
 
-## Tema padrão
+## Workflows
 
-Dark Black (`AppTheme.darkBlack`) — ver agente designer.
+| Workflow | Claude Code | Cursor Skill |
+|----------|-------------|--------------|
+| Validação | `.claude/commands/flutter-check.md` | `.cursor/skills/agrimind-flutter-check/` |
+| Nova feature | `.claude/commands/new-feature.md` | `.cursor/skills/agrimind-new-feature/` |
+| Build IPA | `.claude/commands/build-ipa.md` | `.cursor/skills/agrimind-build-ipa/` |
+| Prompt / performance | `.claude/commands/prompt-performance.md` | `.cursor/skills/prompt-performance/` |
+| Listagem lojas | — | [`docs/store-listing.md`](docs/store-listing.md) |
 
-## Banco de dados
+## Role checklists
 
-SQLite local (`lib/core/database/app_database.dart`):
-- `clients`, `plans`, `stages`, `products`
+See `.agents/` for role-specific guides:
+
+- `flutter-architect.md` — structure and migrations
+- `flutter-code-reviewer.md` — senior Flutter/Dart code review
+- `prompt-performance.md` — regulagem de prompt (pacote `../.agent/`)
+- `supabase-auth.md` — Supabase Auth providers
+- `qa-mobile.md` — smoke test order
+- `release-mobile.md` — IPA and signing
+
+Release ledger:
+
+- `agentipa.md` — IPA history, next-build rule, and mandatory post-release updates
+
+Also read `agent.md` (visual) and `agente.md` (change discipline, PT-BR).

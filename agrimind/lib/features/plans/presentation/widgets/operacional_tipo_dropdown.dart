@@ -1,0 +1,180 @@
+import 'package:flutter/cupertino.dart';
+import 'package:flutter/material.dart';
+
+import '../../../../core/constants/app_typography.dart';
+import '../../../../core/utils/extensions.dart';
+import '../../domain/entities/estadio_entity.dart';
+import '../../domain/entities/operacional_estadio_config.dart';
+import '../../domain/talhao_safra/mapear_tipo_operacional_label.dart';
+import '../../domain/talhao_safra/tipo_operacional.dart';
+
+typedef OperacionalEstadioSave = Future<void> Function(EstadioEntity atualizado);
+
+/// Dropdown inline do tipo operacional (substitui action sheet no header do card).
+class OperacionalTipoDropdown extends StatefulWidget {
+  const OperacionalTipoDropdown({
+    super.key,
+    required this.estadio,
+    required this.onSave,
+    required this.tipos,
+    this.hintText = 'Selecione o tipo de operação',
+    this.onSyncFungicidaSubcards,
+    this.dense = false,
+  });
+
+  final EstadioEntity estadio;
+  final OperacionalEstadioSave onSave;
+  final List<TipoOperacional> tipos;
+  final String hintText;
+  final Future<void> Function(EstadioEntity pai)? onSyncFungicidaSubcards;
+  final bool dense;
+
+  @override
+  State<OperacionalTipoDropdown> createState() => _OperacionalTipoDropdownState();
+}
+
+class _OperacionalTipoDropdownState extends State<OperacionalTipoDropdown> {
+  TipoOperacional? _tipo;
+  OperacionalEstadioConfig _config = const OperacionalEstadioConfig();
+
+  @override
+  void initState() {
+    super.initState();
+    _syncFromEstadio();
+  }
+
+  @override
+  void didUpdateWidget(covariant OperacionalTipoDropdown oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.estadio.id != widget.estadio.id ||
+        oldWidget.estadio.tipoOperacional != widget.estadio.tipoOperacional ||
+        oldWidget.estadio.operacionalConfig != widget.estadio.operacionalConfig) {
+      _syncFromEstadio();
+    }
+  }
+
+  void _syncFromEstadio() {
+    final t = widget.estadio.tipoOperacional;
+    _tipo = t == TipoOperacional.indefinido ? null : t;
+    if (_tipo != null && !widget.tipos.contains(_tipo)) {
+      _tipo = null;
+    }
+    _config = widget.estadio.operacionalConfig ?? const OperacionalEstadioConfig();
+  }
+
+  Future<bool?> _confirmIncluirAdubacao() {
+    return showCupertinoDialog<bool>(
+      context: context,
+      builder: (ctx) => CupertinoAlertDialog(
+        title: const Text('Adubação no plantio'),
+        content: const Text(
+          'Incluir adubação na mesma data do plantio neste card?',
+        ),
+        actions: [
+          CupertinoDialogAction(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Separado depois'),
+          ),
+          CupertinoDialogAction(
+            isDefaultAction: true,
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Incluir'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _persist({
+    TipoOperacional? tipo,
+    OperacionalEstadioConfig? config,
+  }) async {
+    final novoTipo = tipo ?? _tipo;
+    if (novoTipo == null || novoTipo == TipoOperacional.indefinido) return;
+
+    final cfg = config ?? _config;
+    final incluir = cfg.incluirAdubacao;
+    final label = labelOperacionalParaCard(novoTipo, incluirAdubacao: incluir);
+
+    final atualizado = widget.estadio.copyWith(
+      tipoOperacional: novoTipo,
+      operacionalConfig: cfg,
+      label: label,
+    );
+    await widget.onSave(atualizado);
+
+    if (widget.onSyncFungicidaSubcards != null) {
+      await widget.onSyncFungicidaSubcards!(atualizado);
+    }
+  }
+
+  Future<void> _onTipoChanged(TipoOperacional? escolhido) async {
+    if (escolhido == null) return;
+
+    var cfg = _config;
+    if (escolhido == TipoOperacional.plantio &&
+        widget.tipos.contains(TipoOperacional.plantio)) {
+      final incluirAdubacao = await _confirmIncluirAdubacao() ?? false;
+      cfg = OperacionalEstadioConfig(incluirAdubacao: incluirAdubacao);
+    } else if (escolhido == TipoOperacional.fungicidaRecorrente) {
+      cfg = _config.copyWith(
+        diasRecuperacaoPosEmergente: _config.diasRecuperacaoPosEmergente ?? 5,
+        totalAplicacoesFungicida: _config.totalAplicacoesFungicida ?? 1,
+      );
+    } else if (escolhido == TipoOperacional.dessecacaoPreColheita) {
+      cfg = _config.copyWith(
+        diasAntesR8: _config.diasAntesR8 ?? 12,
+        diasAntecipacaoColheita: _config.diasAntecipacaoColheita ?? 5,
+      );
+    }
+
+    setState(() {
+      _tipo = escolhido;
+      _config = cfg;
+    });
+    await _persist(tipo: escolhido, config: cfg);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final titleStyle = AppTypography.h3.copyWith(
+      fontSize: widget.dense ? 17 : 17,
+      fontWeight: FontWeight.w700,
+      color: context.appTextPrimary,
+    );
+    final hintStyle = titleStyle.copyWith(
+      color: context.appTextSecondary,
+      fontWeight: FontWeight.w600,
+    );
+
+    return DropdownButtonHideUnderline(
+      child: DropdownButton<TipoOperacional>(
+        value: _tipo,
+        isExpanded: true,
+        hint: Text(widget.hintText, style: hintStyle),
+        icon: Icon(
+          Icons.arrow_drop_down,
+          color: context.appTextSecondary,
+          size: 22,
+        ),
+        style: titleStyle,
+        borderRadius: BorderRadius.circular(8),
+        items: widget.tipos
+            .map(
+              (tipo) => DropdownMenuItem(
+                value: tipo,
+                child: Text(
+                  tipo.label,
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.w600,
+                    color: context.appTextPrimary,
+                  ),
+                ),
+              ),
+            )
+            .toList(),
+        onChanged: _onTipoChanged,
+      ),
+    );
+  }
+}

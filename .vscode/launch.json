@@ -6,7 +6,16 @@
       "cwd": "agrimind",
       "request": "launch",
       "type": "dart",
-      "program": "lib/main.dart"
+      "program": "lib/main.dart",
+      "deviceId": "ios"
+    },
+    {
+      "name": "AgriMind (macOS)",
+      "cwd": "agrimind",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "deviceId": "macos"
     },
     {
       "name": "AgriMind (Chrome)",

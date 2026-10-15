@@ -1,0 +1,12 @@
+# Chave de assinatura Android (release)
+#
+# Copie para key.properties na raiz de android/ e preencha com seus valores.
+# NUNCA commite key.properties nem o arquivo .jks/.keystore.
+#
+# Gerar keystore:
+#   sh tool/create_android_keystore.sh
+#
+storePassword=CHANGE_ME
+keyPassword=CHANGE_ME
+keyAlias=upload
+storeFile=app/upload-keystore.jks
