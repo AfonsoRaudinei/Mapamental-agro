@@ -23,7 +23,6 @@ import '../../domain/entities/produto_aplicacao_entity.dart';
 import '../providers/expanded_panels_provider.dart';
 import '../../domain/talhao_safra/estadio_cronograma_metadata.dart';
 import '../../domain/talhao_safra/roteiro_plano_template.dart';
-import '../../domain/talhao_safra/fungicida_aplicacao_label.dart';
 import '../../domain/talhao_safra/mapear_tipo_operacional_label.dart';
 import '../../domain/talhao_safra/tipo_operacional.dart';
 import 'accordion_stage_card.dart';
@@ -644,15 +643,10 @@ class _StageBlockState extends ConsumerState<StageBlock> {
       }
       if (tipo != null && tipo != TipoOperacional.indefinido) {
         final cfg = widget.estadio.operacionalConfig;
-        if (tipo == TipoOperacional.fungicidaRecorrente) {
-          final idx = cfg?.aplicacaoIndice;
-          if (idx != null && idx > 0) {
-            return labelAplicacaoFungicida(idx);
-          }
-        }
-        return labelOperacionalParaCard(
+        return labelOperacionalComAplicacao(
           tipo,
           incluirAdubacao: cfg?.incluirAdubacao ?? false,
+          aplicacaoIndice: cfg?.aplicacaoIndice,
         );
       }
       return 'Selecione o tipo de operação';
@@ -660,15 +654,10 @@ class _StageBlockState extends ConsumerState<StageBlock> {
     if (widget.estadio.isFenologico) {
       if (tipo != null && tipo != TipoOperacional.indefinido) {
         final cfg = widget.estadio.operacionalConfig;
-        if (tipo == TipoOperacional.fungicidaRecorrente) {
-          final idx = cfg?.aplicacaoIndice;
-          if (idx != null && idx > 0) {
-            return labelAplicacaoFungicida(idx);
-          }
-        }
-        return labelOperacionalParaCard(
+        return labelOperacionalComAplicacao(
           tipo,
           incluirAdubacao: cfg?.incluirAdubacao ?? false,
+          aplicacaoIndice: cfg?.aplicacaoIndice,
         );
       }
       return 'Selecione o tipo de aplicação';
@@ -811,11 +800,14 @@ class _StageBlockState extends ConsumerState<StageBlock> {
       widget.talhaoNomes,
     );
     final isInstancia = talhaoLabel.isNotEmpty;
+    final isExpanded = ref.isPanelExpanded(widget.estadio.id);
     final Widget? titleDropdown;
     if (widget.estadio.isOperacional && !widget.estadio.isSubcardFungicida) {
       titleDropdown = OperacionalTipoDropdown(
         estadio: widget.estadio,
         tipos: programaOperacionalTiposDropdownOperacao,
+        plano: widget.plano,
+        isExpanded: isExpanded,
         onSave: widget.onUpdateEstadio,
         onSyncFungicidaSubcards: widget.onSyncFungicidaSubcards,
       );
@@ -823,6 +815,8 @@ class _StageBlockState extends ConsumerState<StageBlock> {
       titleDropdown = OperacionalTipoDropdown(
         estadio: widget.estadio,
         tipos: programaOperacionalTiposDropdownEstadio,
+        plano: widget.plano,
+        isExpanded: isExpanded,
         hintText: 'Selecione o tipo de aplicação',
         onSave: widget.onUpdateEstadio,
         onSyncFungicidaSubcards: widget.onSyncFungicidaSubcards,
@@ -836,7 +830,7 @@ class _StageBlockState extends ConsumerState<StageBlock> {
       stageName: _stageName,
       titleWidget: titleDropdown,
       subtitleWidget: _collapsedSubtitleWidget(context),
-      isExpanded: ref.isPanelExpanded(widget.estadio.id),
+      isExpanded: isExpanded,
       onToggle: () => ref.togglePanel(widget.estadio.id),
       borderColor: isInstancia
           ? PlanStageCardTokens.instanceBorder(context)

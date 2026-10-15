@@ -56,9 +56,10 @@ class _OperacionalStageEditorState extends State<OperacionalStageEditor> {
     if (novoTipo == null || novoTipo == TipoOperacional.indefinido) return;
 
     final cfg = config ?? _config;
-    final label = labelOperacionalParaCard(
+    final label = labelOperacionalComAplicacao(
       novoTipo,
       incluirAdubacao: cfg.incluirAdubacao,
+      aplicacaoIndice: cfg.aplicacaoIndice,
     );
     final atualizado = widget.estadio.copyWith(
       operacionalConfig: cfg,

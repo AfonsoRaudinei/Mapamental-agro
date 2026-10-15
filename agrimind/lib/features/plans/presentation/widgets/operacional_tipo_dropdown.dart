@@ -5,18 +5,25 @@ import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../domain/entities/estadio_entity.dart';
 import '../../domain/entities/operacional_estadio_config.dart';
+import '../../domain/entities/plano_entity.dart';
 import '../../domain/talhao_safra/mapear_tipo_operacional_label.dart';
+import '../../domain/talhao_safra/roteiro_plano_template.dart';
 import '../../domain/talhao_safra/tipo_operacional.dart';
 
 typedef OperacionalEstadioSave = Future<void> Function(EstadioEntity atualizado);
 
 /// Dropdown inline do tipo operacional (substitui action sheet no header do card).
+///
+/// A seta de seleção só fica disponível com o card expandido ([isExpanded]);
+/// recolhido, mostra apenas o rótulo atual (sem afordance de toque).
 class OperacionalTipoDropdown extends StatefulWidget {
   const OperacionalTipoDropdown({
     super.key,
     required this.estadio,
     required this.onSave,
     required this.tipos,
+    required this.plano,
+    required this.isExpanded,
     this.hintText = 'Selecione o tipo de operação',
     this.onSyncFungicidaSubcards,
     this.dense = false,
@@ -25,6 +32,8 @@ class OperacionalTipoDropdown extends StatefulWidget {
   final EstadioEntity estadio;
   final OperacionalEstadioSave onSave;
   final List<TipoOperacional> tipos;
+  final PlanoEntity plano;
+  final bool isExpanded;
   final String hintText;
   final Future<void> Function(EstadioEntity pai)? onSyncFungicidaSubcards;
   final bool dense;
@@ -93,8 +102,11 @@ class _OperacionalTipoDropdownState extends State<OperacionalTipoDropdown> {
     if (novoTipo == null || novoTipo == TipoOperacional.indefinido) return;
 
     final cfg = config ?? _config;
-    final incluir = cfg.incluirAdubacao;
-    final label = labelOperacionalParaCard(novoTipo, incluirAdubacao: incluir);
+    final label = labelOperacionalComAplicacao(
+      novoTipo,
+      incluirAdubacao: cfg.incluirAdubacao,
+      aplicacaoIndice: cfg.aplicacaoIndice,
+    );
 
     final atualizado = widget.estadio.copyWith(
       tipoOperacional: novoTipo,
@@ -120,6 +132,9 @@ class _OperacionalTipoDropdownState extends State<OperacionalTipoDropdown> {
       cfg = _config.copyWith(
         diasRecuperacaoPosEmergente: _config.diasRecuperacaoPosEmergente ?? 5,
         totalAplicacoesFungicida: _config.totalAplicacoesFungicida ?? 1,
+        aplicacaoIndice:
+            widget.estadio.operacionalConfig?.aplicacaoIndice ??
+                _proximoIndiceFungicida(),
       );
     } else if (escolhido == TipoOperacional.dessecacaoPreColheita) {
       cfg = _config.copyWith(
@@ -135,6 +150,28 @@ class _OperacionalTipoDropdownState extends State<OperacionalTipoDropdown> {
     await _persist(tipo: escolhido, config: cfg);
   }
 
+  /// Próximo índice livre entre os cards fungicida-recorrente do roteiro
+  /// (ex.: V7 vira 1, o próximo card que virar fungicida vira 2...).
+  int _proximoIndiceFungicida() {
+    final irmaos = templatesFungicidaRoteiro(widget.plano.estadios)
+        .where((e) => e.id != widget.estadio.id);
+    var maxIndice = 0;
+    for (final e in irmaos) {
+      final idx = e.operacionalConfig?.aplicacaoIndice ?? 0;
+      if (idx > maxIndice) maxIndice = idx;
+    }
+    return maxIndice + 1;
+  }
+
+  String _labelAtual(TipoOperacional tipo) {
+    final indice = tipo == _tipo ? _config.aplicacaoIndice : null;
+    return labelOperacionalComAplicacao(
+      tipo,
+      incluirAdubacao: _config.incluirAdubacao,
+      aplicacaoIndice: indice,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final titleStyle = AppTypography.h3.copyWith(
@@ -146,6 +183,16 @@ class _OperacionalTipoDropdownState extends State<OperacionalTipoDropdown> {
       color: context.appTextSecondary,
       fontWeight: FontWeight.w600,
     );
+
+    if (!widget.isExpanded) {
+      // Recolhido: só leitura — a seta de seleção só aparece ao expandir.
+      return Text(
+        _tipo == null ? widget.hintText : _labelAtual(_tipo!),
+        style: _tipo == null ? hintStyle : titleStyle,
+        maxLines: 2,
+        overflow: TextOverflow.ellipsis,
+      );
+    }
 
     return DropdownButtonHideUnderline(
       child: DropdownButton<TipoOperacional>(
@@ -159,6 +206,19 @@ class _OperacionalTipoDropdownState extends State<OperacionalTipoDropdown> {
         ),
         style: titleStyle,
         borderRadius: BorderRadius.circular(8),
+        selectedItemBuilder: (context) => widget.tipos
+            .map(
+              (tipo) => Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  _labelAtual(tipo),
+                  style: titleStyle,
+                  maxLines: 2,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+            )
+            .toList(),
         items: widget.tipos
             .map(
               (tipo) => DropdownMenuItem(
