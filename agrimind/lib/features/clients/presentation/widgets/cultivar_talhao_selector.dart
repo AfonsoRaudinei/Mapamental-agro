@@ -13,6 +13,7 @@ class CultivarTalhaoSelector extends StatelessWidget {
     required this.opcoesVinculadas,
     required this.onChanged,
     this.hint = 'Ex: Olimpo',
+    this.caption,
   });
 
   final String label;
@@ -20,6 +21,14 @@ class CultivarTalhaoSelector extends StatelessWidget {
   final List<String> opcoesVinculadas;
   final ValueChanged<String> onChanged;
   final String hint;
+
+  /// Legenda exibida abaixo do dropdown quando há mais de uma opção.
+  /// Se omitida, usa o texto padrão ("N cultivares neste talhão — escolha
+  /// qual planejar."). Telas que agrupam mais de um talhão (ex.: cronograma
+  /// por grupo de regulagem) devem fornecer uma legenda própria, já que cada
+  /// cultivar tem seu próprio ciclo (DAE maturação) e a escolha aqui define
+  /// qual ciclo é usado como referência para calcular as datas do grupo.
+  final String? caption;
 
   @override
   Widget build(BuildContext context) {
@@ -72,7 +81,8 @@ class CultivarTalhaoSelector extends StatelessWidget {
             },
           ),
           Text(
-            '${opcoes.length} cultivares neste talhão — escolha qual planejar.',
+            caption ??
+                '${opcoes.length} cultivares neste talhão — escolha qual planejar.',
             style: AppTypography.caption.copyWith(
               color: context.appTextSecondary,
               fontSize: 11,
