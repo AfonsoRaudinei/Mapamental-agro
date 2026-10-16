@@ -38,7 +38,9 @@ import '../../domain/cronograma_soja/cronograma_soja_parametros.dart';
 import '../../../catalog/domain/dae_maturacao_cultivar.dart';
 import '../../../catalog/domain/entities/produto_catalogo_entity.dart';
 import '../../domain/entities/talhao_entity.dart';
+import '../../domain/talhao_etapas/etapa_talhao.dart';
 import '../providers/clients_provider.dart';
+import '../providers/etapas_do_talhao_provider.dart';
 import '../../../plans/domain/entities/semente_talhao_entity.dart';
 import '../../../plans/domain/usecases/resolver_cultivar_talhao_plano_usecase.dart';
 
@@ -210,6 +212,22 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
       _focusCultivarPendente =
           salva.isNotEmpty && opcoes.contains(salva) ? salva : opcoes.first;
     }
+  }
+
+  /// Etapas com produtos do plano para o talhão em foco (null enquanto carrega).
+  List<EtapaTalhao>? _etapasFoco() {
+    final planoId = _planoAtivoId;
+    final linha = _focusLinha;
+    if (planoId == null || linha == null || !linha.plantioDefinido) return null;
+    return ref
+        .watch(
+          etapasDoTalhaoProvider((
+            planoId: planoId,
+            talhaoId: linha.talhaoId,
+            parametros: linha,
+          )),
+        )
+        .valueOrNull;
   }
 
   void _patchFocusLinha(CronogramaSojaParametros linha) {
@@ -677,6 +695,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                         onVerNoPlano: _verNoPlano,
                         avisosValidacao:
                             _avisosValidacaoCronograma(context, _focusLinha!),
+                        etapas: _etapasFoco(),
                       ),
                     ),
                   )

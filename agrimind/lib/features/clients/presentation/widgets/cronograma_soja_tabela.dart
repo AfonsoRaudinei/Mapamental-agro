@@ -5,6 +5,8 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../domain/talhao_etapas/etapa_talhao.dart';
+import 'etapa_talhao_tile.dart';
 
 /// Tabela + resumo do cronograma calculado (formato da spec / referência visual).
 class CronogramaSojaTabela extends StatelessWidget {
@@ -14,12 +16,16 @@ class CronogramaSojaTabela extends StatelessWidget {
     required this.linhas,
     required this.resumo,
     this.mostrarColunaData = true,
+    this.etapas,
   });
 
   final String titulo;
   final List<LinhaTempoSojaItem> linhas;
   final String resumo;
   final bool mostrarColunaData;
+
+  /// Quando informado, cada linha mostra os produtos do plano (accordion).
+  final List<EtapaTalhao>? etapas;
 
   @override
   Widget build(BuildContext context) {
@@ -39,7 +45,16 @@ class CronogramaSojaTabela extends StatelessWidget {
             border: Border.all(color: context.appBorder),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Table(
+          child: etapas != null
+              ? Column(
+                  children: [
+                    for (var i = 0; i < etapas!.length; i++) ...[
+                      if (i > 0) Divider(height: 1, color: context.appBorder),
+                      EtapaTalhaoTile(etapa: etapas![i]),
+                    ],
+                  ],
+                )
+              : Table(
             columnWidths: mostrarColunaData
                 ? const {
                     0: FlexColumnWidth(2.2),
