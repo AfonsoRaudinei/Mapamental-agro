@@ -1,4 +1,3 @@
-import 'fungicida_aplicacao_label.dart';
 import 'tipo_operacional.dart';
 
 /// Resultado da migração de [EstadioEntity.label] legado para [TipoOperacional].
@@ -137,7 +136,7 @@ String labelOperacionalParaCard(
 }
 
 /// Label do card considerando a numeração entre cards fungicida-recorrente
-/// irmãos no roteiro (ex.: "1ª aplicação — Fungicida (recorrente)").
+/// irmãos no roteiro (ex.: "1 Fungicida", "2 Fungicida").
 String labelOperacionalComAplicacao(
   TipoOperacional tipo, {
   bool incluirAdubacao = false,
@@ -146,7 +145,7 @@ String labelOperacionalComAplicacao(
   if (tipo == TipoOperacional.fungicidaRecorrente &&
       aplicacaoIndice != null &&
       aplicacaoIndice > 0) {
-    return labelAplicacaoFungicida(aplicacaoIndice);
+    return '$aplicacaoIndice Fungicida';
   }
   return labelOperacionalParaCard(tipo, incluirAdubacao: incluirAdubacao);
 }
