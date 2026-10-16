@@ -722,6 +722,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                                 });
                               },
                               child: _CronogramaRegulagemForm(
+                                key: ValueKey(grupo.grupoId),
                                 grupo: grupo,
                                 talhoes: _talhoes,
                                 catalogo: _catalogo,
@@ -808,7 +809,18 @@ List<Widget> _avisosValidacaoCronograma(
       .toList();
 }
 
-class _CronogramaRegulagemForm extends StatelessWidget {
+/// Blocos da sanfona interna de regulagem (exclusiva — só um aberto por vez).
+/// "Referência da regulagem (DAE)" fica fora deste enum: é resultado
+/// calculado (output), não um input, e por isso sempre fica visível.
+enum _CronogramaBloco {
+  selecao,
+  ciclo,
+  emergencia,
+  fungicida,
+  dessecacaoColheita,
+}
+
+class _CronogramaRegulagemForm extends StatefulWidget {
   const _CronogramaRegulagemForm({
     required this.grupo,
     required this.talhoes,
@@ -836,17 +848,323 @@ class _CronogramaRegulagemForm extends StatelessWidget {
   final VoidCallback onSyncPlano;
   final VoidCallback? onDelete;
 
-  CronogramaSojaParametros get params => grupo.modelo;
+  @override
+  State<_CronogramaRegulagemForm> createState() =>
+      _CronogramaRegulagemFormState();
+}
+
+class _CronogramaRegulagemFormState extends State<_CronogramaRegulagemForm> {
+  _CronogramaBloco? _blocoAberto = _CronogramaBloco.selecao;
+
+  CronogramaSojaParametros get params => widget.grupo.modelo;
 
   List<String> _cultivaresDoGrupo() {
-    final ids = grupo.talhaoIds;
+    final ids = widget.grupo.talhaoIds;
     final set = <String>{};
     for (final id in ids) {
-      set.addAll(cultivaresPorTalhao[id] ?? const []);
+      set.addAll(widget.cultivaresPorTalhao[id] ?? const []);
     }
     final list = set.toList();
     list.sort();
     return list;
+  }
+
+  String _resumoSelecao() {
+    final nomes = widget.grupo.linhas
+        .map((l) => widget.talhaoNome(l.talhaoId))
+        .join(', ');
+    final mat = params.materialCultivar.trim();
+    return mat.isEmpty ? nomes : '$nomes · $mat';
+  }
+
+  String _resumoCiclo() => 'Ciclo ${params.daeMaturacaoCiclo} dias';
+
+  String _resumoEmergencia() =>
+      'Emergência ${params.diasEmergencia}d · '
+      'Pós-em. DAE ${params.daePosEmergente} · '
+      'Recup. ${params.diasRecuperacaoPosEmergente}d';
+
+  String _resumoFungicida() {
+    final total = params.totalAplicacoesFungicida;
+    if (total <= 1) return '$total aplic.';
+    return '$total aplic. · intervalo ${params.intervaloFungicidaDias}d';
+  }
+
+  String _resumoDessecacaoColheita() =>
+      'Desseca ${params.diasDessecacaoPrePlantio}d antes · '
+      'antecipa ${params.diasAntecipacaoColheitaReal}d';
+
+  Widget _blocoAccordion({
+    required _CronogramaBloco id,
+    required String title,
+    required String subtitle,
+    required Widget child,
+  }) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.sm),
+      child: AccordionSection(
+        title: title,
+        subtitle: subtitle,
+        quiet: true,
+        isExpanded: _blocoAberto == id,
+        onToggle: (v) => setState(() => _blocoAberto = v ? id : null),
+        child: child,
+      ),
+    );
+  }
+
+  Widget _blocoSelecao(BuildContext context) {
+    return _blocoAccordion(
+      id: _CronogramaBloco.selecao,
+      title: 'Seleção',
+      subtitle: _resumoSelecao(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          TalhaoMultiSelector(
+            talhoes: widget.talhoes,
+            selectedIds: widget.grupo.talhaoIds,
+            onChanged: widget.onTalhoesChanged,
+          ),
+          _CampoDropdown(
+            label: 'Cultura',
+            value: params.cultura,
+            options: AppConstants.culturas,
+            onChanged: (v) =>
+                widget.onModeloChanged(params.copyWith(cultura: v)),
+          ),
+          CultivarTalhaoSelector(
+            label: 'Material / Cultivar (referência)',
+            value: params.materialCultivar,
+            opcoesVinculadas: _cultivaresDoGrupo(),
+            onChanged: (v) => widget.onModeloChanged(
+              aplicarDaeAoEscolherCultivar(
+                params: params,
+                cultivar: v,
+                catalogo: widget.catalogo,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _blocoCiclo(BuildContext context) {
+    final daeCatalogo = resolverDaeMaturacaoCultivar(
+      params.materialCultivar,
+      widget.catalogo,
+    );
+    return _blocoAccordion(
+      id: _CronogramaBloco.ciclo,
+      title: 'Ciclo da cultivar',
+      subtitle: _resumoCiclo(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _CampoInteiro(
+            label: 'Ciclo da cultivar (DAE maturação)',
+            value: params.daeMaturacaoCiclo,
+            suffix: 'dias',
+            onChanged: (v) => widget.onModeloChanged(
+              params.copyWith(daeMaturacaoCiclo: v),
+            ),
+          ),
+          if (daeCatalogo != null)
+            Padding(
+              padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+              child: Text(
+                'Catálogo de sementes: $daeCatalogo dias (editável)',
+                style: AppTypography.caption.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontSize: 11,
+                ),
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _blocoEmergencia(BuildContext context) {
+    return _blocoAccordion(
+      id: _CronogramaBloco.emergencia,
+      title: 'Emergência',
+      subtitle: _resumoEmergencia(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _CampoInteiro(
+            label: 'Dias para emergência',
+            value: params.diasEmergencia,
+            suffix: 'dias',
+            onChanged: (v) =>
+                widget.onModeloChanged(params.copyWith(diasEmergencia: v)),
+          ),
+          _CampoInteiro(
+            label: 'DAE do pós-emergente',
+            value: params.daePosEmergente,
+            suffix: 'DAE',
+            onChanged: (v) =>
+                widget.onModeloChanged(params.copyWith(daePosEmergente: v)),
+          ),
+          _CampoInteiro(
+            label: 'Recuperação pós-emergente',
+            value: params.diasRecuperacaoPosEmergente,
+            suffix: 'dias',
+            onChanged: (v) => widget.onModeloChanged(
+              params.copyWith(diasRecuperacaoPosEmergente: v),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _blocoFungicida(BuildContext context) {
+    final total = params.totalAplicacoesFungicida;
+    final aplicacoes = _linhasCore(
+      params,
+    ).where((l) => l.tipo == LinhaTempoSojaTipo.fungicida);
+    return _blocoAccordion(
+      id: _CronogramaBloco.fungicida,
+      title: 'Fungicida',
+      subtitle: _resumoFungicida(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _campoTotalAplicacoesFungicida(context, total),
+          if (total > 1)
+            _CampoInteiro(
+              label: 'Intervalo entre fungicidas',
+              value: params.intervaloFungicidaDias,
+              suffix: 'dias',
+              onChanged: (v) => widget.onModeloChanged(
+                params.copyWith(intervaloFungicidaDias: v),
+              ),
+            ),
+          // Pré-visualização gerada dinamicamente a partir do total acima —
+          // nenhuma aplicação fica hardcoded, a lista acompanha o stepper.
+          if (aplicacoes.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: AppSpacing.xs),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  for (final l in aplicacoes)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 2),
+                      child: Text(
+                        '${l.fungicidaIndice}ª aplicação — DAE ${l.dae}',
+                        style: AppTypography.caption.copyWith(
+                          color: context.appTextSecondary,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+        ],
+      ),
+    );
+  }
+
+  Widget _campoTotalAplicacoesFungicida(BuildContext context, int total) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: AppSpacing.xs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Total de aplicações de fungicida',
+            style: AppTypography.caption.copyWith(
+              color: context.appTextSecondary,
+            ),
+          ),
+          const SizedBox(height: 4),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.xs),
+            decoration: BoxDecoration(
+              color: context.appSurface,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: context.appBorder),
+            ),
+            child: Row(
+              children: [
+                IconButton(
+                  onPressed: total > 0
+                      ? () => widget.onModeloChanged(
+                          params.copyWith(
+                            totalAplicacoesFungicida: total - 1,
+                          ),
+                        )
+                      : null,
+                  icon: const Icon(Icons.remove_circle_outline),
+                  color: AppColors.primary,
+                  tooltip: 'Remover aplicação',
+                ),
+                Expanded(
+                  child: Text(
+                    total == 1 ? '1 aplicação' : '$total aplicações',
+                    textAlign: TextAlign.center,
+                    style: AppTypography.body.copyWith(
+                      fontWeight: FontWeight.w600,
+                      color: context.appTextPrimary,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  onPressed: () => widget.onModeloChanged(
+                    params.copyWith(totalAplicacoesFungicida: total + 1),
+                  ),
+                  icon: const Icon(Icons.add_circle_outline),
+                  color: AppColors.primary,
+                  tooltip: 'Adicionar aplicação',
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _blocoDessecacaoColheita(BuildContext context) {
+    return _blocoAccordion(
+      id: _CronogramaBloco.dessecacaoColheita,
+      title: 'Dessecação e colheita',
+      subtitle: _resumoDessecacaoColheita(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          _CampoInteiro(
+            label: 'Dessecação pré-plantio (dias antes do plantio)',
+            value: params.diasDessecacaoPrePlantio,
+            suffix: 'dias',
+            onChanged: (v) => widget.onModeloChanged(
+              params.copyWith(diasDessecacaoPrePlantio: v),
+            ),
+          ),
+          _CampoInteiro(
+            label: 'Dias antes do R8 para dessecante (R7)',
+            value: params.diasAntesR8Dessecante,
+            suffix: 'dias',
+            onChanged: (v) => widget.onModeloChanged(
+              params.copyWith(diasAntesR8Dessecante: v),
+            ),
+          ),
+          _CampoInteiro(
+            label: 'Antecipação real da colheita (após dessecação)',
+            value: params.diasAntecipacaoColheitaReal,
+            suffix: 'dias',
+            onChanged: (v) => widget.onModeloChanged(
+              params.copyWith(diasAntecipacaoColheitaReal: v),
+            ),
+          ),
+          ..._avisosValidacaoCronograma(context, params),
+        ],
+      ),
+    );
   }
 
   @override
@@ -854,117 +1172,12 @@ class _CronogramaRegulagemForm extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        TalhaoMultiSelector(
-          talhoes: talhoes,
-          selectedIds: grupo.talhaoIds,
-          onChanged: onTalhoesChanged,
-        ),
-        _CampoDropdown(
-          label: 'Cultura',
-          value: params.cultura,
-          options: AppConstants.culturas,
-          onChanged: (v) => onModeloChanged(params.copyWith(cultura: v)),
-        ),
-        CultivarTalhaoSelector(
-          label: 'Material / Cultivar (referência)',
-          value: params.materialCultivar,
-          opcoesVinculadas: _cultivaresDoGrupo(),
-          caption: 'Os talhões deste grupo têm cultivares diferentes, cada uma '
-              'com seu próprio ciclo. A opção escolhida aqui é só a '
-              'referência: define qual ciclo (DAE maturação) este grupo usa '
-              'para calcular as datas — não altera a cultivar plantada em '
-              'cada talhão.',
-          onChanged: (v) => onModeloChanged(
-            aplicarDaeAoEscolherCultivar(
-              params: params,
-              cultivar: v,
-              catalogo: catalogo,
-            ),
-          ),
-        ),
-        _CampoInteiro(
-          label: 'Dias para emergência',
-          value: params.diasEmergencia,
-          suffix: 'dias',
-          onChanged: (v) => onModeloChanged(params.copyWith(diasEmergencia: v)),
-        ),
-        _CampoInteiro(
-          label: 'DAE do pós-emergente',
-          value: params.daePosEmergente,
-          suffix: 'DAE',
-          onChanged: (v) => onModeloChanged(params.copyWith(daePosEmergente: v)),
-        ),
-        _CampoInteiro(
-          label: 'Recuperação pós-emergente',
-          value: params.diasRecuperacaoPosEmergente,
-          suffix: 'dias',
-          onChanged: (v) => onModeloChanged(
-            params.copyWith(diasRecuperacaoPosEmergente: v),
-          ),
-        ),
-        _CampoInteiro(
-          label: 'Total de aplicações de fungicida',
-          value: params.totalAplicacoesFungicida,
-          suffix: 'aplic.',
-          onChanged: (v) =>
-              onModeloChanged(params.copyWith(totalAplicacoesFungicida: v)),
-        ),
-        if (params.totalAplicacoesFungicida > 1)
-          _CampoInteiro(
-            label: 'Intervalo entre fungicidas',
-            value: params.intervaloFungicidaDias,
-            suffix: 'dias',
-            onChanged: (v) =>
-                onModeloChanged(params.copyWith(intervaloFungicidaDias: v)),
-          ),
-        _CampoInteiro(
-          label: 'Ciclo da cultivar (DAE maturação)',
-          value: params.daeMaturacaoCiclo,
-          suffix: 'dias',
-          onChanged: (v) =>
-              onModeloChanged(params.copyWith(daeMaturacaoCiclo: v)),
-        ),
-        if (resolverDaeMaturacaoCultivar(
-              params.materialCultivar,
-              catalogo,
-            ) !=
-            null)
-          Padding(
-            padding: const EdgeInsets.only(bottom: AppSpacing.xs),
-            child: Text(
-              'Catálogo de sementes: '
-              '${resolverDaeMaturacaoCultivar(params.materialCultivar, catalogo)} dias '
-              '(editável)',
-              style: AppTypography.caption.copyWith(
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
-                fontSize: 11,
-              ),
-            ),
-          ),
-        _CampoInteiro(
-          label: 'Dessecação pré-plantio (dias antes do plantio)',
-          value: params.diasDessecacaoPrePlantio,
-          suffix: 'dias',
-          onChanged: (v) =>
-              onModeloChanged(params.copyWith(diasDessecacaoPrePlantio: v)),
-        ),
-        _CampoInteiro(
-          label: 'Dias antes do R8 para dessecante (R7)',
-          value: params.diasAntesR8Dessecante,
-          suffix: 'dias',
-          onChanged: (v) =>
-              onModeloChanged(params.copyWith(diasAntesR8Dessecante: v)),
-        ),
-        _CampoInteiro(
-          label: 'Antecipação real da colheita (após dessecação)',
-          value: params.diasAntecipacaoColheitaReal,
-          suffix: 'dias',
-          onChanged: (v) => onModeloChanged(
-            params.copyWith(diasAntecipacaoColheitaReal: v),
-          ),
-        ),
-        ..._avisosValidacaoCronograma(context, params),
-        if (!plantioNoGrupo) ...[
+        _blocoSelecao(context),
+        _blocoCiclo(context),
+        _blocoEmergencia(context),
+        _blocoFungicida(context),
+        _blocoDessecacaoColheita(context),
+        if (!widget.plantioNoGrupo) ...[
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Plantio: defina na ficha de cada talhão na fazenda. '
@@ -975,7 +1188,7 @@ class _CronogramaRegulagemForm extends StatelessWidget {
             ),
           ),
         ],
-        if (plantioNoGrupo) ...[
+        if (widget.plantioNoGrupo) ...[
           const SizedBox(height: AppSpacing.sm),
           Text(
             'Plantio por talhão',
@@ -985,13 +1198,13 @@ class _CronogramaRegulagemForm extends StatelessWidget {
             ),
           ),
           const SizedBox(height: AppSpacing.xs),
-          ...grupo.linhas.map((linha) {
-            final label = talhaoNome(linha.talhaoId);
+          ...widget.grupo.linhas.map((linha) {
+            final label = widget.talhaoNome(linha.talhaoId);
             return _CampoData(
               label: label,
               value: linha.dataPlantio,
               hint: linha.plantioDefinido ? null : 'Toque para definir',
-              onChanged: (d) => onPlantioChanged(linha, d),
+              onChanged: (d) => widget.onPlantioChanged(linha, d),
             );
           }),
         ],
@@ -1002,13 +1215,13 @@ class _CronogramaRegulagemForm extends StatelessWidget {
           resumo: resumoCronogramaSoja(params),
           mostrarColunaData: false,
         ),
-        if (plantioNoGrupo)
-          ...grupo.linhas.where((l) => l.plantioDefinido).map((linha) {
+        if (widget.plantioNoGrupo)
+          ...widget.grupo.linhas.where((l) => l.plantioDefinido).map((linha) {
             return Padding(
               padding: const EdgeInsets.only(top: AppSpacing.md),
               child: CronogramaSojaTabela(
                 titulo:
-                    'Datas — ${talhaoNome(linha.talhaoId)} (${AppFormatters.data(linha.dataPlantio)})',
+                    'Datas — ${widget.talhaoNome(linha.talhaoId)} (${AppFormatters.data(linha.dataPlantio)})',
                 linhas: calcularLinhaTempoSoja(
                   dataPlantio: linha.dataPlantio,
                   parametros: parametrosFromCronograma(linha),
@@ -1021,13 +1234,13 @@ class _CronogramaRegulagemForm extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         CupertinoButton.filled(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          onPressed: onSyncPlano,
+          onPressed: widget.onSyncPlano,
           child: const Text('Aplicar datas ao plano'),
         ),
-        if (onDelete != null) ...[
+        if (widget.onDelete != null) ...[
           const SizedBox(height: AppSpacing.xs),
           CupertinoButton(
-            onPressed: onDelete,
+            onPressed: widget.onDelete,
             child: const Text(
               'Remover linha',
               style: TextStyle(color: AppColors.error, fontSize: 14),
