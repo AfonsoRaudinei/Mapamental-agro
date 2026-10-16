@@ -441,7 +441,6 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
             diasRecuperacaoPosEmergente: modelo.diasRecuperacaoPosEmergente,
             intervaloFungicidaDias: modelo.intervaloFungicidaDias,
             totalAplicacoesFungicida: modelo.totalAplicacoesFungicida,
-            daeMaturacaoCiclo: modelo.daeMaturacaoCiclo,
             diasAntesR8Dessecante: modelo.diasAntesR8Dessecante,
             diasAntecipacaoColheitaReal: modelo.diasAntecipacaoColheitaReal,
             diasDessecacaoPrePlantio: modelo.diasDessecacaoPrePlantio,
@@ -464,11 +463,9 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
             diasRecuperacaoPosEmergente: modelo.diasRecuperacaoPosEmergente,
             intervaloFungicidaDias: modelo.intervaloFungicidaDias,
             totalAplicacoesFungicida: modelo.totalAplicacoesFungicida,
-            daeMaturacaoCiclo: modelo.daeMaturacaoCiclo,
             diasAntesR8Dessecante: modelo.diasAntesR8Dessecante,
             diasAntecipacaoColheitaReal: modelo.diasAntecipacaoColheitaReal,
             diasDessecacaoPrePlantio: modelo.diasDessecacaoPrePlantio,
-            materialCultivar: modelo.materialCultivar,
           ),
         ),
       );
@@ -504,7 +501,15 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     final grupoId = _uuid.v4();
     final atribuidos = _linhas.map((l) => l.talhaoId).toSet();
     final livres = _talhoes.where((t) => !atribuidos.contains(t.id)).toList();
-    final selecionados = livres.isEmpty ? [_talhoes.first] : livres;
+    if (livres.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Todos os talhões já têm cronograma.'),
+        ),
+      );
+      return;
+    }
+    final selecionados = livres;
     final novas = selecionados
         .map(
           (t) => _comCultivarDoTalhao(
@@ -935,7 +940,7 @@ class _CronogramaRegulagemForm extends StatelessWidget {
                 onModeloChanged(params.copyWith(intervaloFungicidaDias: v)),
           ),
         _CampoInteiro(
-          label: 'Ciclo da cultivar (DAE maturação)',
+          label: 'Ciclo da cultivar de referência (DAE maturação)',
           value: params.daeMaturacaoCiclo,
           suffix: 'dias',
           onChanged: (v) =>

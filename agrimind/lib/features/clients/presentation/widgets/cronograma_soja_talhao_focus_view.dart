@@ -148,7 +148,7 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
         ],
         const SizedBox(height: AppSpacing.sm),
         _CampoDataPlantio(
-          label: 'Data de plantio',
+          label: 'Data de plantio do talhão',
           hint: 'Toque para definir',
           onChanged: onPlantioChanged,
         ),
@@ -195,6 +195,13 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
           ),
         ],
         const SizedBox(height: AppSpacing.md),
+        _CampoDataPlantio(
+          label: 'Data de plantio do talhão',
+          hint: 'Toque para definir',
+          value: linha.dataPlantio,
+          onChanged: onPlantioChanged,
+        ),
+        const SizedBox(height: AppSpacing.sm),
         ...avisosValidacao,
         CronogramaSojaTabela(
           titulo: 'Cronograma',
@@ -256,11 +263,15 @@ class _CampoDataPlantio extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.onChanged,
+    this.value,
   });
 
   final String label;
   final String hint;
   final ValueChanged<DateTime> onChanged;
+
+  /// Data já informada (permite alterar); `null` = ainda não definida.
+  final DateTime? value;
 
   @override
   Widget build(BuildContext context) {
@@ -282,7 +293,7 @@ class _CampoDataPlantio extends StatelessWidget {
               final now = DateTime.now();
               final picked = await showDatePicker(
                 context: context,
-                initialDate: now,
+                initialDate: _dentroDoIntervalo(value, now) ? value! : now,
                 firstDate: DateTime(now.year - 2),
                 lastDate: DateTime(now.year + 2),
               );
@@ -300,7 +311,7 @@ class _CampoDataPlantio extends StatelessWidget {
                 border: Border.all(color: context.appBorder),
               ),
               child: Text(
-                hint,
+                value == null ? hint : AppFormatters.data(value!),
                 style: AppTypography.body.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
@@ -313,6 +324,9 @@ class _CampoDataPlantio extends StatelessWidget {
     );
   }
 }
+
+bool _dentroDoIntervalo(DateTime? d, DateTime now) =>
+    d != null && d.year >= now.year - 2 && d.year <= now.year + 2;
 
 class _CampoInteiroLeitura extends StatefulWidget {
   const _CampoInteiroLeitura({

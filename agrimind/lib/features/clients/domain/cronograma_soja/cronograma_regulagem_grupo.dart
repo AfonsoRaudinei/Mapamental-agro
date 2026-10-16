@@ -39,11 +39,17 @@ List<CronogramaRegulagemGrupo> agruparCronogramasPorRegulagem(
 }
 
 /// Copia parâmetros fenológicos do [modelo] para cada linha do grupo.
+///
+/// Data de plantio, cultivar e ciclo (DAE maturação) são **do talhão** e
+/// nunca são copiados entre talhões.
 List<CronogramaSojaParametros> aplicarModeloNoGrupo({
   required CronogramaRegulagemGrupo grupo,
   required CronogramaSojaParametros modelo,
 }) {
   return grupo.linhas.map((linha) {
+    if (linha.id == modelo.id) {
+      return modelo.copyWith(grupoRegulagemId: grupo.grupoId);
+    }
     return linha.copyWith(
       cultura: modelo.cultura,
       diasEmergencia: modelo.diasEmergencia,
@@ -51,11 +57,9 @@ List<CronogramaSojaParametros> aplicarModeloNoGrupo({
       diasRecuperacaoPosEmergente: modelo.diasRecuperacaoPosEmergente,
       intervaloFungicidaDias: modelo.intervaloFungicidaDias,
       totalAplicacoesFungicida: modelo.totalAplicacoesFungicida,
-      daeMaturacaoCiclo: modelo.daeMaturacaoCiclo,
       diasAntesR8Dessecante: modelo.diasAntesR8Dessecante,
       diasAntecipacaoColheitaReal: modelo.diasAntecipacaoColheitaReal,
       diasDessecacaoPrePlantio: modelo.diasDessecacaoPrePlantio,
-      materialCultivar: modelo.materialCultivar,
       grupoRegulagemId: grupo.grupoId,
     );
   }).toList();
