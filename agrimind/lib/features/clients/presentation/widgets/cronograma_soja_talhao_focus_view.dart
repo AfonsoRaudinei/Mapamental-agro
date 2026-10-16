@@ -11,6 +11,7 @@ import '../../domain/cronograma_soja/aplicar_dae_catalogo_cronograma.dart';
 import '../../domain/cronograma_soja/calcular_cronograma_soja.dart';
 import '../../domain/cronograma_soja/cronograma_soja_parametros.dart';
 import '../../../catalog/domain/entities/produto_catalogo_entity.dart';
+import '../../domain/talhao_etapas/etapa_talhao.dart';
 import 'cronograma_soja_tabela.dart';
 import 'cultivar_talhao_selector.dart';
 
@@ -32,6 +33,7 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
     required this.onAbrirRegulagemCompleta,
     required this.onVerNoPlano,
     required this.avisosValidacao,
+    this.etapas,
   });
 
   final String talhaoNome;
@@ -48,6 +50,9 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
   final VoidCallback onAbrirRegulagemCompleta;
   final VoidCallback onVerNoPlano;
   final List<Widget> avisosValidacao;
+
+  /// Etapas com produtos do plano; `null` mantém a tabela só com datas.
+  final List<EtapaTalhao>? etapas;
 
   bool get _multiplasCultivares => opcoesCultivar.length > 1;
 
@@ -143,7 +148,7 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
         ],
         const SizedBox(height: AppSpacing.sm),
         _CampoDataPlantio(
-          label: 'Data de plantio',
+          label: 'Data de plantio do talhão',
           hint: 'Toque para definir',
           onChanged: onPlantioChanged,
         ),
@@ -190,12 +195,20 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
           ),
         ],
         const SizedBox(height: AppSpacing.md),
+        _CampoDataPlantio(
+          label: 'Data de plantio do talhão',
+          hint: 'Toque para definir',
+          value: linha.dataPlantio,
+          onChanged: onPlantioChanged,
+        ),
+        const SizedBox(height: AppSpacing.sm),
         ...avisosValidacao,
         CronogramaSojaTabela(
           titulo: 'Cronograma',
           linhas: linhas,
           resumo: resumoCronogramaSoja(linha),
           mostrarColunaData: true,
+          etapas: etapas,
         ),
         const SizedBox(height: AppSpacing.md),
         CupertinoButton.filled(
@@ -250,11 +263,15 @@ class _CampoDataPlantio extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.onChanged,
+    this.value,
   });
 
   final String label;
   final String hint;
   final ValueChanged<DateTime> onChanged;
+
+  /// Data já informada (permite alterar); `null` = ainda não definida.
+  final DateTime? value;
 
   @override
   Widget build(BuildContext context) {
@@ -276,7 +293,7 @@ class _CampoDataPlantio extends StatelessWidget {
               final now = DateTime.now();
               final picked = await showDatePicker(
                 context: context,
-                initialDate: now,
+                initialDate: _dentroDoIntervalo(value, now) ? value! : now,
                 firstDate: DateTime(now.year - 2),
                 lastDate: DateTime(now.year + 2),
               );
@@ -294,7 +311,7 @@ class _CampoDataPlantio extends StatelessWidget {
                 border: Border.all(color: context.appBorder),
               ),
               child: Text(
-                hint,
+                value == null ? hint : AppFormatters.data(value!),
                 style: AppTypography.body.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
@@ -307,6 +324,9 @@ class _CampoDataPlantio extends StatelessWidget {
     );
   }
 }
+
+bool _dentroDoIntervalo(DateTime? d, DateTime now) =>
+    d != null && d.year >= now.year - 2 && d.year <= now.year + 2;
 
 class _CampoInteiroLeitura extends StatefulWidget {
   const _CampoInteiroLeitura({

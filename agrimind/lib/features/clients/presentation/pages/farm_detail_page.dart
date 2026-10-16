@@ -18,6 +18,8 @@ import '../providers/clients_provider.dart';
 import '../widgets/talhao_add_sheet.dart';
 import '../widgets/talhao_list_card.dart';
 import '../../../../core/utils/extensions.dart';
+import '../../../../core/utils/formatters.dart';
+import '../../domain/cronograma_soja/cronograma_soja_parametros.dart';
 
 /// Detalhe da fazenda — resumo, talhões e atalho para edição.
 class FarmDetailPage extends ConsumerWidget {
@@ -153,6 +155,10 @@ class FarmDetailPage extends ConsumerWidget {
               ),
               talhoesAsync.when(
                 data: (talhoes) {
+                  final plantios = ref
+                          .watch(_plantioPorTalhaoProvider(farmId))
+                          .valueOrNull ??
+                      const <String, CronogramaSojaParametros>{};
                   if (talhoes.isEmpty) {
                     return const SliverToBoxAdapter(
                       child: Padding(
@@ -174,15 +180,25 @@ class FarmDetailPage extends ConsumerWidget {
                     ),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
-                        (ctx, i) => TalhaoListCard(
-                          talhao: talhoes[i],
-                          onTap: () => _abrirCronogramaTalhao(
-                            context,
-                            farmId: farmId,
-                            clienteId: clienteId,
-                            talhaoId: talhoes[i].id,
-                          ),
-                        ),
+                        (ctx, i) {
+                          final p = plantios[talhoes[i].id];
+                          final definido = p?.plantioDefinido ?? false;
+                          return TalhaoListCard(
+                            talhao: talhoes[i],
+                            plantioLabel: definido
+                                ? 'Plantio ${AppFormatters.data(p!.dataPlantio)}'
+                                : 'Definir data de plantio',
+                            plantioPendente: !definido,
+                            onTap: () => _abrirCronogramaTalhao(
+                              context,
+                              farmId: farmId,
+                              clienteId: clienteId,
+                              talhaoId: talhoes[i].id,
+                            ).then((_) => ref.invalidate(
+                                  _plantioPorTalhaoProvider(farmId),
+                                )),
+                          );
+                        },
                         childCount: talhoes.length,
                       ),
                     ),
@@ -216,14 +232,14 @@ class FarmDetailPage extends ConsumerWidget {
   }
 }
 
-void _abrirCronogramaTalhao(
+Future<void> _abrirCronogramaTalhao(
   BuildContext context, {
   required String farmId,
   required String clienteId,
   String? talhaoId,
-}) {
+}) async {
   if (!context.mounted) return;
-  context.push(
+  await context.push(
     AppRoutes.farmCronogramaSojaPath(
       clienteId,
       farmId,
@@ -314,6 +330,18 @@ class _CronogramaFazendaEntryCard extends ConsumerWidget {
     );
   }
 }
+
+/// Plantio informado por talhão (lido da safra do plano ativo).
+final _plantioPorTalhaoProvider = FutureProvider.autoDispose
+    .family<Map<String, CronogramaSojaParametros>, String>((ref, farmId) async {
+  final linhas =
+      await ref.read(clientsRepoProvider).getCronogramasSojaByFazenda(farmId);
+  final porTalhao = <String, CronogramaSojaParametros>{};
+  for (final l in linhas) {
+    porTalhao.putIfAbsent(l.talhaoId, () => l);
+  }
+  return porTalhao;
+});
 
 final _planoAtivoFazendaProvider =
     FutureProvider.family<PlanoEntity?, String>((ref, fazendaId) async {

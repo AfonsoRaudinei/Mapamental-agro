@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../domain/entities/talhao_entity.dart';
@@ -11,10 +12,18 @@ class TalhaoListCard extends StatelessWidget {
     super.key,
     required this.talhao,
     this.onTap,
+    this.plantioLabel,
+    this.plantioPendente = false,
   });
 
   final TalhaoEntity talhao;
   final VoidCallback? onTap;
+
+  /// Ex.: "Plantio 15/10/2026" ou "Definir data de plantio".
+  final String? plantioLabel;
+
+  /// Destaca o rótulo quando o talhão ainda não tem plantio (sem cálculo).
+  final bool plantioPendente;
 
   @override
   Widget build(BuildContext context) {
@@ -37,10 +46,27 @@ class TalhaoListCard extends StatelessWidget {
           child: Row(
             children: [
               Expanded(
-                child: Text(
-                  talhao.nome,
-                  style:
-                      AppTypography.body.copyWith(fontWeight: FontWeight.w600),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      talhao.nome,
+                      style: AppTypography.body
+                          .copyWith(fontWeight: FontWeight.w600),
+                    ),
+                    if (plantioLabel != null)
+                      Text(
+                        plantioLabel!,
+                        style: AppTypography.caption.copyWith(
+                          color: plantioPendente
+                              ? AppColors.primary
+                              : context.appTextSecondary,
+                          fontWeight: plantioPendente
+                              ? FontWeight.w600
+                              : FontWeight.normal,
+                        ),
+                      ),
+                  ],
                 ),
               ),
               Text(
