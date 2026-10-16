@@ -311,9 +311,12 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
       );
       return;
     }
-    context.push(
-      AppRoutes.planCanvasPath(planoId, talhaoId: talhaoId),
-    );
+    // Ao voltar do plano, produtos/doses podem ter mudado.
+    context
+        .push(AppRoutes.planCanvasPath(planoId, talhaoId: talhaoId))
+        .then((_) {
+      if (mounted) ref.invalidate(etapasDoTalhaoProvider);
+    });
   }
 
   void _patchPlantioFocus(DateTime data) {

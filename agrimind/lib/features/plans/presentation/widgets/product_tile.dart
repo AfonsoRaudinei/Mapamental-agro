@@ -9,11 +9,12 @@ class ProductTile extends StatelessWidget {
   const ProductTile({
     super.key,
     required this.product,
-    required this.onTap,
+    this.onTap,
   });
 
   final ProductViewModel product;
-  final VoidCallback onTap;
+  /// `null` = somente leitura (ex.: etapas do talhão).
+  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
