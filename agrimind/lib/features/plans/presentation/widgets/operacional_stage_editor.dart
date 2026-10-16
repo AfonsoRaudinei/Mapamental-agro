@@ -110,76 +110,14 @@ class _OperacionalStageEditorState extends State<OperacionalStageEditor> {
       return const SizedBox.shrink();
     }
 
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(10, 0, 10, 8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          if (_tipo == TipoOperacional.dessecacaoPreColheita) ...[
-            const SizedBox(height: 8),
-            _intField(
-              context,
-              label: 'Dias antes do R8',
-              value: _config.diasAntesR8 ?? 12,
-              onChanged: (v) async {
-                setState(() => _config = _config.copyWith(diasAntesR8: v));
-                await _persist(config: _config);
-              },
-            ),
-            _intField(
-              context,
-              label: 'Antecipação da colheita (3–7 dias)',
-              value: _config.diasAntecipacaoColheita ?? 5,
-              min: 3,
-              max: 7,
-              onChanged: (v) async {
-                setState(
-                  () => _config =
-                      _config.copyWith(diasAntecipacaoColheita: v.clamp(3, 7)),
-                );
-                await _persist(config: _config);
-              },
-            ),
-            Text(
-              'Antecipa a colheita em ${_config.diasAntecipacaoColheita ?? 5} dias',
-              style: AppTypography.caption.copyWith(
-                color: context.appTextSecondary,
-              ),
-            ),
-          ],
-        ],
-      ),
-    );
-  }
+    // Dias antes do R8 e antecipação da colheita também são regulagem de
+    // cronograma — mesma regra acima, ficam só no módulo Clientes.
+    if (_tipo == TipoOperacional.dessecacaoPreColheita) {
+      return const SizedBox.shrink();
+    }
 
-  Widget _intField(
-    BuildContext context, {
-    required String label,
-    required int value,
-    required ValueChanged<int> onChanged,
-    int min = 0,
-    int? max,
-  }) {
-    final ctrl = TextEditingController(text: '$value');
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 6),
-      child: TextField(
-        controller: ctrl,
-        keyboardType: TextInputType.number,
-        decoration: InputDecoration(
-          labelText: label,
-          isDense: true,
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
-        ),
-        onSubmitted: (raw) {
-          final parsed = int.tryParse(raw.trim());
-          if (parsed == null) return;
-          var v = parsed;
-          if (v < min) v = min;
-          if (max != null && v > max) v = max;
-          onChanged(v);
-        },
-      ),
-    );
+    // Nenhum outro tipo operacional/fenológico tem campos de regulagem
+    // neste editor — o card aqui é só tipo + produtos por momento.
+    return const SizedBox.shrink();
   }
 }
