@@ -902,24 +902,35 @@ class _StageBlockState extends ConsumerState<StageBlock> {
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
-      child: IosSwipeDelete(
-        dismissKey: ValueKey('swipe-${widget.estadio.id}'),
-        itemName: label,
-        onDelete: _removeStage,
-        child: isInstancia
-            ? DecoratedBox(
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(AppSpacing.md),
-                  border: const Border(
-                    left: BorderSide(
-                      color: PlanStageCardTokens.accent,
-                      width: 3,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          IosSwipeDelete(
+            dismissKey: ValueKey('swipe-${widget.estadio.id}'),
+            itemName: label,
+            onDelete: _removeStage,
+            child: isInstancia
+                ? DecoratedBox(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(AppSpacing.md),
+                      border: const Border(
+                        left: BorderSide(
+                          color: PlanStageCardTokens.accent,
+                          width: 3,
+                        ),
+                      ),
                     ),
-                  ),
-                ),
-                child: card,
-              )
-            : card,
+                    child: card,
+                  )
+                : card,
+          ),
+          // Atalhos do livro aberto no header (Referências / Circular técnica).
+          StageReferencesStrip(
+            estadio: widget.estadio,
+            plano: widget.plano,
+            onAddProdutoFromReferencia: widget.onAddProdutoFromReferencia,
+          ),
+        ],
       ),
     );
   }

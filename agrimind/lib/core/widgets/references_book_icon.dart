@@ -16,6 +16,7 @@ class ReferencesBookIcon extends StatelessWidget {
     this.enabled = true,
     this.compact = false,
     this.filled = false,
+    this.selected = false,
     this.onTap,
   });
 
@@ -23,6 +24,9 @@ class ReferencesBookIcon extends StatelessWidget {
   final bool enabled;
   final bool compact;
   final bool filled;
+
+  /// Livro aberto (atalhos visíveis abaixo do card): anel de destaque.
+  final bool selected;
   final VoidCallback? onTap;
 
   @override
@@ -61,7 +65,12 @@ class ReferencesBookIcon extends StatelessWidget {
               height: size,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                border: Border.all(color: borderColor),
+                border: Border.all(
+                  color: selected
+                      ? (filled ? accent : context.appTextPrimary)
+                      : borderColor,
+                  width: selected ? 2 : 1,
+                ),
               ),
               child: Center(
                 child: PhosphorIcon(
