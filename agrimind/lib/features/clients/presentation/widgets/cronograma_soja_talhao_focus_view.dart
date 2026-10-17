@@ -336,8 +336,11 @@ class _CampoDataPlantio extends StatelessWidget {
   }
 }
 
+/// Mesmo intervalo do picker: [1/jan de now-2, 1/jan de now+2].
 bool _dentroDoIntervalo(DateTime? d, DateTime now) =>
-    d != null && d.year >= now.year - 2 && d.year <= now.year + 2;
+    d != null &&
+    !d.isBefore(DateTime(now.year - 2)) &&
+    !d.isAfter(DateTime(now.year + 2));
 
 class _CampoInteiroLeitura extends StatefulWidget {
   const _CampoInteiroLeitura({

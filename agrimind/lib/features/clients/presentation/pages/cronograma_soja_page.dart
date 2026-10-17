@@ -83,6 +83,10 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
   String? _planoAtivoId;
   List<GlobalKey> _etapaKeys = const [];
 
+  /// Últimas etapas do talhão em foco: evita sumir stepper/lista enquanto
+  /// o provider recalcula após mudar plantio ou regulagem.
+  ({String talhaoId, List<EtapaTalhao> etapas})? _ultimasEtapas;
+
   bool get _modoFocoTalhao =>
       widget.talhaoId != null && widget.talhaoId!.isNotEmpty;
 
@@ -223,7 +227,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     if (planoId == null || linha == null || !linha.plantioDefinido) return null;
     final opcoes = _cultivaresPorTalhao[linha.talhaoId] ?? const <String>[];
     if (opcoes.length > 1 && !_focusCultivarConfirmada) return null;
-    return ref
+    final atuais = ref
         .watch(
           etapasDoTalhaoProvider((
             planoId: planoId,
@@ -232,6 +236,14 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
           )),
         )
         .valueOrNull;
+    if (atuais != null) {
+      _ultimasEtapas = (talhaoId: linha.talhaoId, etapas: atuais);
+      return atuais;
+    }
+    final ultimas = _ultimasEtapas;
+    return ultimas != null && ultimas.talhaoId == linha.talhaoId
+        ? ultimas.etapas
+        : null;
   }
 
   /// Uma chave estável por etapa (mesmo índice da lista do provider).

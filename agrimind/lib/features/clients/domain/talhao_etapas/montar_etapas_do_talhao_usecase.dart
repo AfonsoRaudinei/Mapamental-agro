@@ -80,6 +80,7 @@ List<EtapaTalhao> montarEtapasDoTalhao({
         ? _produtosSementes(sementes, talhaoId, areaTalhaoHa)
         : _produtosDoEstadio(
             _resolverEstadio(estadios, linha),
+            talhaoId,
             areaTalhaoHa,
           );
     return EtapaTalhao(linha: linha, produtosVinculados: produtos);
@@ -112,9 +113,15 @@ List<ProdutoAplicado> _produtosSementes(
   }).toList();
 }
 
-List<ProdutoAplicado> _produtosDoEstadio(EstadioEntity? estadio, double areaHa) {
+List<ProdutoAplicado> _produtosDoEstadio(
+  EstadioEntity? estadio,
+  String talhaoId,
+  double areaHa,
+) {
   if (estadio == null) return const [];
-  final produtos = [...estadio.produtos]
+  final produtos = estadio.produtos
+      .where((p) => p.talhaoRef == null || p.talhaoRef == talhaoId)
+      .toList()
     ..sort((a, b) => a.ordem.compareTo(b.ordem));
   return produtos
       .map(
