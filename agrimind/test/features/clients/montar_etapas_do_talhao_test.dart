@@ -118,4 +118,25 @@ void main() {
     );
     expect(plantio.produtosVinculados.map((p) => p.nome), ['Olimpo']);
   });
+
+  test('produto restrito a outro talhão (talhaoRef) não entra', () {
+    final restrito = plano.copyWith(
+      estadios: [
+        _est('V5', [
+          _prod('1', 'Roundup Original', 2, 'L/ha'),
+          _prod('9', 'Só Talhão 2', 1, 'L/ha').copyWith(talhaoRef: 't2'),
+        ]),
+      ],
+    );
+    final etapas = montarEtapasDoTalhao(
+      plano: restrito,
+      parametros: params,
+      talhaoId: 't1',
+      areaTalhaoHa: 95,
+    );
+    final pos = etapas.firstWhere(
+      (e) => e.linha.tipo == CronogramaSojaLinhaTipo.posEmergente,
+    );
+    expect(pos.produtosVinculados.map((p) => p.nome), ['Roundup Original']);
+  });
 }

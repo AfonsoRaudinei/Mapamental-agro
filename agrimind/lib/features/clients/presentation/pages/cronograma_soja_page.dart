@@ -32,6 +32,7 @@ import '../widgets/cronograma_soja_tabela.dart';
 import '../widgets/cronograma_soja_talhao_focus_view.dart';
 import '../widgets/cultivar_talhao_selector.dart';
 import '../widgets/talhao_multi_selector.dart';
+import '../widgets/talhao_timeline_stepper.dart';
 import '../../domain/cronograma_soja/aplicar_dae_catalogo_cronograma.dart';
 import '../../domain/cronograma_soja/cronograma_regulagem_grupo.dart';
 import '../../domain/cronograma_soja/cronograma_soja_parametros.dart';
@@ -80,6 +81,11 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
   bool _focusCultivarConfirmada = false;
   String _focusCultivarPendente = '';
   String? _planoAtivoId;
+  List<GlobalKey> _etapaKeys = const [];
+
+  /// Últimas etapas do talhão em foco: evita sumir stepper/lista enquanto
+  /// o provider recalcula após mudar plantio ou regulagem.
+  ({String talhaoId, List<EtapaTalhao> etapas})? _ultimasEtapas;
 
   bool get _modoFocoTalhao =>
       widget.talhaoId != null && widget.talhaoId!.isNotEmpty;
@@ -219,7 +225,9 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     final planoId = _planoAtivoId;
     final linha = _focusLinha;
     if (planoId == null || linha == null || !linha.plantioDefinido) return null;
-    return ref
+    final opcoes = _cultivaresPorTalhao[linha.talhaoId] ?? const <String>[];
+    if (opcoes.length > 1 && !_focusCultivarConfirmada) return null;
+    final atuais = ref
         .watch(
           etapasDoTalhaoProvider((
             planoId: planoId,
@@ -228,6 +236,36 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
           )),
         )
         .valueOrNull;
+    if (atuais != null) {
+      _ultimasEtapas = (talhaoId: linha.talhaoId, etapas: atuais);
+      return atuais;
+    }
+    final ultimas = _ultimasEtapas;
+    return ultimas != null && ultimas.talhaoId == linha.talhaoId
+        ? ultimas.etapas
+        : null;
+  }
+
+  /// Uma chave estável por etapa (mesmo índice da lista do provider).
+  List<GlobalKey> _keysParaEtapas(int total) {
+    if (_etapaKeys.length != total) {
+      _etapaKeys = List.generate(total, (_) => GlobalKey());
+    }
+    return _etapaKeys;
+  }
+
+  /// Toque no nó do stepper → rola a lista até a etapa (sem trocar de tela).
+  void _scrollParaEtapa(int indice) {
+    if (indice >= _etapaKeys.length) return;
+    final ctx = _etapaKeys[indice].currentContext;
+    if (ctx == null) return;
+    Scrollable.ensureVisible(
+      ctx,
+      // Deixa a etapa abaixo da barra e do stepper fixos.
+      alignment: 0.3,
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeInOut,
+    );
   }
 
   void _patchFocusLinha(CronogramaSojaParametros linha) {
@@ -606,6 +644,12 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     final foco = !_loading && _modoFocoTalhao && _focusLinha != null;
     final comPlano = _planoAtivoId != null;
     final nomeFoco = foco ? _talhaoNome(_focusLinha!.talhaoId) : null;
+    final etapasFoco = foco ? _etapasFoco() : null;
+    final keysEtapas =
+        etapasFoco == null ? null : _keysParaEtapas(etapasFoco.length);
+    final indiceAtual = etapasFoco == null
+        ? null
+        : indiceEtapaAtual(etapasFoco, DateTime.now());
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
@@ -650,6 +694,16 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                           ),
                         ),
                 ),
+                if (etapasFoco != null && etapasFoco.isNotEmpty)
+                  SliverPersistentHeader(
+                    pinned: true,
+                    delegate: _StepperHeaderDelegate(
+                      subtitulo: _subtituloFoco(_focusLinha!),
+                      etapas: etapasFoco,
+                      onEtapaTap: _scrollParaEtapa,
+                      background: Theme.of(context).scaffoldBackgroundColor,
+                    ),
+                  ),
                 if (!comPlano)
                   SliverPadding(
                     padding: const EdgeInsets.fromLTRB(
@@ -703,7 +757,9 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                         onVerNoPlano: _verNoPlano,
                         avisosValidacao:
                             _avisosValidacaoCronograma(context, _focusLinha!),
-                        etapas: _etapasFoco(),
+                        etapas: etapasFoco,
+                        etapaKeys: keysEtapas,
+                        indiceEtapaAtual: indiceAtual,
                       ),
                     ),
                   )
@@ -799,6 +855,72 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
             ),
     );
   }
+}
+
+String _subtituloFoco(CronogramaSojaParametros linha) {
+  final plantio = 'plantio ${AppFormatters.data(linha.dataPlantio)}';
+  final cultivar = linha.materialCultivar.trim();
+  return cultivar.isEmpty ? plantio : '$cultivar · $plantio';
+}
+
+/// Cabeçalho fixo do talhão: cultivar/plantio + stepper de fase.
+class _StepperHeaderDelegate extends SliverPersistentHeaderDelegate {
+  _StepperHeaderDelegate({
+    required this.subtitulo,
+    required this.etapas,
+    required this.onEtapaTap,
+    required this.background,
+  });
+
+  final String subtitulo;
+  final List<EtapaTalhao> etapas;
+  final ValueChanged<int> onEtapaTap;
+  final Color background;
+
+  static const double _altura = TalhaoTimelineStepper.altura + 36;
+
+  @override
+  double get minExtent => _altura;
+
+  @override
+  double get maxExtent => _altura;
+
+  @override
+  Widget build(
+    BuildContext context,
+    double shrinkOffset,
+    bool overlapsContent,
+  ) {
+    return Container(
+      color: background,
+      padding: const EdgeInsets.only(top: AppSpacing.xs),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+            child: Text(
+              subtitulo,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: AppTypography.caption.copyWith(
+                color: context.appTextSecondary,
+              ),
+            ),
+          ),
+          const Spacer(),
+          TalhaoTimelineStepper(etapas: etapas, onEtapaTap: onEtapaTap),
+          Divider(height: 1, color: context.appBorder),
+        ],
+      ),
+    );
+  }
+
+  @override
+  bool shouldRebuild(_StepperHeaderDelegate old) =>
+      old.subtitulo != subtitulo ||
+      old.etapas != etapas ||
+      old.background != background;
 }
 
 List<LinhaTempoSojaItem> _linhasCore(CronogramaSojaParametros params) {

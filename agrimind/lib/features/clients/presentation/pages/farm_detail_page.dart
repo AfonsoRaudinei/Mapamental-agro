@@ -155,10 +155,8 @@ class FarmDetailPage extends ConsumerWidget {
               ),
               talhoesAsync.when(
                 data: (talhoes) {
-                  final plantios = ref
-                          .watch(_plantioPorTalhaoProvider(farmId))
-                          .valueOrNull ??
-                      const <String, CronogramaSojaParametros>{};
+                  final plantios =
+                      ref.watch(_plantioPorTalhaoProvider(farmId)).valueOrNull;
                   if (talhoes.isEmpty) {
                     return const SliverToBoxAdapter(
                       child: Padding(
@@ -181,14 +179,16 @@ class FarmDetailPage extends ConsumerWidget {
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
                         (ctx, i) {
-                          final p = plantios[talhoes[i].id];
+                          final p = plantios?[talhoes[i].id];
                           final definido = p?.plantioDefinido ?? false;
                           return TalhaoListCard(
                             talhao: talhoes[i],
-                            plantioLabel: definido
-                                ? 'Plantio ${AppFormatters.data(p!.dataPlantio)}'
-                                : 'Definir data de plantio',
-                            plantioPendente: !definido,
+                            plantioLabel: plantios == null
+                                ? null
+                                : definido
+                                    ? 'Plantio ${AppFormatters.data(p!.dataPlantio)}'
+                                    : 'Definir data de plantio',
+                            plantioPendente: plantios != null && !definido,
                             onTap: () => _abrirCronogramaTalhao(
                               context,
                               farmId: farmId,
@@ -332,8 +332,13 @@ class _CronogramaFazendaEntryCard extends ConsumerWidget {
 }
 
 /// Plantio informado por talhão (lido da safra do plano ativo).
+/// `null` sem plano ativo (modo avulso não grava plantio).
 final _plantioPorTalhaoProvider = FutureProvider.autoDispose
-    .family<Map<String, CronogramaSojaParametros>, String>((ref, farmId) async {
+    .family<Map<String, CronogramaSojaParametros>?, String>((ref, farmId) async {
+  final plano = await ResolverPlanoAtivoFazendaUseCase(
+    ref.read(plansRepoProvider),
+  ).call(farmId);
+  if (plano == null) return null;
   final linhas =
       await ref.read(clientsRepoProvider).getCronogramasSojaByFazenda(farmId);
   final porTalhao = <String, CronogramaSojaParametros>{};
