@@ -89,7 +89,7 @@ void main() {
       await tester.pump(const Duration(milliseconds: 400));
 
       expect(find.textContaining('Definir plantio'), findsOneWidget);
-      expect(find.text('Data de plantio'), findsOneWidget);
+      expect(find.text('Data de plantio do talhão'), findsOneWidget);
       expect(find.text('Cronograma por talhão'), findsNothing);
     });
   });

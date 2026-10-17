@@ -1119,6 +1119,7 @@ enum _CronogramaBloco {
 
 class _CronogramaRegulagemForm extends StatefulWidget {
   const _CronogramaRegulagemForm({
+    super.key,
     required this.grupo,
     required this.talhoes,
     required this.catalogo,

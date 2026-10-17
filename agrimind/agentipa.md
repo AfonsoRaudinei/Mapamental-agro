@@ -23,7 +23,7 @@ Regras centrais:
 
 O número válido é sempre `último build registrado + 1`.
 
-Último registrado: **272** (2026-10-07) → próximo: **273**
+Último registrado: **276** (2026-10-17) → próximo: **277**
 
 Nunca reutilize um número anterior.
 
@@ -136,6 +136,9 @@ Atualize esta seção após cada IPA bem-sucedida.
 
 | Data | Build | IPA | Commit | Status | Notas |
 |------|-------|-----|--------|--------|-------|
+| 2026-10-17 | 276 | `build/ios/ipa/Agrimind_v276.ipa` | `8990d63`* | concluída | Nuvem: stepper acompanha scroll + toque no nó rola até a etapa; talhão mostra claramente posição na safra; tiles de etapa e tabela refinados; 157 testes |
+| 2026-10-17 | 275 | `build/ios/ipa/Agrimind_v275.ipa` | `e32773b`* | concluída | Nuvem: `TalhaoTimelineStepper` (fases fixas na ficha do talhão); auditoria (picker plantio, anti-flicker, `talhaoRef`, rótulo sem plano); refinamentos `EtapaTalhao`/`ProductTile`; 154 testes |
+| 2026-10-16 | 274 | `build/ios/ipa/Agrimind_v274.ipa` | `c6c55ed`* | concluída | Nuvem: cronograma em sanfona (blocos); produtos do plano por etapa na ficha do talhão (`EtapaTalhao` + `ProductTile`); fungicida título “N Fungicida” e limpeza dessecação; remoção `features/plan` legado; 151 testes |
 | 2026-10-07 | 272 | `build/ios/ipa/Agrimind_v272.ipa` | `1a93340`* | concluída | Fungicida: 1ª/2ª aplicação no próprio card (sem sub-card OP); migração ao abrir plano; cronograma plano ativo = grupos + plantio na ficha do talhão; testes widget cronograma; 148 testes |
 | 2026-10-07 | 271 | `build/ios/ipa/Agrimind_v271.ipa` | *(working tree)* | concluída | Card OP: dropdown só dessecação pré-plantio + adubação (sem plantio no plano); estádio fenológico: dropdown aplicações + aplicação extra; sheet Adicionar unificado; 144 testes |
 | 2026-10-07 | 161 | `build/ios/ipa/Agrimind_v161.ipa` | *(working tree)* | concluída | Cronograma só módulo Clientes (sem rota/card em Planos); operacional: tipo via dropdown no título do card (sem action sheet); 144 testes |
