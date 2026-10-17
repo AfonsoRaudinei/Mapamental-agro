@@ -68,17 +68,6 @@ int? indiceEtapaAtual(List<EtapaTalhao> etapas, DateTime hoje) {
   return pos < 0 ? null : nos[pos];
 }
 
-/// Etapa "em foco" ao rolar: a última cujo topo já passou de [limite]
-/// (borda inferior do cabeçalho fixo). `null` se nenhuma passou.
-int? indiceEtapaEmFoco(List<double?> topos, double limite) {
-  int? foco;
-  for (var i = 0; i < topos.length; i++) {
-    final t = topos[i];
-    if (t != null && t <= limite) foco = i;
-  }
-  return foco;
-}
-
 /// Nome curto da etapa, na linguagem do campo (cabeçalho e "Próxima").
 String nomeCurtoEtapa(CronogramaSojaLinha linha) {
   switch (linha.tipo) {
@@ -578,5 +567,24 @@ class _No extends StatelessWidget {
         ),
       ),
     );
+  }
+}
+
+/// Complemento curto da etapa (ex.: "6 dias após o pós-emergente"), para o
+/// título do card ficar só com o nome. `null` quando não há o que dizer.
+String? notaCurtaEtapa(CronogramaSojaLinha linha) {
+  final nota = linha.notaEtapa?.trim();
+  if (nota != null && nota.isNotEmpty) return nota;
+  final dias = RegExp(r'\((\+?)(\d+) dias\)').firstMatch(linha.etapa)?.group(2);
+  if (dias == null) return null;
+  switch (linha.tipo) {
+    case CronogramaSojaLinhaTipo.emergencia:
+      return '$dias dias após o plantio';
+    case CronogramaSojaLinhaTipo.fungicida:
+      return (linha.fungicidaIndice ?? 1) == 1
+          ? '$dias dias após o pós-emergente'
+          : '+$dias dias da aplicação anterior';
+    default:
+      return null;
   }
 }
