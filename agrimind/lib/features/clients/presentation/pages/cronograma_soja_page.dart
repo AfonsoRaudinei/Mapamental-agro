@@ -87,6 +87,10 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
   /// Carrossel de etapas; criado na 1ª carga já na próxima etapa.
   PageController? _carrossel;
 
+  /// Página-alvo enquanto o carrossel anima após toque no stepper; as páginas
+  /// intermediárias não devem vibrar nem mover o destaque.
+  int? _destinoCarrossel;
+
   /// Etapa visível no carrossel (alimenta o destaque do stepper).
   final ValueNotifier<int?> _etapaEmFoco = ValueNotifier<int?>(null);
 
@@ -273,6 +277,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
 
   /// Deslizar o carrossel → destaca a etapa no stepper.
   void _onEtapaVisivel(int indice) {
+    if (_destinoCarrossel != null) return;
     HapticFeedback.selectionClick();
     _etapaEmFoco.value = indice;
   }
@@ -282,11 +287,15 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     final c = _carrossel;
     if (c == null || !c.hasClients) return;
     HapticFeedback.selectionClick();
-    c.animateToPage(
-      indice,
-      duration: const Duration(milliseconds: 320),
-      curve: Curves.easeOutCubic,
-    );
+    _etapaEmFoco.value = indice;
+    _destinoCarrossel = indice;
+    c
+        .animateToPage(
+          indice,
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOutCubic,
+        )
+        .whenComplete(() => _destinoCarrossel = null);
   }
 
   void _patchFocusLinha(CronogramaSojaParametros linha) {
