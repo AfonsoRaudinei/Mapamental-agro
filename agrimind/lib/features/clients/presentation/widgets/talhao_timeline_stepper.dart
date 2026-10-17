@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
@@ -65,16 +67,32 @@ int? indiceEtapaAtual(List<EtapaTalhao> etapas, DateTime hoje) {
   return pos < 0 ? null : nos[pos];
 }
 
+/// Etapa "em foco" ao rolar: a última cujo topo já passou de [limite]
+/// (borda inferior do cabeçalho fixo). `null` se nenhuma passou.
+int? indiceEtapaEmFoco(List<double?> topos, double limite) {
+  int? foco;
+  for (var i = 0; i < topos.length; i++) {
+    final t = topos[i];
+    if (t != null && t <= limite) foco = i;
+  }
+  return foco;
+}
+
 /// Faixa horizontal com a fase da lavoura; toque rola até a etapa.
 class TalhaoTimelineStepper extends StatefulWidget {
   const TalhaoTimelineStepper({
     super.key,
     required this.etapas,
     required this.onEtapaTap,
+    this.foco,
     this.hoje,
   });
 
   final List<EtapaTalhao> etapas;
+
+  /// Índice (lista original) da etapa visível na lista; destaca o nó com um
+  /// anel e mantém a faixa acompanhando. `null` = só o estado por data.
+  final ValueListenable<int?>? foco;
 
   /// Recebe o índice da etapa na lista original.
   final ValueChanged<int> onEtapaTap;
@@ -90,35 +108,78 @@ class TalhaoTimelineStepper extends StatefulWidget {
 
 class _TalhaoTimelineStepperState extends State<TalhaoTimelineStepper> {
   final _scroll = ScrollController();
+  int? _atualPos;
 
   @override
   void initState() {
     super.initState();
+    widget.foco?.addListener(_onFoco);
+    _atualPos = _posAtual();
     // Centraliza o nó atual só na faixa horizontal (não mexe na lista).
-    WidgetsBinding.instance.addPostFrameCallback((_) => _centralizarAtual());
+    WidgetsBinding.instance
+        .addPostFrameCallback((_) => _centralizar(_atualPos, animar: false));
+  }
+
+  @override
+  void didUpdateWidget(TalhaoTimelineStepper old) {
+    super.didUpdateWidget(old);
+    if (old.foco != widget.foco) {
+      old.foco?.removeListener(_onFoco);
+      widget.foco?.addListener(_onFoco);
+    }
+    // Plantio/regulagem mudou: a fase atual pode ter andado.
+    final nova = _posAtual();
+    if (nova != _atualPos) {
+      _atualPos = nova;
+      WidgetsBinding.instance
+          .addPostFrameCallback((_) => _centralizar(nova, animar: true));
+    }
   }
 
   @override
   void dispose() {
+    widget.foco?.removeListener(_onFoco);
     _scroll.dispose();
     super.dispose();
   }
 
-  void _centralizarAtual() {
-    if (!mounted || !_scroll.hasClients) return;
+  int? _posAtual() {
     final nos = indicesNosStepper(widget.etapas);
     final status = statusDasEtapas(
       [for (final i in nos) widget.etapas[i].data],
       widget.hoje ?? DateTime.now(),
     );
     final pos = status.indexOf(StepperNodeStatus.atual);
-    if (pos < 0) return;
+    return pos < 0 ? null : pos;
+  }
+
+  /// Posição (entre os nós) da etapa em foco, ou `null`.
+  int? _posFoco() {
+    final f = widget.foco?.value;
+    if (f == null) return null;
+    final pos = indicesNosStepper(widget.etapas).indexOf(f);
+    return pos < 0 ? null : pos;
+  }
+
+  void _onFoco() => _centralizar(_posFoco() ?? _atualPos, animar: true);
+
+  void _centralizar(int? pos, {required bool animar}) {
+    if (!mounted || pos == null || !_scroll.hasClients) return;
     final pista = _scroll.position;
-    final alvo = TalhaoTimelineStepper._padding +
-        pos * TalhaoTimelineStepper._larguraNo +
-        TalhaoTimelineStepper._larguraNo / 2 -
-        pista.viewportDimension / 2;
-    _scroll.jumpTo(alvo.clamp(0.0, pista.maxScrollExtent));
+    final alvo = (TalhaoTimelineStepper._padding +
+            pos * TalhaoTimelineStepper._larguraNo +
+            TalhaoTimelineStepper._larguraNo / 2 -
+            pista.viewportDimension / 2)
+        .clamp(0.0, pista.maxScrollExtent);
+    if (animar) {
+      _scroll.animateTo(
+        alvo,
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOut,
+      );
+    } else {
+      _scroll.jumpTo(alvo);
+    }
   }
 
   @override
@@ -131,27 +192,43 @@ class _TalhaoTimelineStepperState extends State<TalhaoTimelineStepper> {
 
     return SizedBox(
       height: TalhaoTimelineStepper.altura,
-      child: SingleChildScrollView(
-        controller: _scroll,
-        scrollDirection: Axis.horizontal,
-        padding: const EdgeInsets.symmetric(
-          horizontal: TalhaoTimelineStepper._padding,
+      // Arrasto horizontal com qualquer dispositivo (toque, mouse, caneta).
+      child: ScrollConfiguration(
+        behavior: ScrollConfiguration.of(context).copyWith(
+          dragDevices: PointerDeviceKind.values.toSet(),
         ),
-        child: Row(
-          children: [
-            for (var n = 0; n < nos.length; n++)
-              _No(
-                codigo: codigoEstagioEtapa(widget.etapas[nos[n]].linha),
-                status: status[n],
-                linhaEsquerda: n == 0
-                    ? null
-                    : status[n] != StepperNodeStatus.futuro,
-                linhaDireita: n == nos.length - 1
-                    ? null
-                    : status[n + 1] != StepperNodeStatus.futuro,
-                onTap: () => widget.onEtapaTap(nos[n]),
+        child: ValueListenableBuilder<int?>(
+          valueListenable: widget.foco ?? ValueNotifier<int?>(null),
+          builder: (context, foco, _) {
+            final posFoco = foco == null ? null : nos.indexOf(foco);
+            return SingleChildScrollView(
+              controller: _scroll,
+              scrollDirection: Axis.horizontal,
+              physics: const AlwaysScrollableScrollPhysics(
+                parent: BouncingScrollPhysics(),
               ),
-          ],
+              padding: const EdgeInsets.symmetric(
+                horizontal: TalhaoTimelineStepper._padding,
+              ),
+              child: Row(
+                children: [
+                  for (var n = 0; n < nos.length; n++)
+                    _No(
+                      codigo: codigoEstagioEtapa(widget.etapas[nos[n]].linha),
+                      status: status[n],
+                      emFoco: n == posFoco,
+                      linhaEsquerda: n == 0
+                          ? null
+                          : status[n] != StepperNodeStatus.futuro,
+                      linhaDireita: n == nos.length - 1
+                          ? null
+                          : status[n + 1] != StepperNodeStatus.futuro,
+                      onTap: () => widget.onEtapaTap(nos[n]),
+                    ),
+                ],
+              ),
+            );
+          },
         ),
       ),
     );
@@ -162,6 +239,7 @@ class _No extends StatelessWidget {
   const _No({
     required this.codigo,
     required this.status,
+    required this.emFoco,
     required this.linhaEsquerda,
     required this.linhaDireita,
     required this.onTap,
@@ -169,6 +247,9 @@ class _No extends StatelessWidget {
 
   final String codigo;
   final StepperNodeStatus status;
+
+  /// Etapa visível na lista agora (anel + rótulo em destaque).
+  final bool emFoco;
 
   /// `null` = sem segmento; `true` = segmento percorrido.
   final bool? linhaEsquerda;
@@ -187,7 +268,7 @@ class _No extends StatelessWidget {
               : Container(height: 2, color: feito ? cinza : claro),
         );
 
-    final circulo = switch (status) {
+    Widget circulo = switch (status) {
       StepperNodeStatus.concluido => Container(
           width: 12,
           height: 12,
@@ -217,6 +298,17 @@ class _No extends StatelessWidget {
         ),
     };
 
+    if (emFoco && !atual) {
+      circulo = Container(
+        padding: const EdgeInsets.all(3),
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          border: Border.all(color: AppColors.primary, width: 2),
+        ),
+        child: circulo,
+      );
+    }
+
     return Semantics(
       button: true,
       label: 'Etapa $codigo',
@@ -243,12 +335,13 @@ class _No extends StatelessWidget {
               Text(
                 codigo,
                 style: AppTypography.label.copyWith(
-                  color: atual
+                  color: atual || emFoco
                       ? AppColors.primary
                       : status == StepperNodeStatus.concluido
                           ? cinza
                           : cinza.withValues(alpha: 0.6),
-                  fontWeight: atual ? FontWeight.w700 : FontWeight.w600,
+                  fontWeight:
+                      atual || emFoco ? FontWeight.w700 : FontWeight.w600,
                 ),
               ),
             ],

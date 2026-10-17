@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -82,6 +83,11 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
   String _focusCultivarPendente = '';
   String? _planoAtivoId;
   List<GlobalKey> _etapaKeys = const [];
+  final ScrollController _pageScroll = ScrollController();
+  final GlobalKey _stepperHeaderKey = GlobalKey();
+
+  /// Etapa visível na lista (alimenta o destaque do stepper).
+  final ValueNotifier<int?> _etapaEmFoco = ValueNotifier<int?>(null);
 
   /// Últimas etapas do talhão em foco: evita sumir stepper/lista enquanto
   /// o provider recalcula após mudar plantio ou regulagem.
@@ -93,6 +99,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
   @override
   void initState() {
     super.initState();
+    _pageScroll.addListener(_atualizarEtapaEmFoco);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -101,6 +108,8 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     for (final t in _saveTimers.values) {
       t.cancel();
     }
+    _pageScroll.dispose();
+    _etapaEmFoco.dispose();
     super.dispose();
   }
 
@@ -254,15 +263,40 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     return _etapaKeys;
   }
 
+  /// Borda inferior (global) do cabeçalho fixo; `null` se ainda não montou.
+  double? _bordaInferiorCabecalho() {
+    final box = _stepperHeaderKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached) return null;
+    return box.localToGlobal(Offset(0, box.size.height)).dy;
+  }
+
+  double? _topoDaEtapa(int i) {
+    if (i >= _etapaKeys.length) return null;
+    final box = _etapaKeys[i].currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached) return null;
+    return box.localToGlobal(Offset.zero).dy;
+  }
+
+  /// Rolagem da lista → destaca no stepper a etapa que está sob o cabeçalho.
+  void _atualizarEtapaEmFoco() {
+    final limite = _bordaInferiorCabecalho();
+    if (limite == null || _etapaKeys.isEmpty) return;
+    _etapaEmFoco.value = indiceEtapaEmFoco(
+      [for (var i = 0; i < _etapaKeys.length; i++) _topoDaEtapa(i)],
+      limite + 2,
+    );
+  }
+
   /// Toque no nó do stepper → rola a lista até a etapa (sem trocar de tela).
   void _scrollParaEtapa(int indice) {
-    if (indice >= _etapaKeys.length) return;
-    final ctx = _etapaKeys[indice].currentContext;
-    if (ctx == null) return;
-    Scrollable.ensureVisible(
-      ctx,
-      // Deixa a etapa abaixo da barra e do stepper fixos.
-      alignment: 0.3,
+    final topo = _topoDaEtapa(indice);
+    final limite = _bordaInferiorCabecalho();
+    if (topo == null || limite == null || !_pageScroll.hasClients) return;
+    final pos = _pageScroll.position;
+    final alvo = (pos.pixels + topo - limite - 4)
+        .clamp(pos.minScrollExtent, pos.maxScrollExtent);
+    _pageScroll.animateTo(
+      alvo,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
@@ -656,6 +690,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
       body: _loading
           ? const LoadingSkeleton()
           : CustomScrollView(
+              controller: _pageScroll,
               slivers: [
                 CupertinoSliverNavigationBar(
                   largeTitle: Text(
@@ -700,6 +735,8 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                     delegate: _StepperHeaderDelegate(
                       subtitulo: _subtituloFoco(_focusLinha!),
                       etapas: etapasFoco,
+                      headerKey: _stepperHeaderKey,
+                      foco: _etapaEmFoco,
                       onEtapaTap: _scrollParaEtapa,
                       background: Theme.of(context).scaffoldBackgroundColor,
                     ),
@@ -869,10 +906,14 @@ class _StepperHeaderDelegate extends SliverPersistentHeaderDelegate {
     required this.etapas,
     required this.onEtapaTap,
     required this.background,
+    required this.headerKey,
+    required this.foco,
   });
 
   final String subtitulo;
   final List<EtapaTalhao> etapas;
+  final GlobalKey headerKey;
+  final ValueListenable<int?> foco;
   final ValueChanged<int> onEtapaTap;
   final Color background;
 
@@ -891,6 +932,7 @@ class _StepperHeaderDelegate extends SliverPersistentHeaderDelegate {
     bool overlapsContent,
   ) {
     return Container(
+      key: headerKey,
       color: background,
       padding: const EdgeInsets.only(top: AppSpacing.xs),
       child: Column(
@@ -908,7 +950,11 @@ class _StepperHeaderDelegate extends SliverPersistentHeaderDelegate {
             ),
           ),
           const Spacer(),
-          TalhaoTimelineStepper(etapas: etapas, onEtapaTap: onEtapaTap),
+          TalhaoTimelineStepper(
+            etapas: etapas,
+            onEtapaTap: onEtapaTap,
+            foco: foco,
+          ),
           Divider(height: 1, color: context.appBorder),
         ],
       ),
