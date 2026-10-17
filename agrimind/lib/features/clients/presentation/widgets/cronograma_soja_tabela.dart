@@ -17,6 +17,8 @@ class CronogramaSojaTabela extends StatelessWidget {
     required this.resumo,
     this.mostrarColunaData = true,
     this.etapas,
+    this.etapaKeys,
+    this.indiceEtapaAtual,
   });
 
   final String titulo;
@@ -26,6 +28,12 @@ class CronogramaSojaTabela extends StatelessWidget {
 
   /// Quando informado, cada linha mostra os produtos do plano (accordion).
   final List<EtapaTalhao>? etapas;
+
+  /// Chaves estáveis por etapa (scroll a partir do stepper).
+  final List<GlobalKey>? etapaKeys;
+
+  /// Etapa destacada como atual (mesma do stepper).
+  final int? indiceEtapaAtual;
 
   @override
   Widget build(BuildContext context) {
@@ -50,7 +58,13 @@ class CronogramaSojaTabela extends StatelessWidget {
                   children: [
                     for (var i = 0; i < etapas!.length; i++) ...[
                       if (i > 0) Divider(height: 1, color: context.appBorder),
-                      EtapaTalhaoTile(etapa: etapas![i]),
+                      EtapaTalhaoTile(
+                        key: etapaKeys != null && i < etapaKeys!.length
+                            ? etapaKeys![i]
+                            : null,
+                        etapa: etapas![i],
+                        atual: i == indiceEtapaAtual,
+                      ),
                     ],
                   ],
                 )

@@ -34,6 +34,8 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
     required this.onVerNoPlano,
     required this.avisosValidacao,
     this.etapas,
+    this.etapaKeys,
+    this.indiceEtapaAtual,
   });
 
   final String talhaoNome;
@@ -53,6 +55,8 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
 
   /// Etapas com produtos do plano; `null` mantém a tabela só com datas.
   final List<EtapaTalhao>? etapas;
+  final List<GlobalKey>? etapaKeys;
+  final int? indiceEtapaAtual;
 
   bool get _multiplasCultivares => opcoesCultivar.length > 1;
 
@@ -175,17 +179,22 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
       parametros: parametrosFromCronograma(linha),
     );
 
+    // Com etapas, nome/cultivar/plantio ficam no cabeçalho fixo do stepper.
+    final cabecalhoNoStepper = etapas != null;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        Text(
-          talhaoNome,
-          style: AppTypography.body.copyWith(
-            fontWeight: FontWeight.w600,
-            color: context.appTextPrimary,
+        if (!cabecalhoNoStepper)
+          Text(
+            talhaoNome,
+            style: AppTypography.body.copyWith(
+              fontWeight: FontWeight.w600,
+              color: context.appTextPrimary,
+            ),
           ),
-        ),
-        if (linha.materialCultivar.trim().isNotEmpty) ...[
+        if (!cabecalhoNoStepper &&
+            linha.materialCultivar.trim().isNotEmpty) ...[
           const SizedBox(height: 4),
           Text(
             '${linha.materialCultivar} · plantio ${AppFormatters.data(linha.dataPlantio)}',
@@ -209,6 +218,8 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
           resumo: resumoCronogramaSoja(linha),
           mostrarColunaData: true,
           etapas: etapas,
+          etapaKeys: etapaKeys,
+          indiceEtapaAtual: indiceEtapaAtual,
         ),
         const SizedBox(height: AppSpacing.md),
         CupertinoButton.filled(
