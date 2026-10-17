@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -82,6 +83,11 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
   String _focusCultivarPendente = '';
   String? _planoAtivoId;
   List<GlobalKey> _etapaKeys = const [];
+  final ScrollController _pageScroll = ScrollController();
+  final GlobalKey _stepperHeaderKey = GlobalKey();
+
+  /// Etapa visível na lista (alimenta o destaque do stepper).
+  final ValueNotifier<int?> _etapaEmFoco = ValueNotifier<int?>(null);
 
   /// Últimas etapas do talhão em foco: evita sumir stepper/lista enquanto
   /// o provider recalcula após mudar plantio ou regulagem.
@@ -93,6 +99,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
   @override
   void initState() {
     super.initState();
+    _pageScroll.addListener(_atualizarEtapaEmFoco);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -101,6 +108,8 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     for (final t in _saveTimers.values) {
       t.cancel();
     }
+    _pageScroll.dispose();
+    _etapaEmFoco.dispose();
     super.dispose();
   }
 
@@ -254,15 +263,41 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     return _etapaKeys;
   }
 
+  /// Borda inferior (global) do cabeçalho fixo; `null` se ainda não montou.
+  double? _bordaInferiorCabecalho() {
+    final box = _stepperHeaderKey.currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached) return null;
+    return box.localToGlobal(Offset(0, box.size.height)).dy;
+  }
+
+  double? _topoDaEtapa(int i) {
+    if (i >= _etapaKeys.length) return null;
+    final box = _etapaKeys[i].currentContext?.findRenderObject();
+    if (box is! RenderBox || !box.attached) return null;
+    return box.localToGlobal(Offset.zero).dy;
+  }
+
+  /// Rolagem da lista → destaca no stepper a etapa que está sob o cabeçalho.
+  void _atualizarEtapaEmFoco() {
+    final limite = _bordaInferiorCabecalho();
+    if (limite == null || _etapaKeys.isEmpty) return;
+    _etapaEmFoco.value = indiceEtapaEmFoco(
+      [for (var i = 0; i < _etapaKeys.length; i++) _topoDaEtapa(i)],
+      limite + 2,
+    );
+  }
+
   /// Toque no nó do stepper → rola a lista até a etapa (sem trocar de tela).
   void _scrollParaEtapa(int indice) {
-    if (indice >= _etapaKeys.length) return;
-    final ctx = _etapaKeys[indice].currentContext;
-    if (ctx == null) return;
-    Scrollable.ensureVisible(
-      ctx,
-      // Deixa a etapa abaixo da barra e do stepper fixos.
-      alignment: 0.3,
+    HapticFeedback.selectionClick();
+    final topo = _topoDaEtapa(indice);
+    final limite = _bordaInferiorCabecalho();
+    if (topo == null || limite == null || !_pageScroll.hasClients) return;
+    final pos = _pageScroll.position;
+    final alvo = (pos.pixels + topo - limite - 4)
+        .clamp(pos.minScrollExtent, pos.maxScrollExtent);
+    _pageScroll.animateTo(
+      alvo,
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
     );
@@ -647,15 +682,13 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     final etapasFoco = foco ? _etapasFoco() : null;
     final keysEtapas =
         etapasFoco == null ? null : _keysParaEtapas(etapasFoco.length);
-    final indiceAtual = etapasFoco == null
-        ? null
-        : indiceEtapaAtual(etapasFoco, DateTime.now());
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _loading
           ? const LoadingSkeleton()
           : CustomScrollView(
+              controller: _pageScroll,
               slivers: [
                 CupertinoSliverNavigationBar(
                   largeTitle: Text(
@@ -700,6 +733,8 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                     delegate: _StepperHeaderDelegate(
                       subtitulo: _subtituloFoco(_focusLinha!),
                       etapas: etapasFoco,
+                      headerKey: _stepperHeaderKey,
+                      foco: _etapaEmFoco,
                       onEtapaTap: _scrollParaEtapa,
                       background: Theme.of(context).scaffoldBackgroundColor,
                     ),
@@ -759,7 +794,6 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                             _avisosValidacaoCronograma(context, _focusLinha!),
                         etapas: etapasFoco,
                         etapaKeys: keysEtapas,
-                        indiceEtapaAtual: indiceAtual,
                       ),
                     ),
                   )
@@ -863,27 +897,36 @@ String _subtituloFoco(CronogramaSojaParametros linha) {
   return cultivar.isEmpty ? plantio : '$cultivar · $plantio';
 }
 
-/// Cabeçalho fixo do talhão: cultivar/plantio + stepper de fase.
+/// Cabeçalho fixo "onde estamos": DAE de hoje, próxima etapa com contagem
+/// regressiva, % do ciclo e a linha do tempo. Ao rolar, a 2ª linha recolhe.
 class _StepperHeaderDelegate extends SliverPersistentHeaderDelegate {
   _StepperHeaderDelegate({
     required this.subtitulo,
     required this.etapas,
     required this.onEtapaTap,
     required this.background,
+    required this.headerKey,
+    required this.foco,
   });
 
+  /// Cultivar · plantio (fallback quando não há próxima etapa).
   final String subtitulo;
   final List<EtapaTalhao> etapas;
   final ValueChanged<int> onEtapaTap;
   final Color background;
+  final GlobalKey headerKey;
+  final ValueListenable<int?> foco;
 
-  static const double _altura = TalhaoTimelineStepper.altura + 36;
+  static const double _resumoAberto = 50;
+  static const double _resumoFechado = 26;
+  static const double _base =
+      AppSpacing.sm + TalhaoTimelineStepper.altura + 1;
 
   @override
-  double get minExtent => _altura;
+  double get minExtent => _base + _resumoFechado;
 
   @override
-  double get maxExtent => _altura;
+  double get maxExtent => _base + _resumoAberto;
 
   @override
   Widget build(
@@ -891,25 +934,108 @@ class _StepperHeaderDelegate extends SliverPersistentHeaderDelegate {
     double shrinkOffset,
     bool overlapsContent,
   ) {
+    final t = (shrinkOffset / (maxExtent - minExtent)).clamp(0.0, 1.0);
+    final hoje = DateTime.now();
+    final resumo = resumoFaseTalhao(etapas, hoje);
+    final prox =
+        resumo.indiceProxima == null ? null : etapas[resumo.indiceProxima!];
+
+    final titulo = resumo.daeHoje != null
+        ? 'Hoje · DAE ${resumo.daeHoje}'
+        : 'Hoje · ${AppFormatters.data(hoje).substring(0, 5)}';
+    final pct = (resumo.progressoCiclo * 100).round();
+
+    final sub = AppTypography.caption.copyWith(color: context.appTextSecondary);
+    final linha2 = prox == null
+        ? Text('Safra concluída · $subtitulo', style: sub, maxLines: 1)
+        : Text.rich(
+            TextSpan(
+              style: sub,
+              children: [
+                TextSpan(
+                  text: diasAte(prox.data, hoje) == 0 ? 'Hoje: ' : 'Próxima: ',
+                ),
+                TextSpan(
+                  text: nomeCurtoEtapa(prox.linha),
+                  style: TextStyle(
+                    color: context.appTextPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+                if (diasAte(prox.data, hoje) != 0)
+                  TextSpan(
+                    text: ' ${textoRelativo(prox.data, hoje)}',
+                    style: const TextStyle(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                TextSpan(
+                  text: ' · ${AppFormatters.data(prox.data).substring(0, 5)}',
+                ),
+              ],
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          );
+
     return Container(
+      key: headerKey,
       color: background,
-      padding: const EdgeInsets.only(top: AppSpacing.xs),
+      padding: const EdgeInsets.only(top: AppSpacing.sm),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.md),
-            child: Text(
-              subtitulo,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: AppTypography.caption.copyWith(
-                color: context.appTextSecondary,
+          SizedBox(
+            height: _resumoAberto - (_resumoAberto - _resumoFechado) * t,
+            child: ClipRect(
+              child: OverflowBox(
+                alignment: Alignment.topLeft,
+                minHeight: _resumoAberto,
+                maxHeight: _resumoAberto,
+                child: Padding(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: AppSpacing.md),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(
+                              titulo,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: AppTypography.h3.copyWith(
+                                fontSize: 17,
+                                color: context.appTextPrimary,
+                              ),
+                            ),
+                          ),
+                          _AnelCiclo(progresso: resumo.progressoCiclo),
+                          const SizedBox(width: 6),
+                          Text(
+                            '$pct% do ciclo',
+                            style: AppTypography.label.copyWith(
+                              fontSize: 12,
+                              color: context.appTextSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 2),
+                      Opacity(opacity: 1 - t, child: linha2),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
-          const Spacer(),
-          TalhaoTimelineStepper(etapas: etapas, onEtapaTap: onEtapaTap),
+          TalhaoTimelineStepper(
+            etapas: etapas,
+            onEtapaTap: onEtapaTap,
+            foco: foco,
+          ),
           Divider(height: 1, color: context.appBorder),
         ],
       ),
@@ -921,6 +1047,28 @@ class _StepperHeaderDelegate extends SliverPersistentHeaderDelegate {
       old.subtitulo != subtitulo ||
       old.etapas != etapas ||
       old.background != background;
+}
+
+/// Anel de progresso do ciclo (plantio → R8), estilo Atividade do iOS.
+class _AnelCiclo extends StatelessWidget {
+  const _AnelCiclo({required this.progresso});
+
+  final double progresso;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 18,
+      height: 18,
+      child: CircularProgressIndicator(
+        value: progresso,
+        strokeWidth: 3,
+        strokeCap: StrokeCap.round,
+        backgroundColor: context.appBorder,
+        valueColor: const AlwaysStoppedAnimation(AppColors.primary),
+      ),
+    );
+  }
 }
 
 List<LinhaTempoSojaItem> _linhasCore(CronogramaSojaParametros params) {

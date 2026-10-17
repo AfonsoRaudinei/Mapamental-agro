@@ -7,6 +7,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../domain/talhao_etapas/etapa_talhao.dart';
 import 'etapa_talhao_tile.dart';
+import 'talhao_timeline_stepper.dart';
 
 /// Tabela + resumo do cronograma calculado (formato da spec / referência visual).
 class CronogramaSojaTabela extends StatelessWidget {
@@ -18,7 +19,7 @@ class CronogramaSojaTabela extends StatelessWidget {
     this.mostrarColunaData = true,
     this.etapas,
     this.etapaKeys,
-    this.indiceEtapaAtual,
+    this.hoje,
   });
 
   final String titulo;
@@ -32,8 +33,8 @@ class CronogramaSojaTabela extends StatelessWidget {
   /// Chaves estáveis por etapa (scroll a partir do stepper).
   final List<GlobalKey>? etapaKeys;
 
-  /// Etapa destacada como atual (mesma do stepper).
-  final int? indiceEtapaAtual;
+  /// Referência de "hoje" (testes); padrão = agora.
+  final DateTime? hoje;
 
   @override
   Widget build(BuildContext context) {
@@ -53,21 +54,9 @@ class CronogramaSojaTabela extends StatelessWidget {
             border: Border.all(color: context.appBorder),
             borderRadius: BorderRadius.circular(10),
           ),
+          clipBehavior: Clip.antiAlias,
           child: etapas != null
-              ? Column(
-                  children: [
-                    for (var i = 0; i < etapas!.length; i++) ...[
-                      if (i > 0) Divider(height: 1, color: context.appBorder),
-                      EtapaTalhaoTile(
-                        key: etapaKeys != null && i < etapaKeys!.length
-                            ? etapaKeys![i]
-                            : null,
-                        etapa: etapas![i],
-                        atual: i == indiceEtapaAtual,
-                      ),
-                    ],
-                  ],
-                )
+              ? _listaEtapas(context, etapas!)
               : Table(
             columnWidths: mostrarColunaData
                 ? const {
@@ -122,6 +111,34 @@ class CronogramaSojaTabela extends StatelessWidget {
             color: context.appTextSecondary,
           ),
         ),
+      ],
+    );
+  }
+
+  /// Etapas com status e o divisor "Hoje" entre passado e futuro.
+  Widget _listaEtapas(BuildContext context, List<EtapaTalhao> etapas) {
+    final agora = hoje ?? DateTime.now();
+    final status = statusDasEtapas([for (final e in etapas) e.data], agora);
+    final iProx = status.indexOf(StepperNodeStatus.atual);
+    // Antes da próxima etapa; sem próxima (safra concluída), no fim.
+    final iHoje = iProx < 0 ? etapas.length : iProx;
+    return Column(
+      children: [
+        for (var i = 0; i <= etapas.length; i++) ...[
+          if (i == iHoje) DivisorHoje(hoje: agora),
+          if (i < etapas.length) ...[
+            if (i > 0 && i != iHoje)
+              Divider(height: 1, color: context.appBorder),
+            EtapaTalhaoTile(
+              key: etapaKeys != null && i < etapaKeys!.length
+                  ? etapaKeys![i]
+                  : null,
+              etapa: etapas[i],
+              status: status[i],
+              hoje: agora,
+            ),
+          ],
+        ],
       ],
     );
   }
