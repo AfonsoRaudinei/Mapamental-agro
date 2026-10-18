@@ -7,6 +7,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../plans/presentation/models/product_view_model.dart';
 import '../../../plans/presentation/widgets/product_tile.dart';
+import '../../domain/cronograma_soja/cronograma_soja_linha.dart';
 import '../../domain/talhao_etapas/etapa_talhao.dart';
 import 'talhao_timeline_stepper.dart';
 
@@ -18,12 +19,16 @@ class EtapasCarrossel extends StatelessWidget {
     required this.etapas,
     required this.controller,
     required this.onPageChanged,
+    this.onEditarPlantio,
     this.hoje,
   });
 
   final List<EtapaTalhao> etapas;
   final PageController controller;
   final ValueChanged<int> onPageChanged;
+
+  /// Toque no card de Plantio para alterar a data (null = somente leitura).
+  final VoidCallback? onEditarPlantio;
   final DateTime? hoje;
 
   static const double alturaCard = 340;
@@ -81,6 +86,10 @@ class EtapasCarrossel extends StatelessWidget {
                   etapa: etapas[i],
                   status: status[i],
                   hoje: agora,
+                  onEditar: etapas[i].linha.tipo ==
+                          CronogramaSojaLinhaTipo.plantio
+                      ? onEditarPlantio
+                      : null,
                 ),
               ),
             ),
@@ -98,11 +107,13 @@ class _CartaoEtapa extends StatelessWidget {
     required this.etapa,
     required this.status,
     required this.hoje,
+    this.onEditar,
   });
 
   final EtapaTalhao etapa;
   final StepperNodeStatus status;
   final DateTime hoje;
+  final VoidCallback? onEditar;
 
   bool get _proxima => status == StepperNodeStatus.atual;
   bool get _feito => status == StepperNodeStatus.concluido;
@@ -119,8 +130,13 @@ class _CartaoEtapa extends StatelessWidget {
 
     return Semantics(
       container: true,
-      label: '$nome, $quando, ${textoRelativo(l.data, hoje)}',
-      child: Container(
+      button: onEditar != null,
+      label: '$nome, $quando, ${textoRelativo(l.data, hoje)}'
+          '${onEditar != null ? '. Toque para alterar a data.' : ''}',
+      child: GestureDetector(
+        behavior: HitTestBehavior.opaque,
+        onTap: onEditar,
+        child: Container(
         decoration: BoxDecoration(
           color: context.appSurface,
           borderRadius: BorderRadius.circular(20),
@@ -169,17 +185,32 @@ class _CartaoEtapa extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 4),
-                  // 3. Quando
-                  Text(
-                    quando,
-                    style: AppTypography.body.copyWith(
-                      fontSize: 15,
-                      height: 1.3,
-                      color: _proxima
-                          ? AppColors.primary
-                          : context.appTextSecondary,
-                      fontWeight: _proxima ? FontWeight.w600 : FontWeight.w400,
-                    ),
+                  // 3. Quando (+ "Alterar" no card de Plantio)
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          quando,
+                          style: AppTypography.body.copyWith(
+                            fontSize: 15,
+                            height: 1.3,
+                            color: _proxima
+                                ? AppColors.primary
+                                : context.appTextSecondary,
+                            fontWeight:
+                                _proxima ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                        ),
+                      ),
+                      if (onEditar != null)
+                        Text(
+                          'Alterar',
+                          style: AppTypography.caption.copyWith(
+                            color: AppColors.primary,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                    ],
                   ),
                   // 4. Por quê (regra do cronograma)
                   if (nota != null) ...[
@@ -201,6 +232,7 @@ class _CartaoEtapa extends StatelessWidget {
             Expanded(child: _Produtos(etapa: etapa, ativos: !_feito)),
           ],
         ),
+      ),
       ),
     );
   }

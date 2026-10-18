@@ -207,18 +207,14 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
           ),
         ],
         const SizedBox(height: AppSpacing.md),
-        _LinhaPlantio(
-          data: linha.dataPlantio,
-          cultivar: linha.materialCultivar.trim(),
-          onChanged: onPlantioChanged,
-        ),
-        const SizedBox(height: AppSpacing.md),
         ...avisosValidacao,
         if (etapas != null && etapas!.isNotEmpty && carrossel != null)
           EtapasCarrossel(
             etapas: etapas!,
             controller: carrossel!,
             onPageChanged: onEtapaVisivel ?? (_) {},
+            onEditarPlantio: () =>
+                _escolherPlantio(context, linha.dataPlantio, onPlantioChanged),
           )
         else
           CronogramaSojaTabela(
@@ -338,96 +334,21 @@ class _CampoDataPlantio extends StatelessWidget {
   }
 }
 
-/// Mesmo intervalo do picker: [1/jan de now-2, 1/jan de now+2].
-/// Plantio já definido: linha compacta (data + cultivar + "Alterar").
-/// Editado raramente — não precisa do peso de um campo de formulário.
-class _LinhaPlantio extends StatelessWidget {
-  const _LinhaPlantio({
-    required this.data,
-    required this.cultivar,
-    required this.onChanged,
-  });
-
-  final DateTime data;
-  final String cultivar;
-  final ValueChanged<DateTime> onChanged;
-
-  Future<void> _escolher(BuildContext context) async {
-    final now = DateTime.now();
-    final picked = await showDatePicker(
-      context: context,
-      initialDate: _dentroDoIntervalo(data, now) ? data : now,
-      firstDate: DateTime(now.year - 2),
-      lastDate: DateTime(now.year + 2),
-      helpText: 'Data de plantio do talhão',
-    );
-    if (picked != null) onChanged(picked);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Semantics(
-      button: true,
-      label: 'Data de plantio ${AppFormatters.data(data)}. Toque para alterar.',
-      child: Material(
-        color: context.appSurface,
-        borderRadius: BorderRadius.circular(12),
-        child: InkWell(
-          borderRadius: BorderRadius.circular(12),
-          onTap: () => _escolher(context),
-          child: Container(
-            padding: const EdgeInsets.symmetric(
-              horizontal: AppSpacing.md,
-              vertical: 12,
-            ),
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: context.appBorder),
-            ),
-            child: Row(
-              children: [
-                const Icon(
-                  Icons.event_rounded,
-                  size: 20,
-                  color: AppColors.primary,
-                ),
-                const SizedBox(width: AppSpacing.sm),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'Plantio',
-                        style: AppTypography.label.copyWith(
-                          color: context.appTextSecondary,
-                        ),
-                      ),
-                      Text(
-                        cultivar.isEmpty
-                            ? AppFormatters.data(data)
-                            : '${AppFormatters.data(data)} · $cultivar',
-                        style: AppTypography.bodyBold.copyWith(
-                          fontSize: 15,
-                          color: context.appTextPrimary,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                Text(
-                  'Alterar',
-                  style: AppTypography.caption.copyWith(
-                    color: AppColors.primary,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
+/// Seletor da data de plantio (intervalo: 1/jan de now-2 a 31/dez de now+2).
+Future<void> _escolherPlantio(
+  BuildContext context,
+  DateTime data,
+  ValueChanged<DateTime> onChanged,
+) async {
+  final now = DateTime.now();
+  final picked = await showDatePicker(
+    context: context,
+    initialDate: _dentroDoIntervalo(data, now) ? data : now,
+    firstDate: DateTime(now.year - 2),
+    lastDate: DateTime(now.year + 2),
+    helpText: 'Data de plantio do talhão',
+  );
+  if (picked != null) onChanged(picked);
 }
 
 bool _dentroDoIntervalo(DateTime? d, DateTime now) =>
