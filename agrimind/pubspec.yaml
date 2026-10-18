@@ -37,6 +37,9 @@ dependencies:
   # Navegação
   go_router: ^13.0.0
 
+  # Preferências locais (tema)
+  shared_preferences: ^2.5.5
+
   # Banco local
   path_provider: ^2.1.2
 
