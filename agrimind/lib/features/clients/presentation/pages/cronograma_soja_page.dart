@@ -735,14 +735,14 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                     ),
                   ),
                 if (!comPlano)
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(
+                  const SliverPadding(
+                    padding: EdgeInsets.fromLTRB(
                       AppSpacing.md,
                       AppSpacing.sm,
                       AppSpacing.md,
                       0,
                     ),
-                    sliver: const SliverToBoxAdapter(
+                    sliver: SliverToBoxAdapter(
                       child: CronogramaModoAvulsoBanner(),
                     ),
                   ),
@@ -1574,7 +1574,7 @@ class _CampoDropdown extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           DropdownButtonFormField<String>(
-            value: options.contains(value) ? value : options.first,
+            initialValue: options.contains(value) ? value : options.first,
             decoration: InputDecoration(
               filled: true,
               fillColor: context.appSurface,

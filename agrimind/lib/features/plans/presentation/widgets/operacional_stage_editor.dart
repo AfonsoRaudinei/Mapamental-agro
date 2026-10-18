@@ -2,10 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../../../core/constants/app_colors.dart';
 import '../../../../core/constants/app_typography.dart';
-import '../../../../core/utils/extensions.dart';
 import '../../domain/entities/estadio_entity.dart';
-import '../../domain/entities/operacional_estadio_config.dart';
-import '../../domain/talhao_safra/mapear_tipo_operacional_label.dart';
 import '../../domain/talhao_safra/tipo_operacional.dart';
 import 'operacional_tipo_dropdown.dart';
 
@@ -28,7 +25,6 @@ class OperacionalStageEditor extends StatefulWidget {
 
 class _OperacionalStageEditorState extends State<OperacionalStageEditor> {
   late TipoOperacional? _tipo;
-  late OperacionalEstadioConfig _config;
 
   @override
   void initState() {
@@ -48,28 +44,6 @@ class _OperacionalStageEditorState extends State<OperacionalStageEditor> {
 
   void _syncFromEstadio() {
     _tipo = widget.estadio.tipoOperacional;
-    _config = widget.estadio.operacionalConfig ?? const OperacionalEstadioConfig();
-  }
-
-  Future<void> _persist({OperacionalEstadioConfig? config}) async {
-    final novoTipo = _tipo;
-    if (novoTipo == null || novoTipo == TipoOperacional.indefinido) return;
-
-    final cfg = config ?? _config;
-    final label = labelOperacionalComAplicacao(
-      novoTipo,
-      incluirAdubacao: cfg.incluirAdubacao,
-      aplicacaoIndice: cfg.aplicacaoIndice,
-    );
-    final atualizado = widget.estadio.copyWith(
-      operacionalConfig: cfg,
-      label: label,
-    );
-    await widget.onSave(atualizado);
-
-    if (widget.onSyncFungicidaSubcards != null) {
-      await widget.onSyncFungicidaSubcards!(atualizado);
-    }
   }
 
   @override

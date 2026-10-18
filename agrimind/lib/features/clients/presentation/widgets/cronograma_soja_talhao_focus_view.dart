@@ -280,15 +280,11 @@ class _CampoDataPlantio extends StatelessWidget {
     required this.label,
     required this.hint,
     required this.onChanged,
-    this.value,
   });
 
   final String label;
   final String hint;
   final ValueChanged<DateTime> onChanged;
-
-  /// Data já informada (permite alterar); `null` = ainda não definida.
-  final DateTime? value;
 
   @override
   Widget build(BuildContext context) {
@@ -310,7 +306,7 @@ class _CampoDataPlantio extends StatelessWidget {
               final now = DateTime.now();
               final picked = await showDatePicker(
                 context: context,
-                initialDate: _dentroDoIntervalo(value, now) ? value! : now,
+                initialDate: now,
                 firstDate: DateTime(now.year - 2),
                 lastDate: DateTime(now.year + 2),
               );
@@ -328,7 +324,7 @@ class _CampoDataPlantio extends StatelessWidget {
                 border: Border.all(color: context.appBorder),
               ),
               child: Text(
-                value == null ? hint : AppFormatters.data(value!),
+                hint,
                 style: AppTypography.body.copyWith(
                   color: AppColors.primary,
                   fontWeight: FontWeight.w600,
