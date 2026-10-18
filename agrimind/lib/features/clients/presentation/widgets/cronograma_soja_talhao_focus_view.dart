@@ -30,9 +30,7 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
     required this.onConfirmarCultivar,
     required this.onLinhaChanged,
     required this.onPlantioChanged,
-    required this.onSyncPlano,
     required this.onAbrirRegulagemCompleta,
-    required this.onVerNoPlano,
     required this.avisosValidacao,
     this.etapas,
     this.carrossel,
@@ -49,9 +47,7 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
   final VoidCallback onConfirmarCultivar;
   final ValueChanged<CronogramaSojaParametros> onLinhaChanged;
   final ValueChanged<DateTime> onPlantioChanged;
-  final VoidCallback onSyncPlano;
   final VoidCallback onAbrirRegulagemCompleta;
-  final VoidCallback onVerNoPlano;
   final List<Widget> avisosValidacao;
 
   /// Etapas com produtos do plano; `null` mantém a tabela só com datas.
@@ -227,20 +223,7 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
             resumo: resumoCronogramaSoja(linha),
             mostrarColunaData: true,
           ),
-        const SizedBox(height: AppSpacing.md),
-        CupertinoButton.filled(
-          padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
-          onPressed: onSyncPlano,
-          child: const Text('Aplicar datas ao plano'),
-        ),
-        TextButton(
-          onPressed: onVerNoPlano,
-          child: const Text('Ver no plano'),
-        ),
-        TextButton(
-          onPressed: onAbrirRegulagemCompleta,
-          child: const Text('Regulagem e outros talhões'),
-        ),
+        const SizedBox(height: AppSpacing.lg),
       ],
     );
   }

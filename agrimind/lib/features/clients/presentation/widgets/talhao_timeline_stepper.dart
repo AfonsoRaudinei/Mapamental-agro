@@ -68,6 +68,13 @@ int? indiceEtapaAtual(List<EtapaTalhao> etapas, DateTime hoje) {
   return pos < 0 ? null : nos[pos];
 }
 
+/// Código do estádio do Plano cujas referências valem para a etapa
+/// (o dessecante R7 é o card R8 do Plano).
+String codigoReferenciaEtapa(CronogramaSojaLinha linha) {
+  final codigo = codigoEstagioEtapa(linha);
+  return codigo == 'R7' ? 'R8' : codigo;
+}
+
 /// Nome curto da etapa, na linguagem do campo (cabeçalho e "Próxima").
 String nomeCurtoEtapa(CronogramaSojaLinha linha) {
   switch (linha.tipo) {

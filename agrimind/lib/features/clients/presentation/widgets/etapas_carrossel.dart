@@ -7,6 +7,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../plans/presentation/models/product_view_model.dart';
 import '../../../plans/presentation/widgets/product_tile.dart';
+import '../../../plans/presentation/widgets/stage_references_button.dart';
 import '../../domain/talhao_etapas/etapa_talhao.dart';
 import 'talhao_timeline_stepper.dart';
 
@@ -26,7 +27,7 @@ class EtapasCarrossel extends StatelessWidget {
   final ValueChanged<int> onPageChanged;
   final DateTime? hoje;
 
-  static const double alturaCard = 340;
+  static const double alturaCard = 360;
 
   @override
   Widget build(BuildContext context) {
@@ -112,6 +113,7 @@ class _CartaoEtapa extends StatelessWidget {
     final l = etapa.linha;
     final nome = nomeCurtoEtapa(l);
     final nota = notaCurtaEtapa(l);
+    final estadio = estadioParaConsulta(codigoReferenciaEtapa(l));
     final quando = [
       AppFormatters.data(l.data),
       if (l.dae != null) 'DAE ${l.dae}',
@@ -145,14 +147,28 @@ class _CartaoEtapa extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. Estádio + situação
+                  // 1. Estádio + livros de referência + situação
                   Row(
                     children: [
                       _ChipEstadio(codigoEstagioEtapa(l), destaque: _proxima),
-                      const Spacer(),
-                      _PilulaSituacao(
-                        status: status,
-                        relativo: textoRelativo(l.data, hoje),
+                      const SizedBox(width: 8),
+                      // Mesmos livros do Plano; aqui só consulta.
+                      StageReferencesButton(
+                        estadio: estadio,
+                        compact: true,
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: _PilulaSituacao(
+                              status: status,
+                              relativo: textoRelativo(l.data, hoje),
+                            ),
+                          ),
+                        ),
                       ),
                     ],
                   ),
@@ -195,6 +211,11 @@ class _CartaoEtapa extends StatelessWidget {
                   ],
                 ],
               ),
+            ),
+            // Atalhos do livro aberto (Referências / Circular técnica).
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: StageReferencesStrip(estadio: estadio),
             ),
             Divider(height: 1, color: context.appBorder),
             // 5. Produtos
