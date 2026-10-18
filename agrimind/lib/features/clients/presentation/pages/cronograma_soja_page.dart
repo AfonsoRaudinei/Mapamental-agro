@@ -82,11 +82,16 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
   bool _focusCultivarConfirmada = false;
   String _focusCultivarPendente = '';
   String? _planoAtivoId;
-  List<GlobalKey> _etapaKeys = const [];
-  final ScrollController _pageScroll = ScrollController();
   final GlobalKey _stepperHeaderKey = GlobalKey();
 
-  /// Etapa visível na lista (alimenta o destaque do stepper).
+  /// Carrossel de etapas; criado na 1ª carga já na próxima etapa.
+  PageController? _carrossel;
+
+  /// Página-alvo enquanto o carrossel anima após toque no stepper; as páginas
+  /// intermediárias não devem vibrar nem mover o destaque.
+  int? _destinoCarrossel;
+
+  /// Etapa visível no carrossel (alimenta o destaque do stepper).
   final ValueNotifier<int?> _etapaEmFoco = ValueNotifier<int?>(null);
 
   /// Últimas etapas do talhão em foco: evita sumir stepper/lista enquanto
@@ -99,7 +104,6 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
   @override
   void initState() {
     super.initState();
-    _pageScroll.addListener(_atualizarEtapaEmFoco);
     WidgetsBinding.instance.addPostFrameCallback((_) => _load());
   }
 
@@ -108,7 +112,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     for (final t in _saveTimers.values) {
       t.cancel();
     }
-    _pageScroll.dispose();
+    _carrossel?.dispose();
     _etapaEmFoco.dispose();
     super.dispose();
   }
@@ -255,52 +259,43 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
         : null;
   }
 
-  /// Uma chave estável por etapa (mesmo índice da lista do provider).
-  List<GlobalKey> _keysParaEtapas(int total) {
-    if (_etapaKeys.length != total) {
-      _etapaKeys = List.generate(total, (_) => GlobalKey());
-    }
-    return _etapaKeys;
-  }
-
-  /// Borda inferior (global) do cabeçalho fixo; `null` se ainda não montou.
-  double? _bordaInferiorCabecalho() {
-    final box = _stepperHeaderKey.currentContext?.findRenderObject();
-    if (box is! RenderBox || !box.attached) return null;
-    return box.localToGlobal(Offset(0, box.size.height)).dy;
-  }
-
-  double? _topoDaEtapa(int i) {
-    if (i >= _etapaKeys.length) return null;
-    final box = _etapaKeys[i].currentContext?.findRenderObject();
-    if (box is! RenderBox || !box.attached) return null;
-    return box.localToGlobal(Offset.zero).dy;
-  }
-
-  /// Rolagem da lista → destaca no stepper a etapa que está sob o cabeçalho.
-  void _atualizarEtapaEmFoco() {
-    final limite = _bordaInferiorCabecalho();
-    if (limite == null || _etapaKeys.isEmpty) return;
-    _etapaEmFoco.value = indiceEtapaEmFoco(
-      [for (var i = 0; i < _etapaKeys.length; i++) _topoDaEtapa(i)],
-      limite + 2,
+  /// Controller do carrossel; abre na próxima etapa (ou na última, se a
+  /// safra terminou) e já marca essa etapa no stepper.
+  PageController _carrosselPara(List<EtapaTalhao> etapas) {
+    final existente = _carrossel;
+    if (existente != null) return existente;
+    final inicial = resumoFaseTalhao(etapas, DateTime.now()).indiceProxima ??
+        etapas.length - 1;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _etapaEmFoco.value = inicial;
+    });
+    return _carrossel = PageController(
+      viewportFraction: 0.86,
+      initialPage: inicial,
     );
   }
 
-  /// Toque no nó do stepper → rola a lista até a etapa (sem trocar de tela).
-  void _scrollParaEtapa(int indice) {
+  /// Deslizar o carrossel → destaca a etapa no stepper.
+  void _onEtapaVisivel(int indice) {
+    if (_destinoCarrossel != null) return;
     HapticFeedback.selectionClick();
-    final topo = _topoDaEtapa(indice);
-    final limite = _bordaInferiorCabecalho();
-    if (topo == null || limite == null || !_pageScroll.hasClients) return;
-    final pos = _pageScroll.position;
-    final alvo = (pos.pixels + topo - limite - 4)
-        .clamp(pos.minScrollExtent, pos.maxScrollExtent);
-    _pageScroll.animateTo(
-      alvo,
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeInOut,
-    );
+    _etapaEmFoco.value = indice;
+  }
+
+  /// Toque no nó do stepper → carrossel vai até o card da etapa.
+  void _scrollParaEtapa(int indice) {
+    final c = _carrossel;
+    if (c == null || !c.hasClients) return;
+    HapticFeedback.selectionClick();
+    _etapaEmFoco.value = indice;
+    _destinoCarrossel = indice;
+    c
+        .animateToPage(
+          indice,
+          duration: const Duration(milliseconds: 320),
+          curve: Curves.easeOutCubic,
+        )
+        .whenComplete(() => _destinoCarrossel = null);
   }
 
   void _patchFocusLinha(CronogramaSojaParametros linha) {
@@ -680,15 +675,15 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     final comPlano = _planoAtivoId != null;
     final nomeFoco = foco ? _talhaoNome(_focusLinha!.talhaoId) : null;
     final etapasFoco = foco ? _etapasFoco() : null;
-    final keysEtapas =
-        etapasFoco == null ? null : _keysParaEtapas(etapasFoco.length);
+    final carrossel = etapasFoco == null || etapasFoco.isEmpty
+        ? null
+        : _carrosselPara(etapasFoco);
 
     return Scaffold(
       backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: _loading
           ? const LoadingSkeleton()
           : CustomScrollView(
-              controller: _pageScroll,
               slivers: [
                 CupertinoSliverNavigationBar(
                   largeTitle: Text(
@@ -793,7 +788,8 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                         avisosValidacao:
                             _avisosValidacaoCronograma(context, _focusLinha!),
                         etapas: etapasFoco,
-                        etapaKeys: keysEtapas,
+                        carrossel: carrossel,
+                        onEtapaVisivel: _onEtapaVisivel,
                       ),
                     ),
                   )

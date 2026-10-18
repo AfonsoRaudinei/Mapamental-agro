@@ -1,3 +1,4 @@
+import 'package:agrimind/features/clients/domain/cronograma_soja/cronograma_soja_linha.dart';
 import 'package:agrimind/features/clients/presentation/widgets/talhao_timeline_stepper.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -20,12 +21,6 @@ void main() {
   test('safra encerrada não tem nó atual', () {
     final s = statusDasEtapas([DateTime(2026, 1, 1), DateTime(2026, 2, 1)], hoje);
     expect(s.contains(StepperNodeStatus.atual), isFalse);
-  });
-
-  test('etapa em foco: última cujo topo já passou do cabeçalho', () {
-    expect(indiceEtapaEmFoco([-300, -100, 50, 400], 100), 2);
-    expect(indiceEtapaEmFoco([200, 400], 100), isNull);
-    expect(indiceEtapaEmFoco([null, 80, null], 100), 1);
   });
 
   test('texto relativo na linguagem do campo', () {
@@ -52,5 +47,58 @@ void main() {
     // Antes de tudo / depois de tudo.
     expect(posicaoHoje(datas, DateTime(2026, 9, 1)), lessThan(0));
     expect(posicaoHoje(datas, DateTime(2027, 3, 1)), greaterThan(3));
+  });
+
+  test('nota curta tira o detalhe do título do card', () {
+    CronogramaSojaLinha linha(
+      String etapa,
+      CronogramaSojaLinhaTipo tipo, {
+      int? fung,
+      String? nota,
+    }) =>
+        CronogramaSojaLinha(
+          etapa: etapa,
+          dae: null,
+          data: DateTime(2026, 11, 13),
+          tipo: tipo,
+          fungicidaIndice: fung,
+          notaEtapa: nota,
+        );
+
+    final f1 = linha(
+      'Recuperação do pós-emergente (6 dias) → 1ª aplicação fungicida',
+      CronogramaSojaLinhaTipo.fungicida,
+      fung: 1,
+    );
+    expect(nomeCurtoEtapa(f1), '1ª aplicação fungicida');
+    expect(notaCurtaEtapa(f1), '6 dias após o pós-emergente');
+
+    final f2 = linha(
+      '2ª aplicação fungicida (+15 dias)',
+      CronogramaSojaLinhaTipo.fungicida,
+      fung: 2,
+    );
+    expect(notaCurtaEtapa(f2), '+15 dias da aplicação anterior');
+
+    expect(
+      notaCurtaEtapa(
+        linha('Emergência (5 dias)', CronogramaSojaLinhaTipo.emergencia),
+      ),
+      '5 dias após o plantio',
+    );
+    expect(
+      notaCurtaEtapa(
+        linha(
+          'Dessecação (pré-plantio)',
+          CronogramaSojaLinhaTipo.dessecacaoPrePlantio,
+          nota: '15 dias antes do plantio',
+        ),
+      ),
+      '15 dias antes do plantio',
+    );
+    expect(
+      notaCurtaEtapa(linha('Plantio', CronogramaSojaLinhaTipo.plantio)),
+      isNull,
+    );
   });
 }

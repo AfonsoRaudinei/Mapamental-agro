@@ -13,6 +13,7 @@ import '../../domain/cronograma_soja/cronograma_soja_parametros.dart';
 import '../../../catalog/domain/entities/produto_catalogo_entity.dart';
 import '../../domain/talhao_etapas/etapa_talhao.dart';
 import 'cronograma_soja_tabela.dart';
+import 'etapas_carrossel.dart';
 import 'cultivar_talhao_selector.dart';
 
 /// Cronograma de um talhão aberto pela lista da fazenda (fluxo direto).
@@ -34,7 +35,8 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
     required this.onVerNoPlano,
     required this.avisosValidacao,
     this.etapas,
-    this.etapaKeys,
+    this.carrossel,
+    this.onEtapaVisivel,
   });
 
   final String talhaoNome;
@@ -54,7 +56,10 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
 
   /// Etapas com produtos do plano; `null` mantém a tabela só com datas.
   final List<EtapaTalhao>? etapas;
-  final List<GlobalKey>? etapaKeys;
+
+  /// Controla o carrossel de etapas (sincronizado com a linha do tempo).
+  final PageController? carrossel;
+  final ValueChanged<int>? onEtapaVisivel;
 
   bool get _multiplasCultivares => opcoesCultivar.length > 1;
 
@@ -209,14 +214,19 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         ...avisosValidacao,
-        CronogramaSojaTabela(
-          titulo: 'Cronograma',
-          linhas: linhas,
-          resumo: resumoCronogramaSoja(linha),
-          mostrarColunaData: true,
-          etapas: etapas,
-          etapaKeys: etapaKeys,
-        ),
+        if (etapas != null && etapas!.isNotEmpty && carrossel != null)
+          EtapasCarrossel(
+            etapas: etapas!,
+            controller: carrossel!,
+            onPageChanged: onEtapaVisivel ?? (_) {},
+          )
+        else
+          CronogramaSojaTabela(
+            titulo: 'Cronograma',
+            linhas: linhas,
+            resumo: resumoCronogramaSoja(linha),
+            mostrarColunaData: true,
+          ),
         const SizedBox(height: AppSpacing.md),
         CupertinoButton.filled(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
