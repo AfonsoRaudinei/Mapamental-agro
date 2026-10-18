@@ -23,7 +23,7 @@ Regras centrais:
 
 O número válido é sempre `último build registrado + 1`.
 
-Último registrado: **276** (2026-10-17) → próximo: **277**
+Último registrado: **278** (2026-10-17) → próximo: **279**
 
 Nunca reutilize um número anterior.
 
@@ -136,6 +136,7 @@ Atualize esta seção após cada IPA bem-sucedida.
 
 | Data | Build | IPA | Commit | Status | Notas |
 |------|-------|-----|--------|--------|-------|
+| 2026-10-17 | 278 | `build/ios/ipa/Agrimind_v278.ipa` | `a3b1c4e` | concluída | Talhão: etapas em carrossel de cards (hierarquia estádio → nome → data/DAE → regra → produtos) sincronizado com a linha do tempo; Plano: livros do estádio abrem atalhos abaixo do card (sem sheet); analyze limpo (`shared_preferences` declarado, código morto removido); `build_ipa.sh` lê chave do `sup.rtf`, recusa placeholder e valida build/analyze/test; 277 pulado (IPA local com chave placeholder descartada); 157 testes |
 | 2026-10-17 | 276 | `build/ios/ipa/Agrimind_v276.ipa` | `8990d63`* | concluída | Nuvem: stepper acompanha scroll + toque no nó rola até a etapa; talhão mostra claramente posição na safra; tiles de etapa e tabela refinados; 157 testes |
 | 2026-10-17 | 275 | `build/ios/ipa/Agrimind_v275.ipa` | `e32773b`* | concluída | Nuvem: `TalhaoTimelineStepper` (fases fixas na ficha do talhão); auditoria (picker plantio, anti-flicker, `talhaoRef`, rótulo sem plano); refinamentos `EtapaTalhao`/`ProductTile`; 154 testes |
 | 2026-10-16 | 274 | `build/ios/ipa/Agrimind_v274.ipa` | `c6c55ed`* | concluída | Nuvem: cronograma em sanfona (blocos); produtos do plano por etapa na ficha do talhão (`EtapaTalhao` + `ProductTile`); fungicida título “N Fungicida” e limpeza dessecação; remoção `features/plan` legado; 151 testes |
