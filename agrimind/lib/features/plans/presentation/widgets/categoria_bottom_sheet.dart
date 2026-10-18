@@ -58,7 +58,7 @@ class CategoriaBottomSheet extends StatelessWidget {
     required this.categoria,
     required this.estadioCodigo,
     required this.itens,
-    required this.onUsarNoPlano,
+    this.onUsarNoPlano,
     this.titleOverride,
     this.subtitleOverride,
     this.accentOverride,
@@ -68,8 +68,9 @@ class CategoriaBottomSheet extends StatelessWidget {
   final String estadioCodigo;
   final List<ReferenciaDisplayItem> itens;
 
-  /// Chamado quando o técnico toca em [+ Usar no Plano].
-  final void Function(ReferenciaDisplayItem) onUsarNoPlano;
+  /// Chamado quando o técnico toca em [+ Usar no Plano]; `null` = só consulta
+  /// (botão oculto, ex.: tela do talhão).
+  final void Function(ReferenciaDisplayItem)? onUsarNoPlano;
 
   /// Título custom (ex.: Circular técnica / Campeões CESB).
   final String? titleOverride;
@@ -86,7 +87,7 @@ class CategoriaBottomSheet extends StatelessWidget {
     required CategoriaReferencia categoria,
     required String estadioCodigo,
     required List<ReferenciaDisplayItem> itens,
-    required void Function(ReferenciaDisplayItem) onUsarNoPlano,
+    void Function(ReferenciaDisplayItem)? onUsarNoPlano,
     String? titleOverride,
     String? subtitleOverride,
     Color? accentOverride,
@@ -134,12 +135,16 @@ class CategoriaBottomSheet extends StatelessWidget {
                     ? _CesbTile(
                         item: itens[i],
                         cor: accent,
-                        onUsar: () => onUsarNoPlano(itens[i]),
+                        onUsar: onUsarNoPlano == null
+                            ? null
+                            : () => onUsarNoPlano!(itens[i]),
                       )
                     : _ReferenciaTile(
                         item: itens[i],
                         cor: accent,
-                        onUsar: () => onUsarNoPlano(itens[i]),
+                        onUsar: onUsarNoPlano == null
+                            ? null
+                            : () => onUsarNoPlano!(itens[i]),
                       ),
               ),
       ),
@@ -230,7 +235,7 @@ class _ReferenciaTile extends StatelessWidget {
 
   final ReferenciaDisplayItem item;
   final Color cor;
-  final VoidCallback onUsar;
+  final VoidCallback? onUsar;
 
   @override
   Widget build(BuildContext context) {
@@ -260,11 +265,11 @@ class _ReferenciaTile extends StatelessWidget {
             ),
           ),
         ],
-        if (item.podeUsarNoPlano) ...[
+        if (item.podeUsarNoPlano && onUsar != null) ...[
           const SizedBox(height: AppSpacing.sm),
           Align(
             alignment: Alignment.centerRight,
-            child: _UsarNoPlanoBtn(cor: cor, onTap: onUsar),
+            child: _UsarNoPlanoBtn(cor: cor, onTap: onUsar!),
           ),
         ],
       ],
@@ -281,7 +286,7 @@ class _CesbTile extends StatelessWidget {
 
   final ReferenciaDisplayItem item;
   final Color cor;
-  final VoidCallback onUsar;
+  final VoidCallback? onUsar;
 
   @override
   Widget build(BuildContext context) {
@@ -395,11 +400,13 @@ class _CesbTile extends StatelessWidget {
               ),
             ),
           ],
-          const SizedBox(height: AppSpacing.sm),
-          Align(
-            alignment: Alignment.centerRight,
-            child: _UsarNoPlanoBtn(cor: cor, onTap: onUsar),
-          ),
+          if (onUsar != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Align(
+              alignment: Alignment.centerRight,
+              child: _UsarNoPlanoBtn(cor: cor, onTap: onUsar!),
+            ),
+          ],
         ],
       ),
     );

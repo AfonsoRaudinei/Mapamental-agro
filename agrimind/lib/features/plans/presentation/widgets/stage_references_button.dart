@@ -49,14 +49,15 @@ class StageReferencesButton extends ConsumerWidget {
   const StageReferencesButton({
     super.key,
     required this.estadio,
-    required this.plano,
-    required this.onAddProdutoFromReferencia,
+    this.plano,
+    this.onAddProdutoFromReferencia,
     this.compact = false,
   });
 
   final EstadioEntity estadio;
-  final PlanoEntity plano;
-  final AddProdutoFromReferencia onAddProdutoFromReferencia;
+  /// `null` (com [onAddProdutoFromReferencia]) = modo consulta, sem "Usar no plano".
+  final PlanoEntity? plano;
+  final AddProdutoFromReferencia? onAddProdutoFromReferencia;
 
   /// Versão compacta para o header colapsado do estádio (ao lado do badge V5).
   final bool compact;
@@ -89,14 +90,15 @@ class StageReferencesButton extends ConsumerWidget {
 class _StandardReferencesBook extends ConsumerWidget {
   const _StandardReferencesBook({
     required this.estadio,
-    required this.plano,
-    required this.onAddProdutoFromReferencia,
+    this.plano,
+    this.onAddProdutoFromReferencia,
     required this.compact,
   });
 
   final EstadioEntity estadio;
-  final PlanoEntity plano;
-  final AddProdutoFromReferencia onAddProdutoFromReferencia;
+  /// `null` (com [onAddProdutoFromReferencia]) = modo consulta, sem "Usar no plano".
+  final PlanoEntity? plano;
+  final AddProdutoFromReferencia? onAddProdutoFromReferencia;
   final bool compact;
 
   @override
@@ -140,14 +142,15 @@ class _StandardReferencesBook extends ConsumerWidget {
 class _CircularTecnicaBook extends ConsumerWidget {
   const _CircularTecnicaBook({
     required this.estadio,
-    required this.plano,
-    required this.onAddProdutoFromReferencia,
+    this.plano,
+    this.onAddProdutoFromReferencia,
     required this.compact,
   });
 
   final EstadioEntity estadio;
-  final PlanoEntity plano;
-  final AddProdutoFromReferencia onAddProdutoFromReferencia;
+  /// `null` (com [onAddProdutoFromReferencia]) = modo consulta, sem "Usar no plano".
+  final PlanoEntity? plano;
+  final AddProdutoFromReferencia? onAddProdutoFromReferencia;
   final bool compact;
 
   @override
@@ -200,13 +203,14 @@ class StageReferencesStrip extends ConsumerWidget {
   const StageReferencesStrip({
     super.key,
     required this.estadio,
-    required this.plano,
-    required this.onAddProdutoFromReferencia,
+    this.plano,
+    this.onAddProdutoFromReferencia,
   });
 
   final EstadioEntity estadio;
-  final PlanoEntity plano;
-  final AddProdutoFromReferencia onAddProdutoFromReferencia;
+  /// `null` (com [onAddProdutoFromReferencia]) = modo consulta, sem "Usar no plano".
+  final PlanoEntity? plano;
+  final AddProdutoFromReferencia? onAddProdutoFromReferencia;
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -271,6 +275,8 @@ class StageReferencesStrip extends ConsumerWidget {
     );
   }
 
+  bool get _editavel => plano != null && onAddProdutoFromReferencia != null;
+
   Future<void> _abrirCategoria(
     BuildContext context,
     WidgetRef ref,
@@ -288,13 +294,13 @@ class StageReferencesStrip extends ConsumerWidget {
       categoria: categoria,
       estadioCodigo: estadio.codigo,
       itens: itens,
-      onUsarNoPlano: (item) async {
+      onUsarNoPlano: !_editavel ? null : (item) async {
         if (context.mounted) Navigator.of(context).pop();
-        await onAddProdutoFromReferencia(
+        await onAddProdutoFromReferencia!(
           estadio,
           nome: item.titulo,
           produtoCategoria: categoria.filtroCatalogo ?? 'Geral',
-          areaHa: plano.areaHaTotal,
+          areaHa: plano!.areaHaTotal,
         );
       },
     );
@@ -316,13 +322,13 @@ class StageReferencesStrip extends ConsumerWidget {
       subtitleOverride: 'Manejo dos produtores recordistas',
       accentOverride: ReferencesBookAccents.cesb,
       itens: itens,
-      onUsarNoPlano: (item) async {
+      onUsarNoPlano: !_editavel ? null : (item) async {
         if (context.mounted) Navigator.of(context).pop();
-        await onAddProdutoFromReferencia(
+        await onAddProdutoFromReferencia!(
           estadio,
           nome: item.titulo,
           produtoCategoria: 'Geral',
-          areaHa: plano.areaHaTotal,
+          areaHa: plano!.areaHaTotal,
         );
       },
     );
@@ -340,13 +346,13 @@ class StageReferencesStrip extends ConsumerWidget {
       subtitleOverride: 'Estádio → doença → fungicida',
       accentOverride: ReferencesBookAccents.fungicidas,
       itens: itens,
-      onUsarNoPlano: (item) async {
+      onUsarNoPlano: !_editavel ? null : (item) async {
         if (context.mounted) Navigator.of(context).pop();
-        await onAddProdutoFromReferencia(
+        await onAddProdutoFromReferencia!(
           estadio,
           nome: item.titulo,
           produtoCategoria: 'Fungicida',
-          areaHa: plano.areaHaTotal,
+          areaHa: plano!.areaHaTotal,
         );
       },
     );
@@ -372,7 +378,7 @@ class _Faixa extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      margin: const EdgeInsets.only(top: 6),
+      margin: const EdgeInsets.fromLTRB(0, 6, 0, 6),
       padding: const EdgeInsets.fromLTRB(
         AppSpacing.md,
         10,
@@ -517,3 +523,13 @@ class _IconeLivroDourado extends StatelessWidget {
     );
   }
 }
+
+/// Estádio mínimo só para consultar referências (tela do talhão, sem plano).
+EstadioEntity estadioParaConsulta(String codigo) => EstadioEntity(
+      id: 'consulta-$codigo',
+      planoId: '',
+      codigo: codigo,
+      label: codigo,
+      ordem: 0,
+      createdAt: DateTime(2000),
+    );
