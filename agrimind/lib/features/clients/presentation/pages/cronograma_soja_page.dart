@@ -322,69 +322,10 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
     _scheduleSave(atualizada);
   }
 
-  Future<void> _syncFocusLinha() async {
-    final linha = _focusLinha;
-    if (linha == null || !linha.plantioDefinido) return;
-    final planoId = _planoAtivoId;
-    if (planoId != null) {
-      final nome = _talhaoNome(linha.talhaoId);
-      await InstanciarRoteiroTalhaoUseCase(
-        ref.read(plansRepoProvider),
-        ref.read(clientsRepoProvider),
-      ).call(
-        planoId: planoId,
-        talhaoId: linha.talhaoId,
-        talhaoNome: nome,
-      );
-      final resultado = await SincronizarTalhaoSafraPlanoUseCase(
-        ref.read(plansRepoProvider),
-      ).call(
-        planoId: planoId,
-        talhaoId: linha.talhaoId,
-        talhaoNome: nome,
-        parametros: linha,
-      );
-      if (!mounted) return;
-      final msg = resultado == null || resultado.totalAlteracoes == 0
-          ? 'Nenhuma alteração no plano. Confira o roteiro e os parâmetros.'
-          : 'Plano atualizado para $nome.';
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-      return;
-    }
-    final linhasCalc = calcularCronogramaSoja(linha);
-    final count = await SincronizarCronogramaSojaPlanoUseCase(
-      ref.read(plansRepoProvider),
-    ).call(fazendaId: widget.farmId, linhas: linhasCalc);
-    if (!mounted) return;
-    final msg = count == 0
-        ? 'Nenhum estádio atualizado. Confira o plano ativo da fazenda.'
-        : '$count estádio(s) atualizado(s) no plano.';
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
-  }
-
   void _abrirRegulagemCompleta() {
     context.pushReplacement(
       AppRoutes.farmCronogramaSojaPath(widget.clienteId, widget.farmId),
     );
-  }
-
-  void _verNoPlano() {
-    final planoId = _planoAtivoId;
-    final talhaoId = _focusLinha?.talhaoId ?? widget.talhaoId;
-    if (planoId == null || talhaoId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Nenhum plano ativo vinculado a esta fazenda.'),
-        ),
-      );
-      return;
-    }
-    // Ao voltar do plano, produtos/doses podem ter mudado.
-    context
-        .push(AppRoutes.planCanvasPath(planoId, talhaoId: talhaoId))
-        .then((_) {
-      if (mounted) ref.invalidate(etapasDoTalhaoProvider);
-    });
   }
 
   void _patchPlantioFocus(DateTime data) {
@@ -782,9 +723,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                         onConfirmarCultivar: _confirmarCultivarFocus,
                         onLinhaChanged: _patchFocusLinha,
                         onPlantioChanged: _patchPlantioFocus,
-                        onSyncPlano: _syncFocusLinha,
                         onAbrirRegulagemCompleta: _abrirRegulagemCompleta,
-                        onVerNoPlano: _verNoPlano,
                         avisosValidacao:
                             _avisosValidacaoCronograma(context, _focusLinha!),
                         etapas: etapasFoco,

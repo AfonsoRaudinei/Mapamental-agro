@@ -7,6 +7,7 @@ import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/formatters.dart';
 import '../../../plans/presentation/models/product_view_model.dart';
 import '../../../plans/presentation/widgets/product_tile.dart';
+import '../../../plans/presentation/widgets/stage_references_button.dart';
 import '../../domain/cronograma_soja/cronograma_soja_linha.dart';
 import '../../domain/talhao_etapas/etapa_talhao.dart';
 import 'talhao_timeline_stepper.dart';
@@ -31,7 +32,7 @@ class EtapasCarrossel extends StatelessWidget {
   final VoidCallback? onEditarPlantio;
   final DateTime? hoje;
 
-  static const double alturaCard = 340;
+  static const double alturaCard = 360;
 
   @override
   Widget build(BuildContext context) {
@@ -123,6 +124,7 @@ class _CartaoEtapa extends StatelessWidget {
     final l = etapa.linha;
     final nome = nomeCurtoEtapa(l);
     final nota = notaCurtaEtapa(l);
+    final estadio = estadioParaConsulta(codigoReferenciaEtapa(l));
     final quando = [
       AppFormatters.data(l.data),
       if (l.dae != null) 'DAE ${l.dae}',
@@ -230,6 +232,20 @@ class _CartaoEtapa extends StatelessWidget {
             Divider(height: 1, color: context.appBorder),
             // 5. Produtos
             Expanded(child: _Produtos(etapa: etapa, ativos: !_feito)),
+            // Atalhos do livro aberto (Referências / Circular técnica).
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: StageReferencesStrip(estadio: estadio),
+            ),
+            Divider(height: 1, color: context.appBorder),
+            // 6. Livros de referência no rodapé (mesmos do Plano; só consulta).
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
+              child: Align(
+                alignment: Alignment.centerLeft,
+                child: StageReferencesButton(estadio: estadio, compact: true),
+              ),
+            ),
           ],
         ),
       ),
