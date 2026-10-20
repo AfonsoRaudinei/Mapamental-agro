@@ -27,6 +27,33 @@ List<StepperNodeStatus> statusDasEtapas(List<DateTime> datas, DateTime hoje) {
   }).toList();
 }
 
+/// Status das etapas do talhão, levando em conta a confirmação manual.
+///
+/// - Aplicação: concluída só quando confirmada; vencida e não confirmada
+///   continua pendente (é a "atual" atrasada, ver [etapaAtrasada]).
+/// - Demais etapas: concluídas pela data, como em [statusDasEtapas].
+/// - A primeira etapa pendente é a atual; as seguintes, futuras.
+List<StepperNodeStatus> statusDasEtapasTalhao(
+  List<EtapaTalhao> etapas,
+  DateTime hoje,
+) {
+  final h = DateTime(hoje.year, hoje.month, hoje.day);
+  var atualDefinido = false;
+  return etapas.map((e) {
+    final d = e.data;
+    final vencida = DateTime(d.year, d.month, d.day).isBefore(h);
+    final concluida = e.exigeConfirmacao ? e.confirmada : vencida;
+    if (concluida) return StepperNodeStatus.concluido;
+    if (atualDefinido) return StepperNodeStatus.futuro;
+    atualDefinido = true;
+    return StepperNodeStatus.atual;
+  }).toList();
+}
+
+/// Aplicação com data vencida que ainda não foi confirmada.
+bool etapaAtrasada(EtapaTalhao e, DateTime hoje) =>
+    e.exigeConfirmacao && !e.confirmada && diasAte(e.data, hoje) < 0;
+
 /// Código curto do estádio exibido sob o nó.
 String codigoEstagioEtapa(CronogramaSojaLinha linha) {
   switch (linha.tipo) {
@@ -63,7 +90,7 @@ List<int> indicesNosStepper(List<EtapaTalhao> etapas) => [
 /// Índice (na lista original) da etapa atual do stepper, ou `null`.
 int? indiceEtapaAtual(List<EtapaTalhao> etapas, DateTime hoje) {
   final nos = indicesNosStepper(etapas);
-  final status = statusDasEtapas([for (final i in nos) etapas[i].data], hoje);
+  final status = statusDasEtapasTalhao([for (final i in nos) etapas[i]], hoje);
   final pos = status.indexOf(StepperNodeStatus.atual);
   return pos < 0 ? null : nos[pos];
 }
@@ -147,7 +174,7 @@ class ResumoFaseTalhao {
 }
 
 ResumoFaseTalhao resumoFaseTalhao(List<EtapaTalhao> etapas, DateTime hoje) {
-  final status = statusDasEtapas([for (final e in etapas) e.data], hoje);
+  final status = statusDasEtapasTalhao(etapas, hoje);
   final prox = status.indexOf(StepperNodeStatus.atual);
 
   DateTime? dataDo(CronogramaSojaLinhaTipo tipo) {
@@ -286,8 +313,10 @@ class _TalhaoTimelineStepperState extends State<TalhaoTimelineStepper>
 
   int? _posAtual() {
     final nos = indicesNosStepper(widget.etapas);
-    final pos =
-        statusDasEtapas(_datasDosNos(nos), _hoje).indexOf(StepperNodeStatus.atual);
+    final pos = statusDasEtapasTalhao(
+      [for (final i in nos) widget.etapas[i]],
+      _hoje,
+    ).indexOf(StepperNodeStatus.atual);
     return pos < 0 ? null : pos;
   }
 
@@ -326,7 +355,10 @@ class _TalhaoTimelineStepperState extends State<TalhaoTimelineStepper>
     final nos = indicesNosStepper(widget.etapas);
     if (nos.isEmpty) return const SizedBox(height: TalhaoTimelineStepper.altura);
     final datas = _datasDosNos(nos);
-    final status = statusDasEtapas(datas, _hoje);
+    final status = statusDasEtapasTalhao(
+      [for (final i in nos) widget.etapas[i]],
+      _hoje,
+    );
     final xHoje = _centro(posicaoHoje(datas, _hoje));
     final largura =
         TalhaoTimelineStepper._padding * 2 + nos.length * TalhaoTimelineStepper._larguraNo;

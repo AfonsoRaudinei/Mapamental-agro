@@ -5,7 +5,9 @@ import '../../features/auth/data/datasources/auth_remote_datasource.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
 import '../../features/clients/data/datasources/clients_local_datasource.dart';
+import '../../features/clients/data/datasources/confirmacoes_etapa_local_datasource.dart';
 import '../../features/clients/data/repositories/clients_repository_impl.dart';
+import '../../features/clients/domain/repositories/confirmacoes_etapa_repository.dart';
 import '../../features/clients/domain/repositories/clients_repository.dart';
 import '../../features/catalog/data/datasources/catalog_local_datasource.dart';
 import '../../features/catalog/data/repositories/catalog_repository_impl.dart';
@@ -51,6 +53,10 @@ final clientsDatasourceProvider = Provider<ClientsLocalDatasource>(
 
 final clientsRepoProvider = Provider<ClientsRepository>(
   (ref) => ClientsRepositoryImpl(ref.read(clientsDatasourceProvider)),
+);
+
+final confirmacoesEtapaRepoProvider = Provider<ConfirmacoesEtapaRepository>(
+  (ref) => ConfirmacoesEtapaLocalDatasource(ref.read(databaseProvider)),
 );
 
 // ─────────────────────────────────────────────────────────────────────────────

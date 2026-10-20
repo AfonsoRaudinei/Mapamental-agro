@@ -21,6 +21,7 @@ class EtapasCarrossel extends StatelessWidget {
     required this.controller,
     required this.onPageChanged,
     this.onEditarPlantio,
+    this.onConfirmarEtapa,
     this.hoje,
   });
 
@@ -30,6 +31,9 @@ class EtapasCarrossel extends StatelessWidget {
 
   /// Toque no card de Plantio para alterar a data (null = somente leitura).
   final VoidCallback? onEditarPlantio;
+
+  /// Confirmar (ou editar a confirmação de) uma aplicação; null = sem botão.
+  final ValueChanged<EtapaTalhao>? onConfirmarEtapa;
   final DateTime? hoje;
 
   static const double alturaCard = 360;
@@ -37,7 +41,7 @@ class EtapasCarrossel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final agora = hoje ?? DateTime.now();
-    final status = statusDasEtapas([for (final e in etapas) e.data], agora);
+    final status = statusDasEtapasTalhao(etapas, agora);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -91,6 +95,9 @@ class EtapasCarrossel extends StatelessWidget {
                           CronogramaSojaLinhaTipo.plantio
                       ? onEditarPlantio
                       : null,
+                  onConfirmar: onConfirmarEtapa == null || !etapas[i].exigeConfirmacao
+                      ? null
+                      : () => onConfirmarEtapa!(etapas[i]),
                 ),
               ),
             ),
@@ -109,12 +116,14 @@ class _CartaoEtapa extends StatelessWidget {
     required this.status,
     required this.hoje,
     this.onEditar,
+    this.onConfirmar,
   });
 
   final EtapaTalhao etapa;
   final StepperNodeStatus status;
   final DateTime hoje;
   final VoidCallback? onEditar;
+  final VoidCallback? onConfirmar;
 
   bool get _proxima => status == StepperNodeStatus.atual;
   bool get _feito => status == StepperNodeStatus.concluido;
@@ -171,6 +180,8 @@ class _CartaoEtapa extends StatelessWidget {
                       _PilulaSituacao(
                         status: status,
                         relativo: textoRelativo(l.data, hoje),
+                        atrasada: etapaAtrasada(etapa, hoje),
+                        confirmada: etapa.confirmada,
                       ),
                     ],
                   ),
@@ -214,6 +225,15 @@ class _CartaoEtapa extends StatelessWidget {
                         ),
                     ],
                   ),
+                  if (etapa.dataPrevista != null) ...[
+                    const SizedBox(height: 2),
+                    Text(
+                      'Previsto ${AppFormatters.data(etapa.dataPrevista!)}',
+                      style: AppTypography.caption.copyWith(
+                        color: context.appTextSecondary,
+                      ),
+                    ),
+                  ],
                   // 4. Por quê (regra do cronograma)
                   if (nota != null) ...[
                     const SizedBox(height: 2),
@@ -241,9 +261,16 @@ class _CartaoEtapa extends StatelessWidget {
             // 6. Livros de referência no rodapé (mesmos do Plano; só consulta).
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: StageReferencesButton(estadio: estadio, compact: true),
+              child: Row(
+                children: [
+                  StageReferencesButton(estadio: estadio, compact: true),
+                  const Spacer(),
+                  if (onConfirmar != null)
+                    _BotaoConfirmar(
+                      confirmada: etapa.confirmada,
+                      onPressed: onConfirmar!,
+                    ),
+                ],
               ),
             ),
           ],
@@ -354,23 +381,60 @@ class _ChipEstadio extends StatelessWidget {
   }
 }
 
-/// "Próxima · em 21 dias" / "Concluída · há 9 dias" / "em 27 dias".
-class _PilulaSituacao extends StatelessWidget {
-  const _PilulaSituacao({required this.status, required this.relativo});
+/// Confirmar a aplicação (pendente) ou editar a confirmação já feita.
+class _BotaoConfirmar extends StatelessWidget {
+  const _BotaoConfirmar({required this.confirmada, required this.onPressed});
 
-  final StepperNodeStatus status;
-  final String relativo;
+  final bool confirmada;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final (texto, icone, cor) = switch (status) {
+    if (confirmada) {
+      return TextButton(
+        onPressed: onPressed,
+        child: const Text('Editar'),
+      );
+    }
+    return FilledButton(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        minimumSize: const Size(0, 36),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      child: const Text('Confirmar aplicação'),
+    );
+  }
+}
+
+/// "Próxima · em 21 dias" / "Atrasada · há 3 dias" / "Aplicada · há 9 dias".
+class _PilulaSituacao extends StatelessWidget {
+  const _PilulaSituacao({
+    required this.status,
+    required this.relativo,
+    this.atrasada = false,
+    this.confirmada = false,
+  });
+
+  final StepperNodeStatus status;
+  final String relativo;
+  final bool atrasada;
+  final bool confirmada;
+
+  @override
+  Widget build(BuildContext context) {
+    final (texto, icone, cor) = atrasada
+        ? ('Atrasada · $relativo', Icons.error_rounded, AppColors.error)
+        : switch (status) {
       StepperNodeStatus.atual => (
           'Próxima · $relativo',
           Icons.radio_button_checked_rounded,
           AppColors.primary,
         ),
       StepperNodeStatus.concluido => (
-          'Concluída · $relativo',
+          '${confirmada ? 'Aplicada' : 'Concluída'} · $relativo',
           Icons.check_circle_rounded,
           context.appTextSecondary,
         ),
