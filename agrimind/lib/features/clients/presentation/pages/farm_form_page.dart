@@ -390,6 +390,7 @@ class _FarmFormPageState extends ConsumerState<FarmFormPage> {
               style:
                   AppTypography.body.copyWith(color: context.appTextDisabled)),
           onChanged: onChanged,
+          menuMaxHeight: MediaQuery.sizeOf(context).height * 0.5,
           decoration: InputDecoration(
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(8),
