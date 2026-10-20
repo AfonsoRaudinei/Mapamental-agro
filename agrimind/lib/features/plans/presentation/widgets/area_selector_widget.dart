@@ -151,22 +151,79 @@ class _AreaSelectorWidgetState extends State<AreaSelectorWidget> {
     final disponiveis =
         widget.talhoes.where((t) => !_excluidos.contains(t.id)).toList();
 
+    final fazenda = _modo == _ModoArea.fazenda;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Área de Aplicação',
-          style: AppTypography.label.copyWith(color: context.appTextSecondary),
+        Wrap(
+          spacing: 8,
+          runSpacing: 4,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            ChoiceChip(
+              label: Text(
+                '${widget.fazendaNome} · ${widget.areaHaFazenda.toStringAsFixed(1)} ha',
+              ),
+              selected: fazenda,
+              onSelected: (_) => _onModo(_ModoArea.fazenda),
+              visualDensity: VisualDensity.compact,
+            ),
+            ChoiceChip(
+              label: const Text('Personalizado'),
+              selected: !fazenda,
+              onSelected: (_) => _onModo(_ModoArea.personalizado),
+              visualDensity: VisualDensity.compact,
+            ),
+            if (fazenda && widget.talhoes.isNotEmpty)
+              PopupMenuButton<String>(
+                enabled: disponiveis.isNotEmpty,
+                onSelected: _addExclusao,
+                itemBuilder: (_) => disponiveis
+                    .map(
+                      (t) => PopupMenuItem(
+                        value: t.id,
+                        child: Text(
+                          '${t.nome} — ${t.areaHa.toStringAsFixed(1)} ha',
+                        ),
+                      ),
+                    )
+                    .toList(),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 8,
+                    vertical: 6,
+                  ),
+                  child: Text(
+                    '− Excluir talhão',
+                    style: AppTypography.caption.copyWith(
+                      color: AppColors.primary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ),
+          ],
         ),
-        const SizedBox(height: AppSpacing.sm),
-        _RadioItem(
-          label: 'Fazenda inteira (${widget.fazendaNome})',
-          sublabel: '${widget.areaHaFazenda.toStringAsFixed(1)} ha',
-          selected: _modo == _ModoArea.fazenda,
-          onTap: () => _onModo(_ModoArea.fazenda),
-        ),
-        if (_modo == _ModoArea.fazenda) ...[
-          const SizedBox(height: 8),
+        if (fazenda && _excluidos.isNotEmpty) ...[
+          const SizedBox(height: 4),
+          Wrap(
+            spacing: 6,
+            runSpacing: 4,
+            children: _excluidos.map((id) {
+              final t = widget.talhoes.firstWhere((x) => x.id == id);
+              return InputChip(
+                label: Text(
+                  '${t.nome} (−${t.areaHa.toStringAsFixed(1)} ha)',
+                  style: AppTypography.caption,
+                ),
+                onDeleted: () => _removeExclusao(id),
+                deleteIconColor: context.appTextSecondary,
+                visualDensity: VisualDensity.compact,
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 4),
           Text(
             'Área efetiva: ${_areaEfetivaFazenda.toStringAsFixed(1)} ha',
             style: AppTypography.caption.copyWith(
@@ -174,132 +231,15 @@ class _AreaSelectorWidgetState extends State<AreaSelectorWidget> {
               fontWeight: FontWeight.w700,
             ),
           ),
-          if (widget.talhoes.isNotEmpty) ...[
-            const SizedBox(height: 10),
-            Text(
-              'Excluir talhão (opcional)',
-              style: AppTypography.caption.copyWith(
-                color: context.appTextSecondary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
-            const SizedBox(height: 6),
-            DropdownButtonFormField<String>(
-              key: ValueKey(_excluidos.join(',')),
-              initialValue: null,
-              decoration: InputDecoration(
-                hintText: 'Selecionar talhão para excluir',
-                isDense: true,
-                filled: true,
-                fillColor: context.appBackground,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  borderSide: BorderSide(color: context.appBorderSoft),
-                ),
-              ),
-              items: disponiveis
-                  .map(
-                    (t) => DropdownMenuItem(
-                      value: t.id,
-                      child: Text(
-                        '${t.nome} — ${t.areaHa.toStringAsFixed(1)} ha',
-                      ),
-                    ),
-                  )
-                  .toList(),
-              onChanged: disponiveis.isEmpty ? null : _addExclusao,
-            ),
-            if (_excluidos.isNotEmpty) ...[
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: _excluidos.map((id) {
-                  final t = widget.talhoes.firstWhere((x) => x.id == id);
-                  return InputChip(
-                    label: Text(
-                      '${t.nome} (−${t.areaHa.toStringAsFixed(1)} ha)',
-                      style: AppTypography.caption,
-                    ),
-                    onDeleted: () => _removeExclusao(id),
-                    deleteIconColor: context.appTextSecondary,
-                  );
-                }).toList(),
-              ),
-            ],
-          ],
         ],
-        _RadioItem(
-          label: 'Personalizado',
-          sublabel: null,
-          selected: _modo == _ModoArea.personalizado,
-          onTap: () => _onModo(_ModoArea.personalizado),
-        ),
-        if (_modo == _ModoArea.personalizado) ...[
-          const SizedBox(height: AppSpacing.sm),
+        if (!fazenda) ...[
+          const SizedBox(height: AppSpacing.xs),
           _CustomAreaField(
             controller: _customCtrl,
             onChanged: (_) => _notify(),
           ),
         ],
       ],
-    );
-  }
-}
-
-class _RadioItem extends StatelessWidget {
-  const _RadioItem({
-    required this.label,
-    required this.sublabel,
-    required this.selected,
-    required this.onTap,
-  });
-
-  final String label;
-  final String? sublabel;
-  final bool selected;
-  final VoidCallback onTap;
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      behavior: HitTestBehavior.opaque,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Row(
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 150),
-              width: 20,
-              height: 20,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                border: Border.all(
-                  color: selected ? AppColors.primary : context.appBorder,
-                  width: selected ? 6 : 2,
-                ),
-              ),
-            ),
-            const SizedBox(width: AppSpacing.sm),
-            Expanded(
-              child: Text(
-                label,
-                style: AppTypography.body.copyWith(
-                  color: context.appTextPrimary,
-                ),
-              ),
-            ),
-            if (sublabel != null)
-              Text(
-                sublabel!,
-                style: AppTypography.caption.copyWith(
-                  color: context.appTextSecondary,
-                ),
-              ),
-          ],
-        ),
-      ),
     );
   }
 }

@@ -39,4 +39,16 @@ void main() {
     expect(r.sementesPorMetroLinear, isNull);
     expect(r.metrosLinearesPorHa, isNull);
   });
+
+  test('embalagensFinais usa o ajuste manual quando existe', () {
+    final r = calcularSementesTalhao(
+      populacaoSementesPorHa: 260000,
+      sementesPorEmbalagem: 5000000,
+      areaTalhaoHa: 76,
+      espacamentoPlantioCm: 50,
+    );
+
+    expect(embalagensFinais(r, null), r.embalagensNecessarias);
+    expect(embalagensFinais(r, 6), 6);
+  });
 }

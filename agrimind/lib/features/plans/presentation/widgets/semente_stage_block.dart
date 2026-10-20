@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:phosphor_flutter/phosphor_flutter.dart';
@@ -149,8 +150,8 @@ class _SementeStageBlockState extends ConsumerState<SementeStageBlock> {
         areaTalhaoHa: talhaoEnt.areaHa,
         espacamentoPlantioCm: s.espacamentoPlantioCm,
       );
-      embalagens =
-          '${calc.embalagensNecessarias} ${calc.embalagensNecessarias == 1 ? 'embalagem' : 'embalagens'}';
+      final n = embalagensFinais(calc, s.embalagensManual);
+      embalagens = '$n ${n == 1 ? 'embalagem' : 'embalagens'}';
     }
 
     return '$cultivar · $talhao · $pop · $embalagens';
@@ -436,7 +437,7 @@ class _SementeStageBlockState extends ConsumerState<SementeStageBlock> {
         child: AccordionStageCard(
           stageCode: 'SEM',
           stageName: tituloHeader,
-          subtitleWidget: _headerSubtitleWidget(linhas),
+          subtitleWidget: expanded ? null : _headerSubtitleWidget(linhas),
           isExpanded: expanded,
           onToggle: _toggleExpanded,
           child: _expandedContent(linhas, reservados),
@@ -560,6 +561,8 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
   late final TextEditingController _cultivar;
   late final TextEditingController _populacao;
   late final TextEditingController _espacamento;
+  late final TextEditingController _embManual;
+  bool _manualAtivo = false;
   late int _embalagem;
   TalhaoEntity? _talhao;
 
@@ -569,9 +572,10 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
     _cultivar = TextEditingController(text: widget.semente.cultivar);
     _populacao = TextEditingController();
     _espacamento = TextEditingController();
+    _embManual = TextEditingController();
     _embalagem = widget.semente.sementesPorEmbalagem;
     _syncFromEntity(widget.semente);
-    for (final c in [_cultivar, _populacao, _espacamento]) {
+    for (final c in [_cultivar, _populacao, _espacamento, _embManual]) {
       c.addListener(_scheduleSave);
     }
   }
@@ -595,6 +599,9 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
         : '';
     if (_espacamento.text != espText) _espacamento.text = espText;
     _embalagem = s.sementesPorEmbalagem;
+    _manualAtivo = s.embalagensManual != null;
+    final manualText = s.embalagensManual?.toString() ?? '';
+    if (_embManual.text != manualText) _embManual.text = manualText;
     TalhaoEntity? found;
     for (final t in widget.talhoes) {
       if (t.id == s.talhaoId) {
@@ -611,6 +618,7 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
     _cultivar.dispose();
     _populacao.dispose();
     _espacamento.dispose();
+    _embManual.dispose();
     super.dispose();
   }
 
@@ -644,6 +652,7 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
       populacaoSementesPorHa: pop ?? 0,
       sementesPorEmbalagem: _embalagem,
       espacamentoPlantioCm: esp ?? 0,
+      embalagensManual: _manualAtivo ? int.tryParse(_embManual.text) : null,
       updatedAt: DateTime.now(),
     );
     await ref.read(plansRepoProvider).updateSementeTalhao(updated);
@@ -717,16 +726,35 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
         const SizedBox(height: 8),
         _talhaoSelector(),
         const SizedBox(height: 8),
-        _field(
-          'População (sementes/ha)',
-          _populacao,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        Row(
+          children: [
+            Expanded(
+              child: _field(
+                'População (sem/ha)',
+                _populacao,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _field(
+                'Espaç. (cm)',
+                _espacamento,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
           initialValue: _embalagem,
+          isDense: true,
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: 'Embalagem',
+            isDense: true,
             filled: true,
             fillColor: context.appBackground,
             border: OutlineInputBorder(
@@ -749,53 +777,40 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
           },
         ),
         const SizedBox(height: 8),
-        _field(
-          'Espaçamento entre linhas (cm)',
-          _espacamento,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        const SizedBox(height: 12),
         _resultBlock(calc),
       ],
     );
   }
 
   Widget _talhaoSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Talhão',
-          style: AppTypography.caption.copyWith(
+    final t = _talhao;
+    return GestureDetector(
+      onTap: _pickTalhao,
+      behavior: HitTestBehavior.opaque,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: 'Talhão',
+          isDense: true,
+          filled: true,
+          fillColor: context.appBackground,
+          suffixIcon: Icon(
+            Icons.arrow_drop_down,
             color: context.appTextSecondary,
-            fontWeight: FontWeight.w600,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: context.appBorderSoft),
           ),
         ),
-        const SizedBox(height: 4),
-        CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _pickTalhao,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              _talhao?.nome ?? 'Selecionar talhão',
-              style: AppTypography.body.copyWith(
-                color: _talhao == null
-                    ? AppColors.primary
-                    : context.appTextPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+        child: Text(
+          t == null
+              ? 'Selecionar talhão'
+              : '${t.nome} · ${t.areaHa.toStringAsFixed(1)} ha',
+          style: AppTypography.body.copyWith(
+            color: t == null ? AppColors.primary : context.appTextPrimary,
           ),
         ),
-        if (_talhao != null)
-          Text(
-            '${_talhao!.areaHa.toStringAsFixed(1)} ha (cadastro)',
-            style: AppTypography.caption.copyWith(
-              color: context.appTextSecondary,
-            ),
-          ),
-      ],
+      ),
     );
   }
 
@@ -828,16 +843,31 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
     );
   }
 
+  void _toggleManual(bool v, int calculadas) {
+    setState(() {
+      _manualAtivo = v;
+      if (v && _embManual.text.isEmpty) {
+        _embManual.text = calculadas.toString();
+      }
+    });
+    _scheduleSave();
+  }
+
   Widget _resultBlock(SementesTalhaoCalculo? calc) {
     if (calc == null) {
       return Text(
-        'Informe população e talhão para ver totais; espaçamento para sementes/m.',
+        'Informe talhão e população para ver as embalagens.',
         style: AppTypography.caption.copyWith(color: context.appTextDisabled),
       );
     }
+    final n = calc.embalagensNecessarias;
+    final total = _manualAtivo
+        ? (int.tryParse(_embManual.text) ?? n)
+        : n;
+    final porMetro = calc.sementesPorMetroLinear;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.fromLTRB(10, 8, 4, 0),
       decoration: BoxDecoration(
         color: context.appBackground,
         borderRadius: BorderRadius.circular(8),
@@ -845,40 +875,73 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          _resultRow(
-            'Embalagens necessárias',
-            calc.embalagensNecessarias.toString(),
+          Row(
+            children: [
+              Text(
+                '$total ${total == 1 ? 'embalagem' : 'embalagens'}',
+                style: AppTypography.body.copyWith(
+                  color: _manualAtivo
+                      ? AppColors.warning
+                      : context.appTextPrimary,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+              const Spacer(),
+              if (porMetro != null)
+                Padding(
+                  padding: const EdgeInsets.only(right: 6),
+                  child: Text(
+                    '${porMetro.toStringAsFixed(2)} sem/m',
+                    style: AppTypography.caption.copyWith(
+                      color: context.appTextSecondary,
+                    ),
+                  ),
+                ),
+            ],
           ),
-          if (calc.sementesPorMetroLinear != null)
-            _resultRow(
-              'Sementes por metro linear',
-              calc.sementesPorMetroLinear!.toStringAsFixed(2),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _resultRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              label,
-              style: AppTypography.caption.copyWith(
-                color: context.appTextSecondary,
+          Row(
+            children: [
+              Text(
+                _manualAtivo ? 'Calculado: $n' : 'Ajuste manual',
+                style: AppTypography.caption.copyWith(
+                  color: context.appTextSecondary,
+                ),
+              ),
+              const Spacer(),
+              Transform.scale(
+                scale: 0.8,
+                child: Switch.adaptive(
+                  value: _manualAtivo,
+                  onChanged: (v) => _toggleManual(v, n),
+                  activeThumbColor: AppColors.warning,
+                ),
+              ),
+            ],
+          ),
+          if (_manualAtivo)
+            Padding(
+              padding: const EdgeInsets.only(right: 6, bottom: 8),
+              child: TextField(
+                controller: _embManual,
+                keyboardType: TextInputType.number,
+                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                style: AppTypography.body.copyWith(
+                  color: context.appTextPrimary,
+                ),
+                decoration: InputDecoration(
+                  labelText: 'Embalagens (manual)',
+                  isDense: true,
+                  filled: true,
+                  fillColor: context.appSurface,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(8),
+                    borderSide: BorderSide(color: context.appBorderSoft),
+                  ),
+                ),
+                onTapOutside: (_) =>
+                    FocusManager.instance.primaryFocus?.unfocus(),
               ),
             ),
-          ),
-          Text(
-            value,
-            style: AppTypography.caption.copyWith(
-              color: context.appTextPrimary,
-              fontWeight: FontWeight.w800,
-            ),
-          ),
         ],
       ),
     );

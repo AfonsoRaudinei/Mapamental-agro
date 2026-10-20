@@ -95,6 +95,7 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
   List<String> _talhoesExcluidos = const [];
   bool _areaPersonalizada = false;
   bool _overrideAtivo = false;
+  bool _obsVisivel = false;
   String _categoriaSelecionada = 'Geral';
 
   bool get _isEdit => widget.produtoInicial != null;
@@ -116,6 +117,7 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
       }
       _motivoCtrl.text = p.overrideMotivo ?? '';
       _obsCtrl.text = p.observacao ?? '';
+      _obsVisivel = _obsCtrl.text.isNotEmpty;
     } else {
       _unidade = _unidades.first;
       _areaHa = widget.areaHaFazenda;
@@ -195,40 +197,41 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
   @override
   Widget build(BuildContext context) {
     return DraggableScrollableSheet(
-      initialChildSize: 0.85,
+      initialChildSize: 0.72,
       minChildSize: 0.5,
       maxChildSize: 0.95,
       expand: false,
       builder: (_, scrollCtrl) => AppBottomSheetScaffold(
-        header: _PanelHeader(isEdit: _isEdit),
+        header: _PanelHeader(isEdit: _isEdit, onSalvar: _salvar),
         body: Form(
           key: _formKey,
           child: CustomScrollView(
             controller: scrollCtrl,
             slivers: [
               SliverPadding(
-                padding: const EdgeInsets.all(AppSpacing.md),
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.md,
+                  AppSpacing.sm,
+                  AppSpacing.md,
+                  AppSpacing.md,
+                ),
                 sliver: SliverList(
                   delegate: SliverChildListDelegate([
                     // Nome do produto (catálogo)
-                    const _FieldLabel('Produto'),
-                    const SizedBox(height: 6),
                     ProdutoSearchDropdown(
                       controller: _nomeCtrl,
                       hintText: 'Buscar no catálogo...',
                       onSelected: _onCatalogoSelected,
                     ),
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.sm),
 
                     // Dose + unidade
-                    const _FieldLabel('Dose'),
-                    const SizedBox(height: 6),
                     Row(
                       children: [
                         Expanded(
                           child: _PanelTextField(
                             controller: _doseCtrl,
-                            hint: '0,0',
+                            hint: 'Dose (0,0)',
                             keyboardType: const TextInputType.numberWithOptions(
                               decimal: true,
                             ),
@@ -259,7 +262,7 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.sm),
 
                     // Área de aplicação
                     AreaSelectorWidget(
@@ -273,7 +276,7 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
                         _areaPersonalizada = selection.personalizado;
                       }),
                     ),
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.sm),
 
                     // Total calculado
                     _TotalCalculado(
@@ -324,70 +327,31 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
                       ),
                     ],
 
-                    const SizedBox(height: AppSpacing.md),
+                    const SizedBox(height: AppSpacing.sm),
 
-                    // Observação
-                    const _FieldLabel('Observação (opcional)'),
-                    const SizedBox(height: 6),
-                    _PanelTextField(
-                      controller: _obsCtrl,
-                      hint: 'Anotações, cuidados, etc.',
-                      maxLines: 3,
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-
-                    // Botões
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            onPressed: () => Navigator.of(context).pop(),
-                            style: OutlinedButton.styleFrom(
-                              minimumSize: const Size.fromHeight(48),
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                              ),
-                              side: BorderSide(
-                                color: context.appBorder,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            child: Text(
-                              'Cancelar',
-                              maxLines: 1,
-                              softWrap: false,
-                              overflow: TextOverflow.clip,
-                              style: AppTypography.button.copyWith(
-                                color: context.appTextPrimary,
-                                fontSize: 15,
-                              ),
-                            ),
+                    // Observação (oculta até o toque)
+                    if (_obsVisivel)
+                      _PanelTextField(
+                        controller: _obsCtrl,
+                        hint: 'Observação (opcional)',
+                        minLines: 1,
+                        maxLines: 3,
+                        autofocus: _obsCtrl.text.isEmpty,
+                      )
+                    else
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () => setState(() => _obsVisivel = true),
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Observação'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            minimumSize: const Size(0, 32),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
                           ),
                         ),
-                        const SizedBox(width: AppSpacing.sm),
-                        Expanded(
-                          child: ElevatedButton(
-                            onPressed: _salvar,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.primary,
-                              foregroundColor: Colors.white,
-                              minimumSize: const Size.fromHeight(48),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 0,
-                            ),
-                            child: Text(
-                              _isEdit ? 'Atualizar' : 'Adicionar',
-                              style: AppTypography.button,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.md),
+                      ),
                   ]),
                 ),
               ),
@@ -402,16 +366,17 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
 // ── Widgets internos do painel ───────────────────────────────────────────────
 
 class _PanelHeader extends StatelessWidget {
-  const _PanelHeader({required this.isEdit});
+  const _PanelHeader({required this.isEdit, required this.onSalvar});
 
   final bool isEdit;
+  final VoidCallback onSalvar;
 
   @override
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: AppSpacing.sm,
+        vertical: AppSpacing.xs,
       ),
       child: Row(
         children: [
@@ -419,22 +384,21 @@ class _PanelHeader extends StatelessWidget {
             isEdit ? 'Editar Produto' : 'Adicionar Produto',
             style: AppTypography.h3,
           ),
+          const Spacer(),
+          TextButton(
+            onPressed: onSalvar,
+            style: TextButton.styleFrom(
+              foregroundColor: AppColors.primary,
+              minimumSize: const Size(0, 36),
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+            ),
+            child: Text(
+              isEdit ? 'Atualizar' : 'Adicionar',
+              style: AppTypography.button.copyWith(color: AppColors.primary),
+            ),
+          ),
         ],
       ),
-    );
-  }
-}
-
-class _FieldLabel extends StatelessWidget {
-  const _FieldLabel(this.text);
-
-  final String text;
-
-  @override
-  Widget build(BuildContext context) {
-    return Text(
-      text,
-      style: AppTypography.label.copyWith(color: context.appTextSecondary),
     );
   }
 }
@@ -446,7 +410,9 @@ class _PanelTextField extends StatelessWidget {
     this.keyboardType,
     this.inputFormatters,
     this.validator,
+    this.minLines,
     this.maxLines = 1,
+    this.autofocus = false,
   });
 
   final TextEditingController controller;
@@ -454,6 +420,8 @@ class _PanelTextField extends StatelessWidget {
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
+  final int? minLines;
+  final bool autofocus;
   final int maxLines;
 
   @override
@@ -463,6 +431,8 @@ class _PanelTextField extends StatelessWidget {
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       validator: validator,
+      autofocus: autofocus,
+      minLines: minLines,
       maxLines: maxLines,
       decoration: InputDecoration(
         hintText: hint,
@@ -559,7 +529,12 @@ class _TotalCalculado extends StatelessWidget {
     final unitLabel = UnitConverter.unidadeBase(unidade);
 
     return Container(
-      padding: const EdgeInsets.all(AppSpacing.sm),
+      padding: const EdgeInsets.fromLTRB(
+        AppSpacing.sm,
+        AppSpacing.sm,
+        AppSpacing.xs,
+        0,
+      ),
       decoration: BoxDecoration(
         color: AppColors.primaryLight,
         borderRadius: BorderRadius.circular(12),
@@ -585,26 +560,27 @@ class _TotalCalculado extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 4),
-          Text(
-            '${displayTotal.toStringAsFixed(displayTotal < 10 ? 2 : 1)} ${UnitConverter.unidadeTotal(unidade)}',
-            style: AppTypography.h3.copyWith(
-              color: overrideAtivo ? AppColors.warning : AppColors.primary,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
-              Switch.adaptive(
-                value: overrideAtivo,
-                onChanged: onToggleOverride,
-                activeThumbColor: AppColors.warning,
-              ),
-              const SizedBox(width: AppSpacing.xs),
               Text(
-                'Ajuste manual do total',
+                '${displayTotal.toStringAsFixed(displayTotal < 10 ? 2 : 1)} ${UnitConverter.unidadeTotal(unidade)}',
+                style: AppTypography.h3.copyWith(
+                  color: overrideAtivo ? AppColors.warning : AppColors.primary,
+                ),
+              ),
+              const Spacer(),
+              Text(
+                'Ajuste manual',
                 style: AppTypography.caption.copyWith(
                   color: context.appTextSecondary,
+                ),
+              ),
+              Transform.scale(
+                scale: 0.8,
+                child: Switch.adaptive(
+                  value: overrideAtivo,
+                  onChanged: onToggleOverride,
+                  activeThumbColor: AppColors.warning,
                 ),
               ),
             ],
