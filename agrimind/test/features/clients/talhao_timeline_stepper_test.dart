@@ -1,4 +1,5 @@
 import 'package:agrimind/features/clients/domain/cronograma_soja/cronograma_soja_linha.dart';
+import 'package:agrimind/features/clients/domain/talhao_etapas/etapa_talhao.dart';
 import 'package:agrimind/features/clients/presentation/widgets/talhao_timeline_stepper.dart';
 import 'package:flutter_test/flutter_test.dart';
 
@@ -100,5 +101,25 @@ void main() {
       notaCurtaEtapa(linha('Plantio', CronogramaSojaLinhaTipo.plantio)),
       isNull,
     );
+  });
+
+  test('card da colheita real aponta para o nó R8 do stepper', () {
+    EtapaTalhao etapa(CronogramaSojaLinhaTipo tipo, int dia) => EtapaTalhao(
+          linha: CronogramaSojaLinha(
+            etapa: tipo.name,
+            dae: null,
+            data: DateTime(2027, 1, dia),
+            tipo: tipo,
+          ),
+        );
+    final etapas = [
+      etapa(CronogramaSojaLinhaTipo.emergencia, 1),
+      etapa(CronogramaSojaLinhaTipo.colheitaReal, 20),
+      etapa(CronogramaSojaLinhaTipo.colheitaEstimada, 25),
+    ];
+    // Nós: emergência (0) e colheita estimada (1); a real não é nó.
+    expect(posicaoNoStepper(etapas, 0), 0);
+    expect(posicaoNoStepper(etapas, 1), 1);
+    expect(posicaoNoStepper(etapas, 2), 1);
   });
 }

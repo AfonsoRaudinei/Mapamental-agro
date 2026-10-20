@@ -68,6 +68,21 @@ int? indiceEtapaAtual(List<EtapaTalhao> etapas, DateTime hoje) {
   return pos < 0 ? null : nos[pos];
 }
 
+/// Posição no stepper do card [indiceEtapa]. A colheita real não é nó
+/// (só a R8 estimada é): o card dela aponta para o nó de mesmo estádio.
+/// `-1` se não houver nó correspondente.
+int posicaoNoStepper(List<EtapaTalhao> etapas, int indiceEtapa) {
+  final nos = indicesNosStepper(etapas);
+  final direto = nos.indexOf(indiceEtapa);
+  if (direto >= 0 || indiceEtapa < 0 || indiceEtapa >= etapas.length) {
+    return direto;
+  }
+  final codigo = codigoEstagioEtapa(etapas[indiceEtapa].linha);
+  return nos.indexWhere(
+    (i) => codigoEstagioEtapa(etapas[i].linha) == codigo,
+  );
+}
+
 /// Código do estádio do Plano cujas referências valem para a etapa
 /// (o dessecante R7 é o card R8 do Plano).
 String codigoReferenciaEtapa(CronogramaSojaLinha linha) {
@@ -281,7 +296,7 @@ class _TalhaoTimelineStepperState extends State<TalhaoTimelineStepper>
 
   void _onFoco() {
     final f = widget.foco?.value;
-    final pos = f == null ? -1 : indicesNosStepper(widget.etapas).indexOf(f);
+    final pos = f == null ? -1 : posicaoNoStepper(widget.etapas, f);
     _centralizar(pos < 0 ? _alvoHoje() : pos.toDouble(), animar: true);
   }
 
@@ -329,7 +344,8 @@ class _TalhaoTimelineStepperState extends State<TalhaoTimelineStepper>
         child: ValueListenableBuilder<int?>(
           valueListenable: widget.foco ?? ValueNotifier<int?>(null),
           builder: (context, foco, _) {
-            final posFoco = foco == null ? -1 : nos.indexOf(foco);
+            final posFoco =
+                foco == null ? -1 : posicaoNoStepper(widget.etapas, foco);
             return SingleChildScrollView(
               controller: _scroll,
               scrollDirection: Axis.horizontal,
