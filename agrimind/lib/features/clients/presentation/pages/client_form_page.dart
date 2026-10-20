@@ -393,6 +393,7 @@ class _UfDropdown extends StatelessWidget {
               ),
               onChanged: onChanged,
               isExpanded: true,
+              menuMaxHeight: MediaQuery.sizeOf(context).height * 0.5,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
               items: AppConstants.estadosBrasileiros
                   .map(
