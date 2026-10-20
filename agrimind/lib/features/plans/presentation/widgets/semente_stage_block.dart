@@ -436,7 +436,7 @@ class _SementeStageBlockState extends ConsumerState<SementeStageBlock> {
         child: AccordionStageCard(
           stageCode: 'SEM',
           stageName: tituloHeader,
-          subtitleWidget: _headerSubtitleWidget(linhas),
+          subtitleWidget: expanded ? null : _headerSubtitleWidget(linhas),
           isExpanded: expanded,
           onToggle: _toggleExpanded,
           child: _expandedContent(linhas, reservados),
@@ -717,16 +717,35 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
         const SizedBox(height: 8),
         _talhaoSelector(),
         const SizedBox(height: 8),
-        _field(
-          'População (sementes/ha)',
-          _populacao,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        Row(
+          children: [
+            Expanded(
+              child: _field(
+                'População (sem/ha)',
+                _populacao,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: _field(
+                'Espaç. (cm)',
+                _espacamento,
+                keyboardType:
+                    const TextInputType.numberWithOptions(decimal: true),
+              ),
+            ),
+          ],
         ),
         const SizedBox(height: 8),
         DropdownButtonFormField<int>(
           initialValue: _embalagem,
+          isDense: true,
+          isExpanded: true,
           decoration: InputDecoration(
             labelText: 'Embalagem',
+            isDense: true,
             filled: true,
             fillColor: context.appBackground,
             border: OutlineInputBorder(
@@ -749,53 +768,40 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
           },
         ),
         const SizedBox(height: 8),
-        _field(
-          'Espaçamento entre linhas (cm)',
-          _espacamento,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        ),
-        const SizedBox(height: 12),
         _resultBlock(calc),
       ],
     );
   }
 
   Widget _talhaoSelector() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          'Talhão',
-          style: AppTypography.caption.copyWith(
+    final t = _talhao;
+    return GestureDetector(
+      onTap: _pickTalhao,
+      behavior: HitTestBehavior.opaque,
+      child: InputDecorator(
+        decoration: InputDecoration(
+          labelText: 'Talhão',
+          isDense: true,
+          filled: true,
+          fillColor: context.appBackground,
+          suffixIcon: Icon(
+            Icons.arrow_drop_down,
             color: context.appTextSecondary,
-            fontWeight: FontWeight.w600,
+          ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(8),
+            borderSide: BorderSide(color: context.appBorderSoft),
           ),
         ),
-        const SizedBox(height: 4),
-        CupertinoButton(
-          padding: EdgeInsets.zero,
-          onPressed: _pickTalhao,
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: Text(
-              _talhao?.nome ?? 'Selecionar talhão',
-              style: AppTypography.body.copyWith(
-                color: _talhao == null
-                    ? AppColors.primary
-                    : context.appTextPrimary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+        child: Text(
+          t == null
+              ? 'Selecionar talhão'
+              : '${t.nome} · ${t.areaHa.toStringAsFixed(1)} ha',
+          style: AppTypography.body.copyWith(
+            color: t == null ? AppColors.primary : context.appTextPrimary,
           ),
         ),
-        if (_talhao != null)
-          Text(
-            '${_talhao!.areaHa.toStringAsFixed(1)} ha (cadastro)',
-            style: AppTypography.caption.copyWith(
-              color: context.appTextSecondary,
-            ),
-          ),
-      ],
+      ),
     );
   }
 
@@ -831,54 +837,36 @@ class _SementeLineEditorState extends ConsumerState<_SementeLineEditor> {
   Widget _resultBlock(SementesTalhaoCalculo? calc) {
     if (calc == null) {
       return Text(
-        'Informe população e talhão para ver totais; espaçamento para sementes/m.',
+        'Informe talhão e população para ver as embalagens.',
         style: AppTypography.caption.copyWith(color: context.appTextDisabled),
       );
     }
+    final n = calc.embalagensNecessarias;
+    final porMetro = calc.sementesPorMetroLinear;
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(10),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
       decoration: BoxDecoration(
         color: context.appBackground,
         borderRadius: BorderRadius.circular(8),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _resultRow(
-            'Embalagens necessárias',
-            calc.embalagensNecessarias.toString(),
-          ),
-          if (calc.sementesPorMetroLinear != null)
-            _resultRow(
-              'Sementes por metro linear',
-              calc.sementesPorMetroLinear!.toStringAsFixed(2),
-            ),
-        ],
-      ),
-    );
-  }
-
-  Widget _resultRow(String label, String value) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 3),
       child: Row(
         children: [
-          Expanded(
-            child: Text(
-              label,
-              style: AppTypography.caption.copyWith(
-                color: context.appTextSecondary,
-              ),
-            ),
-          ),
           Text(
-            value,
-            style: AppTypography.caption.copyWith(
+            '$n ${n == 1 ? 'embalagem' : 'embalagens'}',
+            style: AppTypography.body.copyWith(
               color: context.appTextPrimary,
               fontWeight: FontWeight.w800,
             ),
           ),
+          const Spacer(),
+          if (porMetro != null)
+            Text(
+              '${porMetro.toStringAsFixed(2)} sem/m',
+              style: AppTypography.caption.copyWith(
+                color: context.appTextSecondary,
+              ),
+            ),
         ],
       ),
     );
