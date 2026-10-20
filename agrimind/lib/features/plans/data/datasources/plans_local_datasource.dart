@@ -567,6 +567,7 @@ class PlansLocalDatasource {
         populacaoSementesPorHa: row.populacaoSementesPorHa,
         sementesPorEmbalagem: row.sementesPorEmbalagem,
         espacamentoPlantioCm: row.espacamentoPlantioCm,
+        embalagensManual: row.embalagensManual,
         createdAt: row.createdAt,
         updatedAt: row.updatedAt,
       );
@@ -582,6 +583,7 @@ class PlansLocalDatasource {
         populacaoSementesPorHa: entity.populacaoSementesPorHa,
         sementesPorEmbalagem: entity.sementesPorEmbalagem,
         espacamentoPlantioCm: entity.espacamentoPlantioCm,
+        embalagensManual: Value(entity.embalagensManual),
         createdAt: entity.createdAt,
         updatedAt: entity.updatedAt,
       );

@@ -8086,6 +8086,12 @@ class $SementesTalhaoTable extends SementesTalhao
   late final GeneratedColumn<double> espacamentoPlantioCm =
       GeneratedColumn<double>('espacamento_plantio_cm', aliasedName, false,
           type: DriftSqlType.double, requiredDuringInsert: true);
+  static const VerificationMeta _embalagensManualMeta =
+      const VerificationMeta('embalagensManual');
+  @override
+  late final GeneratedColumn<int> embalagensManual = GeneratedColumn<int>(
+      'embalagens_manual', aliasedName, true,
+      type: DriftSqlType.int, requiredDuringInsert: false);
   static const VerificationMeta _createdAtMeta =
       const VerificationMeta('createdAt');
   @override
@@ -8123,6 +8129,7 @@ class $SementesTalhaoTable extends SementesTalhao
         populacaoSementesPorHa,
         sementesPorEmbalagem,
         espacamentoPlantioCm,
+        embalagensManual,
         createdAt,
         updatedAt,
         syncState,
@@ -8194,6 +8201,12 @@ class $SementesTalhaoTable extends SementesTalhao
     } else if (isInserting) {
       context.missing(_espacamentoPlantioCmMeta);
     }
+    if (data.containsKey('embalagens_manual')) {
+      context.handle(
+          _embalagensManualMeta,
+          embalagensManual.isAcceptableOrUnknown(
+              data['embalagens_manual']!, _embalagensManualMeta));
+    }
     if (data.containsKey('created_at')) {
       context.handle(_createdAtMeta,
           createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta));
@@ -8243,6 +8256,8 @@ class $SementesTalhaoTable extends SementesTalhao
       espacamentoPlantioCm: attachedDatabase.typeMapping.read(
           DriftSqlType.double,
           data['${effectivePrefix}espacamento_plantio_cm'])!,
+      embalagensManual: attachedDatabase.typeMapping
+          .read(DriftSqlType.int, data['${effectivePrefix}embalagens_manual']),
       createdAt: attachedDatabase.typeMapping
           .read(DriftSqlType.dateTime, data['${effectivePrefix}created_at'])!,
       updatedAt: attachedDatabase.typeMapping
@@ -8271,6 +8286,7 @@ class SementesTalhaoData extends DataClass
   final double populacaoSementesPorHa;
   final int sementesPorEmbalagem;
   final double espacamentoPlantioCm;
+  final int? embalagensManual;
   final DateTime createdAt;
   final DateTime updatedAt;
   final String syncState;
@@ -8285,6 +8301,7 @@ class SementesTalhaoData extends DataClass
       required this.populacaoSementesPorHa,
       required this.sementesPorEmbalagem,
       required this.espacamentoPlantioCm,
+      this.embalagensManual,
       required this.createdAt,
       required this.updatedAt,
       required this.syncState,
@@ -8305,6 +8322,9 @@ class SementesTalhaoData extends DataClass
     map['populacao_sementes_por_ha'] = Variable<double>(populacaoSementesPorHa);
     map['sementes_por_embalagem'] = Variable<int>(sementesPorEmbalagem);
     map['espacamento_plantio_cm'] = Variable<double>(espacamentoPlantioCm);
+    if (!nullToAbsent || embalagensManual != null) {
+      map['embalagens_manual'] = Variable<int>(embalagensManual);
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     map['updated_at'] = Variable<DateTime>(updatedAt);
     map['sync_state'] = Variable<String>(syncState);
@@ -8328,6 +8348,9 @@ class SementesTalhaoData extends DataClass
       populacaoSementesPorHa: Value(populacaoSementesPorHa),
       sementesPorEmbalagem: Value(sementesPorEmbalagem),
       espacamentoPlantioCm: Value(espacamentoPlantioCm),
+      embalagensManual: embalagensManual == null && nullToAbsent
+          ? const Value.absent()
+          : Value(embalagensManual),
       createdAt: Value(createdAt),
       updatedAt: Value(updatedAt),
       syncState: Value(syncState),
@@ -8353,6 +8376,7 @@ class SementesTalhaoData extends DataClass
           serializer.fromJson<int>(json['sementesPorEmbalagem']),
       espacamentoPlantioCm:
           serializer.fromJson<double>(json['espacamentoPlantioCm']),
+      embalagensManual: serializer.fromJson<int?>(json['embalagensManual']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime>(json['updatedAt']),
       syncState: serializer.fromJson<String>(json['syncState']),
@@ -8373,6 +8397,7 @@ class SementesTalhaoData extends DataClass
           serializer.toJson<double>(populacaoSementesPorHa),
       'sementesPorEmbalagem': serializer.toJson<int>(sementesPorEmbalagem),
       'espacamentoPlantioCm': serializer.toJson<double>(espacamentoPlantioCm),
+      'embalagensManual': serializer.toJson<int?>(embalagensManual),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime>(updatedAt),
       'syncState': serializer.toJson<String>(syncState),
@@ -8390,6 +8415,7 @@ class SementesTalhaoData extends DataClass
           double? populacaoSementesPorHa,
           int? sementesPorEmbalagem,
           double? espacamentoPlantioCm,
+          Value<int?> embalagensManual = const Value.absent(),
           DateTime? createdAt,
           DateTime? updatedAt,
           String? syncState,
@@ -8405,6 +8431,9 @@ class SementesTalhaoData extends DataClass
             populacaoSementesPorHa ?? this.populacaoSementesPorHa,
         sementesPorEmbalagem: sementesPorEmbalagem ?? this.sementesPorEmbalagem,
         espacamentoPlantioCm: espacamentoPlantioCm ?? this.espacamentoPlantioCm,
+        embalagensManual: embalagensManual.present
+            ? embalagensManual.value
+            : this.embalagensManual,
         createdAt: createdAt ?? this.createdAt,
         updatedAt: updatedAt ?? this.updatedAt,
         syncState: syncState ?? this.syncState,
@@ -8427,6 +8456,9 @@ class SementesTalhaoData extends DataClass
       espacamentoPlantioCm: data.espacamentoPlantioCm.present
           ? data.espacamentoPlantioCm.value
           : this.espacamentoPlantioCm,
+      embalagensManual: data.embalagensManual.present
+          ? data.embalagensManual.value
+          : this.embalagensManual,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       syncState: data.syncState.present ? data.syncState.value : this.syncState,
@@ -8446,6 +8478,7 @@ class SementesTalhaoData extends DataClass
           ..write('populacaoSementesPorHa: $populacaoSementesPorHa, ')
           ..write('sementesPorEmbalagem: $sementesPorEmbalagem, ')
           ..write('espacamentoPlantioCm: $espacamentoPlantioCm, ')
+          ..write('embalagensManual: $embalagensManual, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
@@ -8465,6 +8498,7 @@ class SementesTalhaoData extends DataClass
       populacaoSementesPorHa,
       sementesPorEmbalagem,
       espacamentoPlantioCm,
+      embalagensManual,
       createdAt,
       updatedAt,
       syncState,
@@ -8482,6 +8516,7 @@ class SementesTalhaoData extends DataClass
           other.populacaoSementesPorHa == this.populacaoSementesPorHa &&
           other.sementesPorEmbalagem == this.sementesPorEmbalagem &&
           other.espacamentoPlantioCm == this.espacamentoPlantioCm &&
+          other.embalagensManual == this.embalagensManual &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt &&
           other.syncState == this.syncState &&
@@ -8498,6 +8533,7 @@ class SementesTalhaoCompanion extends UpdateCompanion<SementesTalhaoData> {
   final Value<double> populacaoSementesPorHa;
   final Value<int> sementesPorEmbalagem;
   final Value<double> espacamentoPlantioCm;
+  final Value<int?> embalagensManual;
   final Value<DateTime> createdAt;
   final Value<DateTime> updatedAt;
   final Value<String> syncState;
@@ -8513,6 +8549,7 @@ class SementesTalhaoCompanion extends UpdateCompanion<SementesTalhaoData> {
     this.populacaoSementesPorHa = const Value.absent(),
     this.sementesPorEmbalagem = const Value.absent(),
     this.espacamentoPlantioCm = const Value.absent(),
+    this.embalagensManual = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.syncState = const Value.absent(),
@@ -8529,6 +8566,7 @@ class SementesTalhaoCompanion extends UpdateCompanion<SementesTalhaoData> {
     required double populacaoSementesPorHa,
     required int sementesPorEmbalagem,
     required double espacamentoPlantioCm,
+    this.embalagensManual = const Value.absent(),
     required DateTime createdAt,
     required DateTime updatedAt,
     this.syncState = const Value.absent(),
@@ -8553,6 +8591,7 @@ class SementesTalhaoCompanion extends UpdateCompanion<SementesTalhaoData> {
     Expression<double>? populacaoSementesPorHa,
     Expression<int>? sementesPorEmbalagem,
     Expression<double>? espacamentoPlantioCm,
+    Expression<int>? embalagensManual,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<String>? syncState,
@@ -8572,6 +8611,7 @@ class SementesTalhaoCompanion extends UpdateCompanion<SementesTalhaoData> {
         'sementes_por_embalagem': sementesPorEmbalagem,
       if (espacamentoPlantioCm != null)
         'espacamento_plantio_cm': espacamentoPlantioCm,
+      if (embalagensManual != null) 'embalagens_manual': embalagensManual,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (syncState != null) 'sync_state': syncState,
@@ -8590,6 +8630,7 @@ class SementesTalhaoCompanion extends UpdateCompanion<SementesTalhaoData> {
       Value<double>? populacaoSementesPorHa,
       Value<int>? sementesPorEmbalagem,
       Value<double>? espacamentoPlantioCm,
+      Value<int?>? embalagensManual,
       Value<DateTime>? createdAt,
       Value<DateTime>? updatedAt,
       Value<String>? syncState,
@@ -8606,6 +8647,7 @@ class SementesTalhaoCompanion extends UpdateCompanion<SementesTalhaoData> {
           populacaoSementesPorHa ?? this.populacaoSementesPorHa,
       sementesPorEmbalagem: sementesPorEmbalagem ?? this.sementesPorEmbalagem,
       espacamentoPlantioCm: espacamentoPlantioCm ?? this.espacamentoPlantioCm,
+      embalagensManual: embalagensManual ?? this.embalagensManual,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       syncState: syncState ?? this.syncState,
@@ -8646,6 +8688,9 @@ class SementesTalhaoCompanion extends UpdateCompanion<SementesTalhaoData> {
       map['espacamento_plantio_cm'] =
           Variable<double>(espacamentoPlantioCm.value);
     }
+    if (embalagensManual.present) {
+      map['embalagens_manual'] = Variable<int>(embalagensManual.value);
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -8676,6 +8721,7 @@ class SementesTalhaoCompanion extends UpdateCompanion<SementesTalhaoData> {
           ..write('populacaoSementesPorHa: $populacaoSementesPorHa, ')
           ..write('sementesPorEmbalagem: $sementesPorEmbalagem, ')
           ..write('espacamentoPlantioCm: $espacamentoPlantioCm, ')
+          ..write('embalagensManual: $embalagensManual, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('syncState: $syncState, ')
@@ -18264,6 +18310,7 @@ typedef $$SementesTalhaoTableCreateCompanionBuilder = SementesTalhaoCompanion
   required double populacaoSementesPorHa,
   required int sementesPorEmbalagem,
   required double espacamentoPlantioCm,
+  Value<int?> embalagensManual,
   required DateTime createdAt,
   required DateTime updatedAt,
   Value<String> syncState,
@@ -18281,6 +18328,7 @@ typedef $$SementesTalhaoTableUpdateCompanionBuilder = SementesTalhaoCompanion
   Value<double> populacaoSementesPorHa,
   Value<int> sementesPorEmbalagem,
   Value<double> espacamentoPlantioCm,
+  Value<int?> embalagensManual,
   Value<DateTime> createdAt,
   Value<DateTime> updatedAt,
   Value<String> syncState,
@@ -18366,6 +18414,10 @@ class $$SementesTalhaoTableFilterComposer
 
   ColumnFilters<double> get espacamentoPlantioCm => $composableBuilder(
       column: $table.espacamentoPlantioCm,
+      builder: (column) => ColumnFilters(column));
+
+  ColumnFilters<int> get embalagensManual => $composableBuilder(
+      column: $table.embalagensManual,
       builder: (column) => ColumnFilters(column));
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
@@ -18471,6 +18523,10 @@ class $$SementesTalhaoTableOrderingComposer
       column: $table.espacamentoPlantioCm,
       builder: (column) => ColumnOrderings(column));
 
+  ColumnOrderings<int> get embalagensManual => $composableBuilder(
+      column: $table.embalagensManual,
+      builder: (column) => ColumnOrderings(column));
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
       column: $table.createdAt, builder: (column) => ColumnOrderings(column));
 
@@ -18570,6 +18626,9 @@ class $$SementesTalhaoTableAnnotationComposer
 
   GeneratedColumn<double> get espacamentoPlantioCm => $composableBuilder(
       column: $table.espacamentoPlantioCm, builder: (column) => column);
+
+  GeneratedColumn<int> get embalagensManual => $composableBuilder(
+      column: $table.embalagensManual, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -18677,6 +18736,7 @@ class $$SementesTalhaoTableTableManager extends RootTableManager<
             Value<double> populacaoSementesPorHa = const Value.absent(),
             Value<int> sementesPorEmbalagem = const Value.absent(),
             Value<double> espacamentoPlantioCm = const Value.absent(),
+            Value<int?> embalagensManual = const Value.absent(),
             Value<DateTime> createdAt = const Value.absent(),
             Value<DateTime> updatedAt = const Value.absent(),
             Value<String> syncState = const Value.absent(),
@@ -18693,6 +18753,7 @@ class $$SementesTalhaoTableTableManager extends RootTableManager<
             populacaoSementesPorHa: populacaoSementesPorHa,
             sementesPorEmbalagem: sementesPorEmbalagem,
             espacamentoPlantioCm: espacamentoPlantioCm,
+            embalagensManual: embalagensManual,
             createdAt: createdAt,
             updatedAt: updatedAt,
             syncState: syncState,
@@ -18709,6 +18770,7 @@ class $$SementesTalhaoTableTableManager extends RootTableManager<
             required double populacaoSementesPorHa,
             required int sementesPorEmbalagem,
             required double espacamentoPlantioCm,
+            Value<int?> embalagensManual = const Value.absent(),
             required DateTime createdAt,
             required DateTime updatedAt,
             Value<String> syncState = const Value.absent(),
@@ -18725,6 +18787,7 @@ class $$SementesTalhaoTableTableManager extends RootTableManager<
             populacaoSementesPorHa: populacaoSementesPorHa,
             sementesPorEmbalagem: sementesPorEmbalagem,
             espacamentoPlantioCm: espacamentoPlantioCm,
+            embalagensManual: embalagensManual,
             createdAt: createdAt,
             updatedAt: updatedAt,
             syncState: syncState,

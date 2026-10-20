@@ -14,6 +14,9 @@ class SementeTalhaoEntity with _$SementeTalhaoEntity {
     required double populacaoSementesPorHa,
     required int sementesPorEmbalagem,
     required double espacamentoPlantioCm,
+
+    /// Quantidade de embalagens ajustada à mão; null = usa o cálculo.
+    int? embalagensManual,
     required DateTime createdAt,
     required DateTime updatedAt,
   }) = _SementeTalhaoEntity;

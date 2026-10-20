@@ -24,6 +24,9 @@ mixin _$SementeTalhaoEntity {
   double get populacaoSementesPorHa => throw _privateConstructorUsedError;
   int get sementesPorEmbalagem => throw _privateConstructorUsedError;
   double get espacamentoPlantioCm => throw _privateConstructorUsedError;
+
+  /// Quantidade de embalagens ajustada à mão; null = usa o cálculo.
+  int? get embalagensManual => throw _privateConstructorUsedError;
   DateTime get createdAt => throw _privateConstructorUsedError;
   DateTime get updatedAt => throw _privateConstructorUsedError;
 
@@ -49,6 +52,7 @@ abstract class $SementeTalhaoEntityCopyWith<$Res> {
       double populacaoSementesPorHa,
       int sementesPorEmbalagem,
       double espacamentoPlantioCm,
+      int? embalagensManual,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -76,6 +80,7 @@ class _$SementeTalhaoEntityCopyWithImpl<$Res, $Val extends SementeTalhaoEntity>
     Object? populacaoSementesPorHa = null,
     Object? sementesPorEmbalagem = null,
     Object? espacamentoPlantioCm = null,
+    Object? embalagensManual = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -112,6 +117,10 @@ class _$SementeTalhaoEntityCopyWithImpl<$Res, $Val extends SementeTalhaoEntity>
           ? _value.espacamentoPlantioCm
           : espacamentoPlantioCm // ignore: cast_nullable_to_non_nullable
               as double,
+      embalagensManual: freezed == embalagensManual
+          ? _value.embalagensManual
+          : embalagensManual // ignore: cast_nullable_to_non_nullable
+              as int?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -141,6 +150,7 @@ abstract class _$$SementeTalhaoEntityImplCopyWith<$Res>
       double populacaoSementesPorHa,
       int sementesPorEmbalagem,
       double espacamentoPlantioCm,
+      int? embalagensManual,
       DateTime createdAt,
       DateTime updatedAt});
 }
@@ -166,6 +176,7 @@ class __$$SementeTalhaoEntityImplCopyWithImpl<$Res>
     Object? populacaoSementesPorHa = null,
     Object? sementesPorEmbalagem = null,
     Object? espacamentoPlantioCm = null,
+    Object? embalagensManual = freezed,
     Object? createdAt = null,
     Object? updatedAt = null,
   }) {
@@ -202,6 +213,10 @@ class __$$SementeTalhaoEntityImplCopyWithImpl<$Res>
           ? _value.espacamentoPlantioCm
           : espacamentoPlantioCm // ignore: cast_nullable_to_non_nullable
               as double,
+      embalagensManual: freezed == embalagensManual
+          ? _value.embalagensManual
+          : embalagensManual // ignore: cast_nullable_to_non_nullable
+              as int?,
       createdAt: null == createdAt
           ? _value.createdAt
           : createdAt // ignore: cast_nullable_to_non_nullable
@@ -226,6 +241,7 @@ class _$SementeTalhaoEntityImpl implements _SementeTalhaoEntity {
       required this.populacaoSementesPorHa,
       required this.sementesPorEmbalagem,
       required this.espacamentoPlantioCm,
+      this.embalagensManual,
       required this.createdAt,
       required this.updatedAt});
 
@@ -245,6 +261,10 @@ class _$SementeTalhaoEntityImpl implements _SementeTalhaoEntity {
   final int sementesPorEmbalagem;
   @override
   final double espacamentoPlantioCm;
+
+  /// Quantidade de embalagens ajustada à mão; null = usa o cálculo.
+  @override
+  final int? embalagensManual;
   @override
   final DateTime createdAt;
   @override
@@ -252,7 +272,7 @@ class _$SementeTalhaoEntityImpl implements _SementeTalhaoEntity {
 
   @override
   String toString() {
-    return 'SementeTalhaoEntity(id: $id, planoId: $planoId, estadioId: $estadioId, talhaoId: $talhaoId, cultivar: $cultivar, populacaoSementesPorHa: $populacaoSementesPorHa, sementesPorEmbalagem: $sementesPorEmbalagem, espacamentoPlantioCm: $espacamentoPlantioCm, createdAt: $createdAt, updatedAt: $updatedAt)';
+    return 'SementeTalhaoEntity(id: $id, planoId: $planoId, estadioId: $estadioId, talhaoId: $talhaoId, cultivar: $cultivar, populacaoSementesPorHa: $populacaoSementesPorHa, sementesPorEmbalagem: $sementesPorEmbalagem, espacamentoPlantioCm: $espacamentoPlantioCm, embalagensManual: $embalagensManual, createdAt: $createdAt, updatedAt: $updatedAt)';
   }
 
   @override
@@ -274,6 +294,8 @@ class _$SementeTalhaoEntityImpl implements _SementeTalhaoEntity {
                 other.sementesPorEmbalagem == sementesPorEmbalagem) &&
             (identical(other.espacamentoPlantioCm, espacamentoPlantioCm) ||
                 other.espacamentoPlantioCm == espacamentoPlantioCm) &&
+            (identical(other.embalagensManual, embalagensManual) ||
+                other.embalagensManual == embalagensManual) &&
             (identical(other.createdAt, createdAt) ||
                 other.createdAt == createdAt) &&
             (identical(other.updatedAt, updatedAt) ||
@@ -291,6 +313,7 @@ class _$SementeTalhaoEntityImpl implements _SementeTalhaoEntity {
       populacaoSementesPorHa,
       sementesPorEmbalagem,
       espacamentoPlantioCm,
+      embalagensManual,
       createdAt,
       updatedAt);
 
@@ -314,6 +337,7 @@ abstract class _SementeTalhaoEntity implements SementeTalhaoEntity {
       required final double populacaoSementesPorHa,
       required final int sementesPorEmbalagem,
       required final double espacamentoPlantioCm,
+      final int? embalagensManual,
       required final DateTime createdAt,
       required final DateTime updatedAt}) = _$SementeTalhaoEntityImpl;
 
@@ -333,6 +357,10 @@ abstract class _SementeTalhaoEntity implements SementeTalhaoEntity {
   int get sementesPorEmbalagem;
   @override
   double get espacamentoPlantioCm;
+
+  /// Quantidade de embalagens ajustada à mão; null = usa o cálculo.
+  @override
+  int? get embalagensManual;
   @override
   DateTime get createdAt;
   @override

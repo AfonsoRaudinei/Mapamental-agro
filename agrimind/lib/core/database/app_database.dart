@@ -346,6 +346,7 @@ class SementesTalhao extends Table {
   RealColumn get populacaoSementesPorHa => real()();
   IntColumn get sementesPorEmbalagem => integer()();
   RealColumn get espacamentoPlantioCm => real()();
+  IntColumn get embalagensManual => integer().nullable()();
   DateTimeColumn get createdAt => dateTime()();
   DateTimeColumn get updatedAt => dateTime()();
   TextColumn get syncState => text().withDefault(const Constant('pending'))();
@@ -425,7 +426,7 @@ class AppDatabase extends _$AppDatabase {
       : super(executor ?? driftDatabase(name: 'agrimind'));
 
   @override
-  int get schemaVersion => 21;
+  int get schemaVersion => 22;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -640,6 +641,19 @@ class AppDatabase extends _$AppDatabase {
               ),
             );
             await migrateProgramaOperacionalIdsV21(this);
+          }
+          if (from < 22) {
+            final cols = await customSelect(
+              'PRAGMA table_info(sementes_talhao)',
+            ).get();
+            final jaTem =
+                cols.any((r) => r.read<String>('name') == 'embalagens_manual');
+            if (!jaTem) {
+              await migrator.addColumn(
+                sementesTalhao,
+                sementesTalhao.embalagensManual,
+              );
+            }
           }
         },
         beforeOpen: (details) async {

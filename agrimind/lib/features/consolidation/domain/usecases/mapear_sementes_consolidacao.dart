@@ -47,7 +47,7 @@ ConsolidacaoSementeLinha _linha(
     talhaoNome: talhao.nome,
     areaHa: talhao.areaHa,
     populacaoSementesPorHa: s.populacaoSementesPorHa,
-    embalagens: calc.embalagensNecessarias,
+    embalagens: embalagensFinais(calc, s.embalagensManual),
     sementesPorMetroLinear: calc.sementesPorMetroLinear,
   );
 }

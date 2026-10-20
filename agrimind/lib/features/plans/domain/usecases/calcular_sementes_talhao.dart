@@ -38,3 +38,7 @@ SementesTalhaoCalculo calcularSementesTalhao({
     sementesPorMetroLinear: sementesPorMetroLinear,
   );
 }
+
+/// Embalagens a usar: o ajuste manual, quando existe, senão o calculado.
+int embalagensFinais(SementesTalhaoCalculo calc, int? manual) =>
+    manual ?? calc.embalagensNecessarias;

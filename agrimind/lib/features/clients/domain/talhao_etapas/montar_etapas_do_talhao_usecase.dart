@@ -108,7 +108,7 @@ List<ProdutoAplicado> _produtosSementes(
       unidade: 'sem/ha',
       totalCalculado: calc.totalSementes,
       unidadeTotal: 'sem',
-      detalhe: '${calc.embalagensNecessarias} embalagens',
+      detalhe: '${embalagensFinais(calc, s.embalagensManual)} embalagens',
     );
   }).toList();
 }
