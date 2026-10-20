@@ -95,6 +95,7 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
   List<String> _talhoesExcluidos = const [];
   bool _areaPersonalizada = false;
   bool _overrideAtivo = false;
+  bool _obsVisivel = false;
   String _categoriaSelecionada = 'Geral';
 
   bool get _isEdit => widget.produtoInicial != null;
@@ -116,6 +117,7 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
       }
       _motivoCtrl.text = p.overrideMotivo ?? '';
       _obsCtrl.text = p.observacao ?? '';
+      _obsVisivel = _obsCtrl.text.isNotEmpty;
     } else {
       _unidade = _unidades.first;
       _areaHa = widget.areaHaFazenda;
@@ -327,13 +329,29 @@ class _ProdutoPanelState extends ConsumerState<ProdutoPanel> {
 
                     const SizedBox(height: AppSpacing.sm),
 
-                    // Observação (cresce conforme o texto)
-                    _PanelTextField(
-                      controller: _obsCtrl,
-                      hint: 'Observação (opcional)',
-                      minLines: 1,
-                      maxLines: 3,
-                    ),
+                    // Observação (oculta até o toque)
+                    if (_obsVisivel)
+                      _PanelTextField(
+                        controller: _obsCtrl,
+                        hint: 'Observação (opcional)',
+                        minLines: 1,
+                        maxLines: 3,
+                        autofocus: _obsCtrl.text.isEmpty,
+                      )
+                    else
+                      Align(
+                        alignment: Alignment.centerLeft,
+                        child: TextButton.icon(
+                          onPressed: () => setState(() => _obsVisivel = true),
+                          icon: const Icon(Icons.add, size: 18),
+                          label: const Text('Observação'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppColors.primary,
+                            minimumSize: const Size(0, 32),
+                            padding: const EdgeInsets.symmetric(horizontal: 4),
+                          ),
+                        ),
+                      ),
                   ]),
                 ),
               ),
@@ -394,6 +412,7 @@ class _PanelTextField extends StatelessWidget {
     this.validator,
     this.minLines,
     this.maxLines = 1,
+    this.autofocus = false,
   });
 
   final TextEditingController controller;
@@ -402,6 +421,7 @@ class _PanelTextField extends StatelessWidget {
   final List<TextInputFormatter>? inputFormatters;
   final String? Function(String?)? validator;
   final int? minLines;
+  final bool autofocus;
   final int maxLines;
 
   @override
@@ -411,6 +431,7 @@ class _PanelTextField extends StatelessWidget {
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
       validator: validator,
+      autofocus: autofocus,
       minLines: minLines,
       maxLines: maxLines,
       decoration: InputDecoration(
