@@ -35,6 +35,7 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
     this.etapas,
     this.carrossel,
     this.onEtapaVisivel,
+    this.onConfirmarEtapa,
   });
 
   final String talhaoNome;
@@ -56,6 +57,9 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
   /// Controla o carrossel de etapas (sincronizado com a linha do tempo).
   final PageController? carrossel;
   final ValueChanged<int>? onEtapaVisivel;
+
+  /// Confirmar (ou editar) a aplicação de uma etapa do carrossel.
+  final ValueChanged<EtapaTalhao>? onConfirmarEtapa;
 
   bool get _multiplasCultivares => opcoesCultivar.length > 1;
 
@@ -209,6 +213,7 @@ class CronogramaSojaTalhaoFocusView extends StatelessWidget {
             etapas: etapas!,
             controller: carrossel!,
             onPageChanged: onEtapaVisivel ?? (_) {},
+            onConfirmarEtapa: onConfirmarEtapa,
             onEditarPlantio: () =>
                 _escolherPlantio(context, linha.dataPlantio, onPlantioChanged),
           )

@@ -28,6 +28,7 @@ import '../../../../core/agronomy/linha_tempo_soja.dart';
 import '../../../../core/agronomy/linha_tempo_soja_validacao.dart';
 import '../../domain/cronograma_soja/calcular_cronograma_soja.dart'
     show calcularCronogramaSoja, parametrosFromCronograma, resumoCronogramaSoja;
+import '../widgets/confirmar_aplicacao_sheet.dart';
 import '../widgets/cronograma_modo_avulso_banner.dart';
 import '../widgets/cronograma_soja_tabela.dart';
 import '../widgets/cronograma_soja_talhao_focus_view.dart';
@@ -273,6 +274,27 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
       viewportFraction: 0.86,
       initialPage: inicial,
     );
+  }
+
+  /// Confirmação manual da aplicação (data real + produtos usados).
+  Future<void> _confirmarEtapa(EtapaTalhao etapa) async {
+    final linha = _focusLinha;
+    if (linha == null) return;
+    final resultado = await mostrarConfirmarAplicacao(
+      context,
+      talhaoId: linha.talhaoId,
+      etapa: etapa,
+      dataPlantio: linha.dataPlantio,
+    );
+    if (resultado == null || !mounted) return;
+    final repo = ref.read(confirmacoesEtapaRepoProvider);
+    final confirmacao = resultado.confirmacao;
+    if (resultado.desfazer) {
+      await repo.remover(linha.talhaoId, etapa.chave);
+    } else if (confirmacao != null) {
+      await repo.salvar(confirmacao);
+    }
+    ref.invalidate(confirmacoesEtapaProvider(linha.talhaoId));
   }
 
   /// Deslizar o carrossel → destaca a etapa no stepper.
@@ -729,6 +751,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
                         etapas: etapasFoco,
                         carrossel: carrossel,
                         onEtapaVisivel: _onEtapaVisivel,
+                        onConfirmarEtapa: _confirmarEtapa,
                       ),
                     ),
                   )

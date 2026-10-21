@@ -5,11 +5,10 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../plans/presentation/models/product_view_model.dart';
-import '../../../plans/presentation/widgets/product_tile.dart';
 import '../../../plans/presentation/widgets/stage_references_button.dart';
 import '../../domain/cronograma_soja/cronograma_soja_linha.dart';
 import '../../domain/talhao_etapas/etapa_talhao.dart';
+import '../../domain/talhao_etapas/produto_aplicado.dart';
 import 'talhao_timeline_stepper.dart';
 
 /// Etapas do talhão em carrossel: um card por vez, deslize para os lados.
@@ -21,6 +20,7 @@ class EtapasCarrossel extends StatelessWidget {
     required this.controller,
     required this.onPageChanged,
     this.onEditarPlantio,
+    this.onConfirmarEtapa,
     this.hoje,
   });
 
@@ -30,14 +30,36 @@ class EtapasCarrossel extends StatelessWidget {
 
   /// Toque no card de Plantio para alterar a data (null = somente leitura).
   final VoidCallback? onEditarPlantio;
+
+  /// Confirmar (ou editar a confirmação de) uma aplicação; null = sem botão.
+  final ValueChanged<EtapaTalhao>? onConfirmarEtapa;
   final DateTime? hoje;
 
-  static const double alturaCard = 360;
+  /// Altura do card = parte fixa + área dos produtos da etapa com mais
+  /// produtos (todos aparecem, sem rolar). Acima de [_maxAreaProdutos] a
+  /// lista rola, para o card não ficar tumultuado.
+  static const double _fixoCard = 206;
+  static const double _alturaProduto = 38;
+  static const double _alturaDetalhe = 18;
+  static const double _minAreaProdutos = 90;
+  static const double _maxAreaProdutos = 190;
+
+  static double alturaDoCard(List<EtapaTalhao> etapas) {
+    var area = _minAreaProdutos;
+    for (final e in etapas) {
+      var soma = 0.0;
+      for (final p in e.produtosVinculados) {
+        soma += _alturaProduto + (p.detalhe != null ? _alturaDetalhe : 0);
+      }
+      if (soma > area) area = soma;
+    }
+    return _fixoCard + area.clamp(_minAreaProdutos, _maxAreaProdutos);
+  }
 
   @override
   Widget build(BuildContext context) {
     final agora = hoje ?? DateTime.now();
-    final status = statusDasEtapas([for (final e in etapas) e.data], agora);
+    final status = statusDasEtapasTalhao(etapas, agora);
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -69,7 +91,7 @@ class EtapasCarrossel extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
-          height: alturaCard,
+          height: alturaDoCard(etapas),
           // O PageView ocupa a largura toda (sangra o padding da página)
           // para o card vizinho aparecer na borda.
           child: OverflowBox(
@@ -91,6 +113,9 @@ class EtapasCarrossel extends StatelessWidget {
                           CronogramaSojaLinhaTipo.plantio
                       ? onEditarPlantio
                       : null,
+                  onConfirmar: onConfirmarEtapa == null || !etapas[i].exigeConfirmacao
+                      ? null
+                      : () => onConfirmarEtapa!(etapas[i]),
                 ),
               ),
             ),
@@ -109,12 +134,14 @@ class _CartaoEtapa extends StatelessWidget {
     required this.status,
     required this.hoje,
     this.onEditar,
+    this.onConfirmar,
   });
 
   final EtapaTalhao etapa;
   final StepperNodeStatus status;
   final DateTime hoje;
   final VoidCallback? onEditar;
+  final VoidCallback? onConfirmar;
 
   bool get _proxima => status == StepperNodeStatus.atual;
   bool get _feito => status == StepperNodeStatus.concluido;
@@ -128,6 +155,12 @@ class _CartaoEtapa extends StatelessWidget {
     final quando = [
       AppFormatters.data(l.data),
       if (l.dae != null) 'DAE ${l.dae}',
+    ].join(' · ');
+
+    final detalhe = [
+      if (etapa.dataPrevista != null)
+        'Previsto ${AppFormatters.data(etapa.dataPrevista!)}',
+      if (nota != null) nota,
     ].join(' · ');
 
     return Semantics(
@@ -159,40 +192,38 @@ class _CartaoEtapa extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. Estádio + situação
+                  // 1. Estádio + nome da etapa — o que manda no card
                   Row(
                     children: [
                       _ChipEstadio(codigoEstagioEtapa(l), destaque: _proxima),
-                      const Spacer(),
-                      _PilulaSituacao(
-                        status: status,
-                        relativo: textoRelativo(l.data, hoje),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          nome,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.h2.copyWith(
+                            color: _feito
+                                ? context.appTextSecondary
+                                : context.appTextPrimary,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  // 2. Nome da etapa — o que manda no card
-                  Text(
-                    nome,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.h2.copyWith(
-                      color: _feito
-                          ? context.appTextSecondary
-                          : context.appTextPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  // 3. Quando (+ "Alterar" no card de Plantio)
+                  const SizedBox(height: 6),
+                  // 2. Quando + situação, na mesma linha
                   Row(
                     children: [
-                      Expanded(
+                      Flexible(
                         child: Text(
                           quando,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: AppTypography.body.copyWith(
                             fontSize: 15,
                             height: 1.3,
@@ -204,21 +235,28 @@ class _CartaoEtapa extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (onEditar != null)
-                        Text(
-                          'Alterar',
-                          style: AppTypography.caption.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: _PilulaSituacao(
+                              status: status,
+                              relativo: textoRelativo(l.data, hoje),
+                              atrasada: etapaAtrasada(etapa, hoje),
+                              confirmada: etapa.confirmada,
+                            ),
                           ),
                         ),
+                      ),
                     ],
                   ),
-                  // 4. Por quê (regra do cronograma)
-                  if (nota != null) ...[
+                  // 3. Por quê (regra do cronograma) e data original
+                  if (detalhe.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
-                      nota,
+                      detalhe,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.caption.copyWith(
@@ -241,9 +279,23 @@ class _CartaoEtapa extends StatelessWidget {
             // 6. Livros de referência no rodapé (mesmos do Plano; só consulta).
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 10, 16, 12),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: StageReferencesButton(estadio: estadio, compact: true),
+              child: Row(
+                children: [
+                  StageReferencesButton(estadio: estadio, compact: true),
+                  const Spacer(),
+                  if (onConfirmar != null)
+                    _BotaoConfirmar(
+                      confirmada: etapa.confirmada,
+                      emergencia:
+                          l.tipo == CronogramaSojaLinhaTipo.emergencia,
+                      onPressed: onConfirmar!,
+                    )
+                  else if (onEditar != null)
+                    TextButton(
+                      onPressed: onEditar,
+                      child: const Text('Alterar data'),
+                    ),
+                ],
               ),
             ),
           ],
@@ -301,27 +353,92 @@ class _Produtos extends StatelessWidget {
         ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.only(left: 6, bottom: AppSpacing.sm),
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             physics: const ClampingScrollPhysics(),
             itemCount: produtos.length,
             itemBuilder: (context, i) {
               final p = produtos[i];
-              return ProductTile(
-                product: ProductViewModel(
-                  id: p.produtoId,
-                  name: p.nome,
-                  doseLabel: AppFormatters.dose(p.dosePorHa, p.unidade),
-                  totalLabel: [
-                    AppFormatters.total(p.totalCalculado, p.unidadeDoTotal),
-                    if (p.detalhe != null) p.detalhe!,
-                  ].join(' · '),
-                  isActive: ativos,
-                ),
-              );
+              return _ProdutoLinha(produto: produtos[i], ativo: ativos);
             },
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Produto numa linha só: nome à esquerda, dose · total à direita.
+/// Detalhe longo (ex.: embalagens de sementes) vai numa segunda linha.
+class _ProdutoLinha extends StatelessWidget {
+  const _ProdutoLinha({required this.produto, required this.ativo});
+
+  final ProdutoAplicado produto;
+  final bool ativo;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = produto;
+    final doseTotal = [
+      AppFormatters.dose(p.dosePorHa, p.unidade),
+      AppFormatters.total(p.totalCalculado, p.unidadeDoTotal),
+    ].join(' · ');
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: ativo ? AppColors.primary : context.appTextDisabled,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  p.nome,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: context.appTextPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    doseTotal,
+                    maxLines: 1,
+                    style: AppTypography.caption.copyWith(
+                      color: context.appTextSecondary,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (p.detalhe != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, top: 2),
+              child: Text(
+                p.detalhe!,
+                style: AppTypography.caption.copyWith(
+                  color: context.appTextSecondary,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
@@ -354,23 +471,65 @@ class _ChipEstadio extends StatelessWidget {
   }
 }
 
-/// "Próxima · em 21 dias" / "Concluída · há 9 dias" / "em 27 dias".
-class _PilulaSituacao extends StatelessWidget {
-  const _PilulaSituacao({required this.status, required this.relativo});
+/// Confirmar a aplicação (pendente) ou editar a confirmação já feita.
+class _BotaoConfirmar extends StatelessWidget {
+  const _BotaoConfirmar({
+    required this.confirmada,
+    required this.emergencia,
+    required this.onPressed,
+  });
 
-  final StepperNodeStatus status;
-  final String relativo;
+  final bool confirmada;
+  final bool emergencia;
+  final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final (texto, icone, cor) = switch (status) {
+    if (confirmada) {
+      return TextButton(
+        onPressed: onPressed,
+        child: const Text('Editar'),
+      );
+    }
+    return FilledButton(
+      onPressed: onPressed,
+      style: FilledButton.styleFrom(
+        backgroundColor: AppColors.primary,
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+        minimumSize: const Size(0, 36),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      ),
+      child: Text(emergencia ? 'Confirmar emergência' : 'Confirmar aplicação'),
+    );
+  }
+}
+
+/// "Próxima · em 21 dias" / "Atrasada · há 3 dias" / "Aplicada · há 9 dias".
+class _PilulaSituacao extends StatelessWidget {
+  const _PilulaSituacao({
+    required this.status,
+    required this.relativo,
+    this.atrasada = false,
+    this.confirmada = false,
+  });
+
+  final StepperNodeStatus status;
+  final String relativo;
+  final bool atrasada;
+  final bool confirmada;
+
+  @override
+  Widget build(BuildContext context) {
+    final (texto, icone, cor) = atrasada
+        ? ('Atrasada · $relativo', Icons.error_rounded, AppColors.error)
+        : switch (status) {
       StepperNodeStatus.atual => (
           'Próxima · $relativo',
           Icons.radio_button_checked_rounded,
           AppColors.primary,
         ),
       StepperNodeStatus.concluido => (
-          'Concluída · $relativo',
+          '${confirmada ? 'Aplicada' : 'Concluída'} · $relativo',
           Icons.check_circle_rounded,
           context.appTextSecondary,
         ),
