@@ -5,11 +5,10 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/formatters.dart';
-import '../../../plans/presentation/models/product_view_model.dart';
-import '../../../plans/presentation/widgets/product_tile.dart';
 import '../../../plans/presentation/widgets/stage_references_button.dart';
 import '../../domain/cronograma_soja/cronograma_soja_linha.dart';
 import '../../domain/talhao_etapas/etapa_talhao.dart';
+import '../../domain/talhao_etapas/produto_aplicado.dart';
 import 'talhao_timeline_stepper.dart';
 
 /// Etapas do talhão em carrossel: um card por vez, deslize para os lados.
@@ -40,10 +39,10 @@ class EtapasCarrossel extends StatelessWidget {
   /// produtos (todos aparecem, sem rolar). Acima de [_maxAreaProdutos] a
   /// lista rola, para o card não ficar tumultuado.
   static const double _fixoCard = 206;
-  static const double _alturaProduto = 52;
-  static const double _alturaDetalhe = 20;
+  static const double _alturaProduto = 38;
+  static const double _alturaDetalhe = 18;
   static const double _minAreaProdutos = 90;
-  static const double _maxAreaProdutos = 164;
+  static const double _maxAreaProdutos = 190;
 
   static double alturaDoCard(List<EtapaTalhao> etapas) {
     var area = _minAreaProdutos;
@@ -354,27 +353,92 @@ class _Produtos extends StatelessWidget {
         ),
         Expanded(
           child: ListView.builder(
-            padding: const EdgeInsets.only(left: 6, bottom: AppSpacing.sm),
+            padding: const EdgeInsets.only(bottom: AppSpacing.sm),
             physics: const ClampingScrollPhysics(),
             itemCount: produtos.length,
             itemBuilder: (context, i) {
               final p = produtos[i];
-              return ProductTile(
-                product: ProductViewModel(
-                  id: p.produtoId,
-                  name: p.nome,
-                  doseLabel: AppFormatters.dose(p.dosePorHa, p.unidade),
-                  totalLabel: [
-                    AppFormatters.total(p.totalCalculado, p.unidadeDoTotal),
-                    if (p.detalhe != null) p.detalhe!,
-                  ].join(' · '),
-                  isActive: ativos,
-                ),
-              );
+              return _ProdutoLinha(produto: produtos[i], ativo: ativos);
             },
           ),
         ),
       ],
+    );
+  }
+}
+
+/// Produto numa linha só: nome à esquerda, dose · total à direita.
+/// Detalhe longo (ex.: embalagens de sementes) vai numa segunda linha.
+class _ProdutoLinha extends StatelessWidget {
+  const _ProdutoLinha({required this.produto, required this.ativo});
+
+  final ProdutoAplicado produto;
+  final bool ativo;
+
+  @override
+  Widget build(BuildContext context) {
+    final p = produto;
+    final doseTotal = [
+      AppFormatters.dose(p.dosePorHa, p.unidade),
+      AppFormatters.total(p.totalCalculado, p.unidadeDoTotal),
+    ].join(' · ');
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(
+                  color: ativo ? AppColors.primary : context.appTextDisabled,
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  p.nome,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: AppTypography.body.copyWith(
+                    fontWeight: FontWeight.w700,
+                    color: context.appTextPrimary,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Flexible(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerRight,
+                  child: Text(
+                    doseTotal,
+                    maxLines: 1,
+                    style: AppTypography.caption.copyWith(
+                      color: context.appTextSecondary,
+                      fontFeatures: const [FontFeature.tabularFigures()],
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+          if (p.detalhe != null)
+            Padding(
+              padding: const EdgeInsets.only(left: 16, top: 2),
+              child: Text(
+                p.detalhe!,
+                style: AppTypography.caption.copyWith(
+                  color: context.appTextSecondary,
+                ),
+              ),
+            ),
+        ],
+      ),
     );
   }
 }
