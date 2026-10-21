@@ -40,17 +40,18 @@ class ConfirmacaoEtapa {
   final DateTime confirmadaEm;
 }
 
-/// Etapas que são aplicações (exigem confirmação manual).
+/// Etapas que exigem confirmação manual: as aplicações e a emergência
+/// (data real, que move o restante do cronograma).
 bool etapaExigeConfirmacao(CronogramaSojaLinhaTipo tipo) {
   switch (tipo) {
     case CronogramaSojaLinhaTipo.dessecacaoPrePlantio:
+    case CronogramaSojaLinhaTipo.emergencia:
     case CronogramaSojaLinhaTipo.posEmergente:
     case CronogramaSojaLinhaTipo.fungicida:
     case CronogramaSojaLinhaTipo.dessecanteR7:
     case CronogramaSojaLinhaTipo.dessecacaoPreColheita:
       return true;
     case CronogramaSojaLinhaTipo.plantio:
-    case CronogramaSojaLinhaTipo.emergencia:
     case CronogramaSojaLinhaTipo.colheitaReal:
     case CronogramaSojaLinhaTipo.colheitaEstimada:
       return false;

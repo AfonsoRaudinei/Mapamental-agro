@@ -5,6 +5,7 @@ import '../../../../core/constants/app_spacing.dart';
 import '../../../../core/constants/app_typography.dart';
 import '../../../../core/utils/extensions.dart';
 import '../../../../core/utils/formatters.dart';
+import '../../domain/cronograma_soja/cronograma_soja_linha.dart';
 import '../../domain/talhao_etapas/confirmacao_etapa.dart';
 import '../../domain/talhao_etapas/etapa_talhao.dart';
 import 'talhao_timeline_stepper.dart';
@@ -17,6 +18,7 @@ Future<ResultadoConfirmacao?> mostrarConfirmarAplicacao(
   BuildContext context, {
   required String talhaoId,
   required EtapaTalhao etapa,
+  required DateTime dataPlantio,
 }) {
   return showModalBottomSheet<ResultadoConfirmacao>(
     context: context,
@@ -26,7 +28,11 @@ Future<ResultadoConfirmacao?> mostrarConfirmarAplicacao(
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
-    builder: (_) => _ConfirmarAplicacaoSheet(talhaoId: talhaoId, etapa: etapa),
+    builder: (_) => _ConfirmarAplicacaoSheet(
+      talhaoId: talhaoId,
+      etapa: etapa,
+      dataPlantio: dataPlantio,
+    ),
   );
 }
 
@@ -34,10 +40,12 @@ class _ConfirmarAplicacaoSheet extends StatefulWidget {
   const _ConfirmarAplicacaoSheet({
     required this.talhaoId,
     required this.etapa,
+    required this.dataPlantio,
   });
 
   final String talhaoId;
   final EtapaTalhao etapa;
+  final DateTime dataPlantio;
 
   @override
   State<_ConfirmarAplicacaoSheet> createState() =>
@@ -69,6 +77,12 @@ class _LinhaProduto {
   static String _formatar(double v) =>
       v == v.roundToDouble() ? v.toStringAsFixed(0) : v.toString().replaceAll('.', ',');
 }
+
+/// Dias de calendário de [a] até [b] (imune a horário de verão).
+int _diasEntre(DateTime a, DateTime b) =>
+    DateTime.utc(b.year, b.month, b.day)
+        .difference(DateTime.utc(a.year, a.month, a.day))
+        .inDays;
 
 class _ConfirmarAplicacaoSheetState extends State<_ConfirmarAplicacaoSheet> {
   late DateTime _data;
@@ -144,6 +158,9 @@ class _ConfirmarAplicacaoSheetState extends State<_ConfirmarAplicacaoSheet> {
     final etapa = widget.etapa;
     final previsto = etapa.dataPrevista ?? etapa.data;
     final editando = etapa.confirmada;
+    final emergencia = etapa.linha.tipo == CronogramaSojaLinhaTipo.emergencia;
+    final diasReais = _diasEntre(widget.dataPlantio, _data);
+    final diasPrevistos = _diasEntre(widget.dataPlantio, previsto);
 
     return Padding(
       padding: EdgeInsets.only(
@@ -156,7 +173,9 @@ class _ConfirmarAplicacaoSheetState extends State<_ConfirmarAplicacaoSheet> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
-              editando ? 'Editar aplicação' : 'Confirmar aplicação',
+              emergencia
+                  ? (editando ? 'Editar emergência' : 'Confirmar emergência')
+                  : (editando ? 'Editar aplicação' : 'Confirmar aplicação'),
               style: AppTypography.h2.copyWith(color: context.appTextPrimary),
             ),
             const SizedBox(height: 2),
@@ -169,7 +188,7 @@ class _ConfirmarAplicacaoSheetState extends State<_ConfirmarAplicacaoSheet> {
             ),
             const SizedBox(height: AppSpacing.md),
             Text(
-              'Data real da aplicação',
+              emergencia ? 'Data real da emergência' : 'Data real da aplicação',
               style: AppTypography.caption.copyWith(
                 color: context.appTextSecondary,
               ),
@@ -206,6 +225,19 @@ class _ConfirmarAplicacaoSheetState extends State<_ConfirmarAplicacaoSheet> {
               ),
             ),
             const SizedBox(height: 6),
+            if (emergencia) ...[
+              Text(
+                'Emergiu $diasReais ${diasReais == 1 ? 'dia' : 'dias'} após o '
+                'plantio (previsto: $diasPrevistos).',
+                style: AppTypography.bodyBold.copyWith(
+                  fontSize: 14,
+                  color: diasReais == diasPrevistos
+                      ? context.appTextPrimary
+                      : AppColors.primary,
+                ),
+              ),
+              const SizedBox(height: 2),
+            ],
             Text(
               'As etapas seguintes serão recalculadas a partir desta data.',
               style: AppTypography.caption.copyWith(

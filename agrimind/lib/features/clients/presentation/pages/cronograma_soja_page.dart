@@ -284,6 +284,7 @@ class _CronogramaSojaPageState extends ConsumerState<CronogramaSojaPage> {
       context,
       talhaoId: linha.talhaoId,
       etapa: etapa,
+      dataPlantio: linha.dataPlantio,
     );
     if (resultado == null || !mounted) return;
     final repo = ref.read(confirmacoesEtapaRepoProvider);

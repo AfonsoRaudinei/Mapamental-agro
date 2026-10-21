@@ -112,4 +112,59 @@ void main() {
     expect(depois[2], StepperNodeStatus.atual);
     expect(etapaAtrasada(r[1], hoje), isFalse);
   });
+
+  group('emergência', () {
+    final dess = _etapa(
+      CronogramaSojaLinhaTipo.dessecacaoPrePlantio,
+      DateTime(2026, 9, 23),
+    );
+    final em = _etapa(
+      CronogramaSojaLinhaTipo.emergencia,
+      DateTime(2026, 10, 13),
+      dae: 0,
+    );
+    final lista = [dess, plantio, em, pos, f1];
+
+    test('emergência tardia move as etapas seguintes sem mudar o DAE', () {
+      final r = aplicarConfirmacoes(lista, [_conf(em, DateTime(2026, 10, 16))]);
+      expect(r[2].confirmada, isTrue);
+      expect(r[2].data, DateTime(2026, 10, 16));
+      expect(r[2].linha.dae, 0);
+      expect(r[2].linha.notaEtapa, '8 dias após o plantio');
+      expect(r[3].data, DateTime(2026, 11, 10));
+      expect(r[3].linha.dae, 25);
+      expect(r[4].data, DateTime(2026, 11, 23));
+      expect(r[4].linha.dae, 38);
+    });
+
+    test('plantio e dessecação pré-plantio não andam com desvios', () {
+      final r = aplicarConfirmacoes(lista, [
+        _conf(dess, DateTime(2026, 10, 1)),
+        _conf(em, DateTime(2026, 10, 16)),
+      ]);
+      expect(r[0].data, DateTime(2026, 10, 1)); // data real da dessecação
+      expect(r[1].data, DateTime(2026, 10, 8)); // plantio intocado
+      expect(r[2].data, DateTime(2026, 10, 16));
+    });
+
+    test('pós atrasado depois de emergência atrasada: DAE só do atraso extra',
+        () {
+      final r = aplicarConfirmacoes(lista, [
+        _conf(em, DateTime(2026, 10, 16)), // +3
+        _conf(pos, DateTime(2026, 11, 12)), // +5 sobre o previsto original
+      ]);
+      expect(r[3].data, DateTime(2026, 11, 12));
+      expect(r[3].linha.dae, 27); // 25 + 5 − 3
+      expect(r[4].data, DateTime(2026, 11, 25));
+      expect(r[4].linha.dae, 40);
+    });
+
+    test('emergência vencida e sem confirmação fica atrasada', () {
+      final hoje = DateTime(2026, 10, 20);
+      expect(etapaAtrasada(em, hoje), isTrue);
+      final status = statusDasEtapasTalhao(lista.sublist(1), hoje);
+      expect(status[0], StepperNodeStatus.concluido); // plantio
+      expect(status[1], StepperNodeStatus.atual); // emergência pendente
+    });
+  });
 }

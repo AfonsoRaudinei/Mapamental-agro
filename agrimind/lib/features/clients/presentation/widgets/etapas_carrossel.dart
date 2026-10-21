@@ -36,7 +36,26 @@ class EtapasCarrossel extends StatelessWidget {
   final ValueChanged<EtapaTalhao>? onConfirmarEtapa;
   final DateTime? hoje;
 
-  static const double alturaCard = 360;
+  /// Altura do card = parte fixa + área dos produtos da etapa com mais
+  /// produtos (todos aparecem, sem rolar). Acima de [_maxAreaProdutos] a
+  /// lista rola, para o card não ficar tumultuado.
+  static const double _fixoCard = 206;
+  static const double _alturaProduto = 52;
+  static const double _alturaDetalhe = 20;
+  static const double _minAreaProdutos = 90;
+  static const double _maxAreaProdutos = 164;
+
+  static double alturaDoCard(List<EtapaTalhao> etapas) {
+    var area = _minAreaProdutos;
+    for (final e in etapas) {
+      var soma = 0.0;
+      for (final p in e.produtosVinculados) {
+        soma += _alturaProduto + (p.detalhe != null ? _alturaDetalhe : 0);
+      }
+      if (soma > area) area = soma;
+    }
+    return _fixoCard + area.clamp(_minAreaProdutos, _maxAreaProdutos);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +92,7 @@ class EtapasCarrossel extends StatelessWidget {
         ),
         const SizedBox(height: AppSpacing.sm),
         SizedBox(
-          height: alturaCard,
+          height: alturaDoCard(etapas),
           // O PageView ocupa a largura toda (sangra o padding da página)
           // para o card vizinho aparecer na borda.
           child: OverflowBox(
@@ -139,6 +158,12 @@ class _CartaoEtapa extends StatelessWidget {
       if (l.dae != null) 'DAE ${l.dae}',
     ].join(' · ');
 
+    final detalhe = [
+      if (etapa.dataPrevista != null)
+        'Previsto ${AppFormatters.data(etapa.dataPrevista!)}',
+      if (nota != null) nota,
+    ].join(' · ');
+
     return Semantics(
       container: true,
       button: onEditar != null,
@@ -168,42 +193,38 @@ class _CartaoEtapa extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(20, 18, 20, 14),
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 1. Estádio + situação
+                  // 1. Estádio + nome da etapa — o que manda no card
                   Row(
                     children: [
                       _ChipEstadio(codigoEstagioEtapa(l), destaque: _proxima),
-                      const Spacer(),
-                      _PilulaSituacao(
-                        status: status,
-                        relativo: textoRelativo(l.data, hoje),
-                        atrasada: etapaAtrasada(etapa, hoje),
-                        confirmada: etapa.confirmada,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          nome,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: AppTypography.h2.copyWith(
+                            color: _feito
+                                ? context.appTextSecondary
+                                : context.appTextPrimary,
+                          ),
+                        ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  // 2. Nome da etapa — o que manda no card
-                  Text(
-                    nome,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: AppTypography.h2.copyWith(
-                      color: _feito
-                          ? context.appTextSecondary
-                          : context.appTextPrimary,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  // 3. Quando (+ "Alterar" no card de Plantio)
+                  const SizedBox(height: 6),
+                  // 2. Quando + situação, na mesma linha
                   Row(
                     children: [
-                      Expanded(
+                      Flexible(
                         child: Text(
                           quando,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: AppTypography.body.copyWith(
                             fontSize: 15,
                             height: 1.3,
@@ -215,30 +236,28 @@ class _CartaoEtapa extends StatelessWidget {
                           ),
                         ),
                       ),
-                      if (onEditar != null)
-                        Text(
-                          'Alterar',
-                          style: AppTypography.caption.copyWith(
-                            color: AppColors.primary,
-                            fontWeight: FontWeight.w600,
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: _PilulaSituacao(
+                              status: status,
+                              relativo: textoRelativo(l.data, hoje),
+                              atrasada: etapaAtrasada(etapa, hoje),
+                              confirmada: etapa.confirmada,
+                            ),
                           ),
                         ),
+                      ),
                     ],
                   ),
-                  if (etapa.dataPrevista != null) ...[
+                  // 3. Por quê (regra do cronograma) e data original
+                  if (detalhe.isNotEmpty) ...[
                     const SizedBox(height: 2),
                     Text(
-                      'Previsto ${AppFormatters.data(etapa.dataPrevista!)}',
-                      style: AppTypography.caption.copyWith(
-                        color: context.appTextSecondary,
-                      ),
-                    ),
-                  ],
-                  // 4. Por quê (regra do cronograma)
-                  if (nota != null) ...[
-                    const SizedBox(height: 2),
-                    Text(
-                      nota,
+                      detalhe,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: AppTypography.caption.copyWith(
@@ -268,7 +287,14 @@ class _CartaoEtapa extends StatelessWidget {
                   if (onConfirmar != null)
                     _BotaoConfirmar(
                       confirmada: etapa.confirmada,
+                      emergencia:
+                          l.tipo == CronogramaSojaLinhaTipo.emergencia,
                       onPressed: onConfirmar!,
+                    )
+                  else if (onEditar != null)
+                    TextButton(
+                      onPressed: onEditar,
+                      child: const Text('Alterar data'),
                     ),
                 ],
               ),
@@ -383,9 +409,14 @@ class _ChipEstadio extends StatelessWidget {
 
 /// Confirmar a aplicação (pendente) ou editar a confirmação já feita.
 class _BotaoConfirmar extends StatelessWidget {
-  const _BotaoConfirmar({required this.confirmada, required this.onPressed});
+  const _BotaoConfirmar({
+    required this.confirmada,
+    required this.emergencia,
+    required this.onPressed,
+  });
 
   final bool confirmada;
+  final bool emergencia;
   final VoidCallback onPressed;
 
   @override
@@ -404,7 +435,7 @@ class _BotaoConfirmar extends StatelessWidget {
         minimumSize: const Size(0, 36),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
       ),
-      child: const Text('Confirmar aplicação'),
+      child: Text(emergencia ? 'Confirmar emergência' : 'Confirmar aplicação'),
     );
   }
 }
